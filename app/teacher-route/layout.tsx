@@ -5,8 +5,11 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 const teacherItems = [
   { label: "Dashboard", href: "/teacher-route/dashboard" },
-  { label: "Exams", href: "/teacher-route/exams" },
+  { label: "My Exams", href: "/teacher-route/exams" },
+  { label: "Marks Entry", href: "/teacher-route/marks" },
   { label: "Results", href: "/teacher-route/results" },
+  { label: "Class Log", href: "/teacher-route/class-log" },
+  { label: "Payments", href: "/teacher-route/payments" },
   { label: "Profile", href: "/teacher-route/profile" },
 ];
 

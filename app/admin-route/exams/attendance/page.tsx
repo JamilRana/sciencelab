@@ -118,7 +118,7 @@ export default function ExamAttendancePage() {
       <div className="max-w-[1400px] mx-auto print:max-w-none">
         {/* Print Header - Only visible when printing */}
         <div className="hidden print:block text-center mb-6 print:mb-4">
-          <h1 className="text-2xl font-bold mb-2">Coaching Center</h1>
+          <h1 className="text-2xl font-bold mb-2">Science Lab Coaching Center</h1>
           <h2 className="text-xl font-semibold mb-1">
             {selectedExam?.type} Examination - {selectedExam?.month} {new Date().getFullYear()}
           </h2>

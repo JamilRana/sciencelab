@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Coaching Center",
+  title: "Science Lab Science Lab Coaching Center",
   description: "Management System",
 };
 

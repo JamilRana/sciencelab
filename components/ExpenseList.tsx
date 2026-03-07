@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Receipt, Calendar, CreditCard } from "lucide-react";
+import { Plus, Receipt, Calendar, CreditCard, Download } from "lucide-react";
 import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { ExpenseForm } from "@/components/forms/ExpenseForm";
 import { createExpenseAction, updateExpenseAction, deleteExpenseAction } from "@/app/actions/expenses";
 import { toast } from "sonner";
 import type { Expense } from "@/types";
+import { exportToCSV } from "@/lib/export";
 
 interface ExpenseListProps {
   initialExpenses: Expense[];
@@ -56,6 +57,15 @@ export function ExpenseList({ initialExpenses }: ExpenseListProps) {
   ];
 
   const totalExpenses = initialExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const handleExport = () => {
+    const exportData = initialExpenses.map(e => ({
+      date: new Date(e.date).toLocaleDateString(),
+      description: e.description,
+      amount: e.amount,
+    }));
+    exportToCSV(exportData, 'expenses');
+  };
 
   const handleOpenCreate = () => {
     setEditingExpense(null);
@@ -115,13 +125,22 @@ export function ExpenseList({ initialExpenses }: ExpenseListProps) {
           <p className="text-red-100 text-sm font-medium">Total Expenses</p>
           <p className="text-white text-3xl font-bold">৳{totalExpenses.toLocaleString()}</p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          className="flex items-center gap-2 px-5 h-11 bg-white text-red-600 font-bold rounded-xl shadow-lg transition-all active:scale-95"
-        >
-          <Plus className="h-5 w-5" />
-          Add Expense
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 h-11 bg-green-500 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95"
+          >
+            <Download className="h-5 w-5" />
+            Export
+          </button>
+          <button
+            onClick={handleOpenCreate}
+            className="flex items-center gap-2 px-5 h-11 bg-white text-red-600 font-bold rounded-xl shadow-lg transition-all active:scale-95"
+          >
+            <Plus className="h-5 w-5" />
+            Add Expense
+          </button>
+        </div>
       </div>
 
       <DataTable

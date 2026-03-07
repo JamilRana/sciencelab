@@ -13,7 +13,7 @@ async function migrate() {
 
   try {
     // Insert school
-    await pool.query(`INSERT INTO schools (name) VALUES ($1) ON CONFLICT DO NOTHING`, ["Science Lab Coaching Center"]);
+    await pool.query(`INSERT INTO schools (name) VALUES ($1) ON CONFLICT DO NOTHING`, ["Science Lab Science Lab Coaching Center"]);
     console.log("School inserted");
 
     // Insert batches

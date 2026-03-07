@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit3, Search, Loader2 } from "lucide-react";
+import { Plus, Trash2, Edit3, Search, Loader2, Download } from "lucide-react";
+import { exportToCSV } from "@/lib/export";
 
 interface AdminTableRow {
   id: string | number;
@@ -24,6 +25,7 @@ interface AdminTableProps {
   onEdit?: (row: AdminTableRow) => void;
   onDelete?: (row: AdminTableRow) => void;
   onAdd?: () => void;
+  onExport?: () => void;
   title?: string;
   searchPlaceholder?: string;
   loading?: boolean;
@@ -37,6 +39,7 @@ export function AdminTable({
   onEdit,
   onDelete,
   onAdd,
+  onExport,
   title,
   searchPlaceholder = 'Search...',
   loading = false,
@@ -68,6 +71,23 @@ export function AdminTable({
     }
   };
 
+  const handleExport = () => {
+    if (onExport) {
+      onExport();
+    } else {
+      // Default export
+      const exportData = data.map(row => {
+        const obj: Record<string, any> = {};
+        visibleColumns.forEach(col => {
+          const value = row[col.key];
+          obj[col.header] = value;
+        });
+        return obj;
+      });
+      exportToCSV(exportData, title?.replace(/\s+/g, '_').toLowerCase() || 'export');
+    }
+  };
+
   const visibleColumns = columns.filter((col) => !col.key.startsWith('__'));
 
   return (
@@ -78,15 +98,26 @@ export function AdminTable({
            {title && <h2 className="text-2xl font-bold text-gray-800">{title}</h2>}
            <p className="text-sm text-gray-500">Manage your {title?.toLowerCase() || 'records'} efficiently.</p>
         </div>
-        {onAdd && (
-          <button
-            onClick={onAdd}
-            className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all shadow-sm active:scale-95"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="font-medium">Add New</span>
-          </button>
-        )}
+        <div className="flex gap-2">
+          {onExport && (
+            <button
+              onClick={onExport}
+              className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition-all shadow-sm active:scale-95"
+            >
+              <Download className="h-4 w-4" />
+              <span className="font-medium">Export</span>
+            </button>
+          )}
+          {onAdd && (
+            <button
+              onClick={onAdd}
+              className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all shadow-sm active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="font-medium">Add New</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Search Bar Section */}

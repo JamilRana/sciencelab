@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 const studentItems = [
   { label: "Dashboard", href: "/student-route/dashboard" },
-  { label: "Results", href: "/student-route/results" },
+  { label: "My Results", href: "/student-route/results" },
   { label: "Fees", href: "/student-route/fees" },
   { label: "Profile", href: "/student-route/profile" },
 ];

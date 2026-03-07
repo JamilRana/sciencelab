@@ -185,6 +185,8 @@ export const navItems: NavItem[] = [
   { label: "Teachers", href: "/admin-route/teachers", permission: "teachers:view" },
   { label: "Batches", href: "/admin-route/batches", permission: "batches:view" },
   { label: "Exams", href: "/admin-route/exams", permission: "exams:view" },
+  { label: "Marks Entry", href: "/admin-route/marks", permission: "marks:view" },
+  { label: "Class Log", href: "/admin-route/class-log", permission: "payments:view" },
   { label: "Fees", href: "/admin-route/fees", permission: "fees:view" },
   { label: "Receipts", href: "/admin-route/receipts", permission: "receipts:view" },
   { label: "Expenses", href: "/admin-route/expenses", permission: "expenses:view" },

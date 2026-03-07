@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Edit, Trash2, Plus, User, Phone, GraduationCap } from "lucide-react";
+import { Edit, Trash2, Plus, User, Phone, GraduationCap, Download } from "lucide-react";
 import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { StudentForm, StudentFormValues } from "@/components/forms/StudentForm";
@@ -10,6 +10,7 @@ import { createStudentAction, updateStudentAction, deleteStudentAction } from "@
 import { toast } from "sonner";
 import type { Student, School, Batch } from "@/types";
 import { generateDisplayRoll } from "@/lib/roll";
+import { exportToCSV } from "@/lib/export";
 
 interface StudentListProps {
   initialStudents: Student[];
@@ -156,10 +157,34 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     }
   };
 
+  const handleExport = () => {
+    const exportData = initialStudents.map(s => ({
+      name: s.name,
+      mobile: s.mobile,
+      email: s.email || '',
+      class: s.class,
+      roll: s.roll,
+      batch: s.batch?.name || '',
+      school: s.school?.name || '',
+      gender: s.gender,
+      fatherName: s.fatherName || '',
+      motherName: s.motherName || '',
+      address: s.address || '',
+    }));
+    exportToCSV(exportData, 'students');
+  };
+
   return (
     <div className="space-y-6">
-      {isAdmin && (
-        <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={handleExport}
+          className="flex items-center gap-2 px-4 h-11 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all active:scale-95"
+        >
+          <Download className="h-5 w-5" />
+          Export CSV
+        </button>
+        {isAdmin && (
           <button
             onClick={handleOpenCreate}
             className="flex items-center gap-2 px-5 h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95"
@@ -167,8 +192,8 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
             <Plus className="h-5 w-5" />
             Add Student
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <DataTable
         data={initialStudents}

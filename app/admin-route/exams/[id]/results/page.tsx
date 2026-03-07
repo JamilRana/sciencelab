@@ -164,7 +164,7 @@ export default function ExamResultsPage({ searchParams }: Props) {
 
       {/* Print Header */}
       <div className="hidden print:block text-center mb-6 border-b-2 border-black pb-4">
-        <h1 className="text-2xl font-bold uppercase">Coaching Center</h1>
+        <h1 className="text-2xl font-bold uppercase">Science Lab Science Lab Coaching Center</h1>
         <h2 className="text-lg font-semibold mt-2">
           {exam.type} Examination - {exam.month} {currentYear}
         </h2>

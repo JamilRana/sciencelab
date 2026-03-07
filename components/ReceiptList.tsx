@@ -11,6 +11,7 @@ import {
 import { ReceiptModal } from "./ReceiptModal";
 import { AdminTable } from "@/app/admin-route/components/AdminTable";
 import type { Month } from "@/app/admin-route/types/admin";
+import { exportToCSV } from "@/lib/export";
 
 interface Student {
   id: number;
@@ -139,6 +140,17 @@ export function ReceiptList({ initialReceipts, students, filters, totalAmount }:
         onEdit={handleEdit}
         onDelete={handleDelete}
         onAdd={handleAddNew}
+        onExport={() => {
+          const exportData = receipts.map(r => ({
+            date: new Date(r.date).toLocaleDateString(),
+            student: r.student?.name || '',
+            roll: r.student ? `${r.student.batch?.code || ''}${r.student.roll.toString().padStart(2, '0')}` : '',
+            class: r.student?.class || '',
+            month: r.month,
+            amount: r.amount,
+          }));
+          exportToCSV(exportData, 'receipts');
+        }}
         searchPlaceholder="Filter receipts..."
       />
 

@@ -116,7 +116,7 @@ export default function FeesPage() {
         studentsCount={students?.length || 0}
       />
       <div className="hidden print:block text-center mb-4">
-        <h1 className="text-xl font-bold">Coaching Center</h1>
+        <h1 className="text-xl font-bold">Science Lab Coaching Center</h1>
         <p className="text-sm">Monthly Fee Register</p>
         <p className="text-sm">
           Class: {activeClass}

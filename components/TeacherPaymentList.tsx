@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, User, Calendar, DollarSign } from "lucide-react";
+import { Plus, User, Calendar, DollarSign, Download } from "lucide-react";
 import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { PaymentForm } from "@/components/forms/PaymentForm";
 import { createTeacherPaymentAction, deleteTeacherPaymentAction, getTeachersForPaymentAction } from "@/app/actions/teacher-payments";
 import { toast } from "sonner";
 import type { Teacher } from "@/types";
+import { exportToCSV } from "@/lib/export";
 
 interface Payment {
   id: number;
@@ -83,6 +84,17 @@ export function TeacherPaymentList({ initialPayments, teachers }: TeacherPayment
 
   const totalPaid = initialPayments.reduce((sum, p) => sum + p.amount, 0);
 
+  const handleExport = () => {
+    const exportData = initialPayments.map(p => ({
+      date: new Date(p.date).toLocaleDateString(),
+      teacher: p.teacher?.name || '',
+      month: p.month,
+      amount: p.amount,
+      note: p.note || '',
+    }));
+    exportToCSV(exportData, 'teacher_payments');
+  };
+
   const handleClose = () => {
     setIsModalOpen(false);
   };
@@ -128,13 +140,22 @@ export function TeacherPaymentList({ initialPayments, teachers }: TeacherPayment
           <p className="text-purple-100 text-sm font-medium">Total Paid</p>
           <p className="text-white text-3xl font-bold">৳{totalPaid.toLocaleString()}</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-5 h-11 bg-white text-purple-600 font-bold rounded-xl shadow-lg transition-all active:scale-95"
-        >
-          <Plus className="h-5 w-5" />
-          Add Payment
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 h-11 bg-green-500 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95"
+          >
+            <Download className="h-5 w-5" />
+            Export
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-5 h-11 bg-white text-purple-600 font-bold rounded-xl shadow-lg transition-all active:scale-95"
+          >
+            <Plus className="h-5 w-5" />
+            Add Payment
+          </button>
+        </div>
       </div>
 
       <DataTable

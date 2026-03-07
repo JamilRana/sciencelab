@@ -9,7 +9,7 @@ async function main() {
   const school1 = await prisma.school.upsert({
     where: { id: 1 },
     update: {},
-    create: { name: "Science Lab Coaching Center" },
+    create: { name: "Science Lab Science Lab Coaching Center" },
   });
 
   // Create batches

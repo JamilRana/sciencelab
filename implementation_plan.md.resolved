@@ -1,5 +1,5 @@
 # PHP → Next.js Migration Plan
-## Coaching Center Management System (Science Lab)
+## Science Lab Coaching Center Management System (Science Lab)
 
 A complete migration from a PHP/MariaDB monolith to a modern **Next.js 14+ (App Router)** application backed by **PostgreSQL**.
 

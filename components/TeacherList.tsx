@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, User, Phone, Mail, Wallet } from "lucide-react";
+import { Plus, User, Phone, Mail, Wallet, Download } from "lucide-react";
 import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { TeacherForm } from "@/components/forms/TeacherForm";
 import { createTeacherAction, updateTeacherAction, deleteTeacherAction } from "@/app/actions/teachers";
 import { toast } from "sonner";
 import type { Teacher } from "@/types";
+import { exportToCSV } from "@/lib/export";
 
 interface TeacherListProps {
   initialTeachers: Teacher[];
@@ -139,10 +140,29 @@ export function TeacherList({ initialTeachers, role = "STAFF" }: TeacherListProp
     }
   };
 
+  const handleExport = () => {
+    const exportData = initialTeachers.map(t => ({
+      name: t.name,
+      mobile: t.mobile,
+      email: t.email || '',
+      gender: t.gender,
+      perClass: t.perClass,
+      due: t.due,
+    }));
+    exportToCSV(exportData, 'teachers');
+  };
+
   return (
     <div className="space-y-6">
-      {canEdit && (
-        <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={handleExport}
+          className="flex items-center gap-2 px-4 h-11 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all active:scale-95"
+        >
+          <Download className="h-5 w-5" />
+          Export CSV
+        </button>
+        {canEdit && (
           <button
             onClick={handleOpenCreate}
             className="flex items-center gap-2 px-5 h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95"
@@ -150,8 +170,8 @@ export function TeacherList({ initialTeachers, role = "STAFF" }: TeacherListProp
             <Plus className="h-5 w-5" />
             Add Teacher
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <DataTable
         data={initialTeachers}

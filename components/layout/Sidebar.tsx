@@ -69,7 +69,7 @@ export function Sidebar({ items, role }: SidebarProps) {
           <div className="p-4 border-b border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold">Coaching Center</h1>
+                <h1 className="text-xl font-bold">Science Lab Coaching Center</h1>
                 <p className="text-sm text-gray-400 capitalize">{role} Panel</p>
               </div>
               <button 

@@ -29,7 +29,7 @@ export function ResultSheetModal({ data, onClose, onBack }: ResultSheetModalProp
 
         {/* 🔹 Print Header (Hidden on Screen) */}
         <div className="hidden print:block text-center border-b pb-4 mb-4">
-          <h1 className="text-xl font-bold">Coaching Center</h1>
+          <h1 className="text-xl font-bold">Science Lab Coaching Center</h1>
           <p className="text-sm">Official Result Sheet</p>
           <p className="text-xs text-muted-foreground mt-1">
             {data.exam.type} Examination • {data.exam.month} • Class {data.exam.class}
