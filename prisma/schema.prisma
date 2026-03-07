@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  STUDENT
+  TEACHER
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  password String
+  name     String  @default("")
+  role     Role
+  active   Boolean @default(true)
+
+  @@map("users")
+}
+
+model School {
+  id       Int       @id @default(autoincrement())
+  name     String
+  students Student[]
+
+  @@map("schools")
+
+  @@index([name])
+}
+
+model Batch {
+  id       Int       @id @default(autoincrement())
+  classId  String    // "Six", "Seven", etc.
+  name     String    // "8A", "9B", etc.
+  code     Int       // 2-digit prefix: 61, 62, 71, etc.
+  students Student[]
+
+  @@map("batches")
+
+  @@index([classId])
+}
+
+model Student {
+  id         Int       @id @default(autoincrement())
+  name       String
+  fatherName String
+  motherName String
+  mobile     String
+  homeMobile String    @default("")
+  image      String    @default("")
+  active     Boolean   @default(true)
+  schoolId   Int
+  batchId    Int
+  roll       Int       // Serial number within batch (1, 2, 3...)
+  address    String
+  gender     String
+  email      String    @default("")
+  dob        DateTime?
+  class      String
+  userId     Int?      @unique
+
+  school     School    @relation(fields: [schoolId], references: [id])
+  batch      Batch     @relation(fields: [batchId], references: [id])
+  receipts   Receipt[]
+  marks      Mark[]
+
+  @@map("students")
+  @@index([batchId])
+  @@index([class])
+}
+
+model Teacher {
+  id        Int     @id @default(autoincrement())
+  name      String
+  mobile    String  @unique
+  image     String  @default("")
+  gender    String
+  email     String  @default("")
+  perClass  Int     @default(0)
+  due       Int     @default(0)
+  userId    Int?    @unique
+
+  classLogs    TeacherClassLog[]
+  examSubjects ExamSubject[]
+  payments    TeacherPayment[]
+
+  @@map("teachers")
+}
+
+model Exam {
+  id       Int           @id @default(autoincrement())
+  type     String        // "Monthly", "Annual"
+  month    String        // "Jan", "Feb", etc.
+  class    String        // "Six", "Seven", etc.
+  subjects ExamSubject[]
+
+  @@map("exams")
+
+  @@index([month])
+}
+
+model ExamSubject {
+  id        Int      @id @default(autoincrement())
+  examId    Int
+  subject   String
+  teacherId Int
+  totalMark Int
+  examDate  DateTime
+  status    Int      @default(1)
+  topics    String   @default("")
+
+  exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  marks   Mark[]
+
+  @@map("exam_subjects")
+}
+
+model Mark {
+  id            Int     @id @default(autoincrement())
+  examSubjectId Int
+  studentId     Int
+  written       Float   @default(0)
+  objective     Float   @default(0)
+
+  examSubject ExamSubject @relation(fields: [examSubjectId], references: [id], onDelete: Cascade)
+  student     Student     @relation(fields: [studentId], references: [id])
+
+  @@unique([examSubjectId, studentId])
+  @@map("marks")
+}
+
+model Receipt {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  month     String
+  amount    Int
+  date      DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@map("receipts")
+
+  @@index([studentId])
+  @@index([month])
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Int
+  date        DateTime
+
+  @@map("expenses")
+
+  @@index([date])
+}
+
+model TeacherClassLog {
+  id        Int      @id @default(autoincrement())
+  teacherId Int
+  date      DateTime
+  classes   Int      @default(0)
+  month     String
+  notebook  Int      @default(0)
+  other     Int      @default(0)
+  paid      Int      @default(0)
+  perClass  Int      @default(0)
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@map("teacher_class_logs")
+
+  @@index([teacherId])
+  @@index([month])
+}
+
+model TeacherPayment {
+  id        Int      @id @default(autoincrement())
+  teacherId Int
+  month     String
+  amount    Int
+  date      DateTime @default(now())
+  note      String   @default("")
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@map("teacher_payments")
+
+  @@index([teacherId])
+  @@index([month])
+}

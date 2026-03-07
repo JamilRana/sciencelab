@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 5mm;
+  }
+
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .no-print, button {
+    display: none !important;
+  }
+
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border: 1pt solid #000 !important;
+    padding: 2px !important;
+    color: black !important;
+  }
+
+  th {
+    background-color: #f3f4f6 !important;
+    text-transform: uppercase;
+  }
+
+  .bg-green-100, .bg-yellow-100, .bg-red-100 {
+    background-color: transparent !important;
+  }
+
+  .text-green-700, .text-yellow-700, .text-red-700 {
+    color: black !important;
+    font-weight: bold;
+  }
+
+  .hidden\.print\:block {
+    display: block !important;
+  }
+}
