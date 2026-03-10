@@ -7,6 +7,7 @@ import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { TeacherForm } from "@/components/forms/TeacherForm";
 import { createTeacherAction, updateTeacherAction, deleteTeacherAction } from "@/app/actions/teachers";
+import { createUserAndProfileAction } from "@/app/actions/registration";
 import { toast } from "sonner";
 import type { Teacher } from "@/types";
 import { exportToCSV } from "@/lib/export";
@@ -18,7 +19,7 @@ interface TeacherListProps {
 
 export function TeacherList({ initialTeachers, role = "STAFF" }: TeacherListProps) {
   const isAdmin = role === "ADMIN";
-  const canEdit = isAdmin || role === "STAFF";
+  const canEdit = isAdmin;
   const canDelete = isAdmin;
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,12 +108,22 @@ export function TeacherList({ initialTeachers, role = "STAFF" }: TeacherListProp
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      const result = editingTeacher
-        ? await updateTeacherAction(editingTeacher.id, data)
-        : await createTeacherAction(data);
+      let result;
+      if (editingTeacher) {
+        result = await updateTeacherAction(editingTeacher.id, data);
+      } else {
+        // Create teacher with user account
+        result = await createUserAndProfileAction({
+          name: data.name,
+          mobile: data.mobile,
+          gender: data.gender,
+          email: data.email || "",
+          role: "TEACHER",
+        });
+      }
 
       if (result.success) {
-        toast.success(editingTeacher ? "Teacher updated" : "Teacher added");
+        toast.success(editingTeacher ? "Teacher updated" : "Teacher added with login");
         handleClose();
         router.refresh();
       } else {

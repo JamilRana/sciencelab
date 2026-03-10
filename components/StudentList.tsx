@@ -1,3 +1,4 @@
+// components/StudentList.tsx
 "use client";
 
 import { useState } from "react";
@@ -7,6 +8,7 @@ import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { StudentForm, StudentFormValues } from "@/components/forms/StudentForm";
 import { createStudentAction, updateStudentAction, deleteStudentAction } from "@/app/actions/students";
+import { createUserAndProfileAction } from "@/app/actions/registration";
 import { toast } from "sonner";
 import type { Student, School, Batch } from "@/types";
 import { generateDisplayRoll } from "@/lib/roll";
@@ -20,7 +22,7 @@ interface StudentListProps {
 }
 
 export function StudentList({ initialStudents, schools, batches, role = "STAFF" }: StudentListProps) {
-  const isAdmin = role === "ADMIN";
+  const isAdmin = role === "ADMIN" || role === "STAFF";
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -31,6 +33,7 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
       key: "name",
       header: "Student",
       sortable: true,
+      fuzzyWeight: 1.2, // Higher weight for name matches
       render: (student) => (
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
@@ -46,6 +49,7 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     {
       key: "mobile",
       header: "Contact",
+      fuzzyWeight: 1.0,
       render: (student) => (
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1.5 text-sm text-gray-600">
@@ -78,9 +82,18 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
       key: "roll",
       header: "Roll",
       sortable: true,
+      fuzzyWeight: 1.5, // Highest weight for roll (exact matches important)
+      // 🔹 Custom search: Combine batch code + roll for "6105" → roll 5 in batch 61
+      searchValue: (student) => {
+        const batchCode = student.batch?.code?.toString() || "";
+        const roll = student.roll?.toString() || "";
+        return `${batchCode}${roll} ${roll}`; // Search both combined and standalone
+      },
       render: (student) => (
         <span className="text-sm font-medium text-blue-600">
-          {student.batch?.code ? generateDisplayRoll(student.batch.code, student.roll) : student.roll}
+          {student.batch?.code 
+            ? generateDisplayRoll(student.batch.code, student.roll) 
+            : student.roll}
         </span>
       ),
     },
@@ -123,12 +136,19 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
   const onSubmit = async (data: StudentFormValues) => {
     setIsLoading(true);
     try {
-      const result = editingStudent
-        ? await updateStudentAction(editingStudent.id, data)
-        : await createStudentAction(data);
+      let result;
+      if (editingStudent) {
+        result = await updateStudentAction(editingStudent.id, data);
+      } else {
+        // Create student with user account
+        result = await createUserAndProfileAction({
+          ...data,
+          role: "STUDENT",
+        } as any);
+      }
 
       if (result.success) {
-        toast.success(editingStudent ? "Student updated" : "Student registered");
+        toast.success(editingStudent ? "Student updated" : "Student registered with login");
         handleClose();
         router.refresh();
       } else {
@@ -174,6 +194,34 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     exportToCSV(exportData, 'students');
   };
 
+  // 🔹 Optional: Custom search for advanced scenarios
+  const customStudentSearch = (student: Student, query: string): boolean => {
+    const q = query.toLowerCase().trim();
+    
+    // Name (fuzzy)
+    if (student.name.toLowerCase().includes(q)) return true;
+    
+    // Mobile (substring - handles partial numbers)
+    if (student.mobile.includes(query)) return true;
+    
+    // Roll with batch code prefix: "6105" matches roll 5 in batch 61
+    const batchCode = student.batch?.code?.toString() || "";
+    const fullRoll = `${batchCode}${student.roll}`;
+    if (fullRoll.includes(query) || student.roll.toString().includes(query)) return true;
+    
+    // Email
+    if (student.email?.toLowerCase().includes(q)) return true;
+    
+    // Parent names
+    if (student.fatherName?.toLowerCase().includes(q)) return true;
+    if (student.motherName?.toLowerCase().includes(q)) return true;
+    
+    // Address
+    if (student.address?.toLowerCase().includes(q)) return true;
+    
+    return false;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end gap-2">
@@ -195,16 +243,25 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
         )}
       </div>
 
-      <DataTable
+      <DataTable<Student>
         data={initialStudents}
         columns={columns}
-        searchFields={["name", "mobile", "email"]}
-        placeholder="Search by name, mobile, or email..."
+        searchFields={["name", "mobile", "roll"]}
+        placeholder="Search by name, mobile, or roll (e.g., 'john', '017', '6105')..."
         pageSize={15}
         onEdit={isAdmin ? handleOpenEdit : undefined}
         onDelete={isAdmin ? handleDelete : undefined}
         filterOptions={filterOptions}
         emptyMessage="No students found"
+        customSearchFn={customStudentSearch}
+        // 🔹 Fuzzy search configuration
+        fuzzySearch={{
+          enabled: true,
+          threshold: 0.35, // Slightly lower for more matches
+          minQueryLength: 2, // Only fuzzy match queries with 2+ chars
+        }}
+        // 🔹 Debounce: Wait 300ms after typing stops before searching
+        searchDebounceMs={300}
       />
 
       <DataModal

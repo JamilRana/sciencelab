@@ -1,53 +1,64 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { ExamSummary } from "@/app/actions/student-results";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Trophy } from "lucide-react";
 
 interface ExamCardProps {
-  exam: {
-    id: number;
-    type: string;
-    month: string;
-    class: string;
-    percentage: number;
-    position: number | null;
-    totalStudents: number;
-    subjectCount: number;
-  };
-  onViewDetails: () => void;
+  exam: ExamSummary;
+  studentId: number;
+  onViewResults: () => void;
 }
 
-export function ExamCard({ exam, onViewDetails }: ExamCardProps) {
+export function ExamCard({ exam, studentId, onViewResults }: ExamCardProps) {
+  // Color coding by percentage
+  const getPercentageColor = (percentage: number) => {
+    if (percentage >= 80) return "text-green-600 bg-green-50";
+    if (percentage >= 60) return "text-blue-600 bg-blue-50";
+    if (percentage >= 40) return "text-yellow-600 bg-yellow-50";
+    return "text-red-600 bg-red-50";
+  };
 
   return (
-    <Card 
+    <Card
       className="cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1 border-2 hover:border-primary/30"
-      onClick={onViewDetails}
+      onClick={onViewResults}
     >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div>
-            <Badge variant="outline" className="mb-2">{exam.type}</Badge>
+            <Badge variant="outline" className="mb-2">
+              {exam.type}
+            </Badge>
             <h3 className="font-semibold text-lg">{exam.month} Examination</h3>
             <p className="text-sm text-muted-foreground">Class {exam.class}</p>
           </div>
+          <div className={`px-3 py-1 rounded-lg font-bold ${getPercentageColor(exam.percentage)}`}>
+            {exam.percentage}%
+          </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-3">
-        {/* Percentage Progress */}
+        {/* Percentage Progress Bar */}
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-muted-foreground">Score</span>
-            <span className="font-bold">{exam.percentage}%</span>
+            <span className="font-bold">
+              {exam.totalMarks}/{exam.maxMarks}
+            </span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div 
+            <div
               className={`h-full rounded-full transition-all ${
-                exam.percentage >= 80 ? "bg-green-500" :
-                exam.percentage >= 60 ? "bg-blue-500" :
-                exam.percentage >= 40 ? "bg-yellow-500" :
-                "bg-red-500"
+                exam.percentage >= 80
+                  ? "bg-green-500"
+                  : exam.percentage >= 60
+                  ? "bg-blue-500"
+                  : exam.percentage >= 40
+                  ? "bg-yellow-500"
+                  : "bg-red-500"
               }`}
               style={{ width: `${Math.min(exam.percentage, 100)}%` }}
             />
@@ -58,11 +69,10 @@ export function ExamCard({ exam, onViewDetails }: ExamCardProps) {
         {exam.position && (
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">Position:</span>
-            <span className="font-semibold">
-              {exam.position}<sup className="text-xs">th</sup> of {exam.totalStudents}
+            <span className="font-semibold flex items-center gap-1">
+              {exam.position === 1 && <Trophy className="h-4 w-4 text-amber-500" />}
+              #{exam.position} of {exam.totalStudents}
             </span>
-            {exam.position === 1 && <span className="text-amber-500">🏆</span>}
-            {exam.position <= 3 && exam.position > 1 && <span className="text-gray-400">🥈</span>}
           </div>
         )}
 
@@ -73,11 +83,17 @@ export function ExamCard({ exam, onViewDetails }: ExamCardProps) {
       </CardContent>
 
       <CardFooter className="pt-2 border-t">
-        <button 
-          className="w-full text-sm text-primary font-medium hover:underline text-left"
-          onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
+        <button
+          className="w-full text-sm text-primary font-medium hover:underline text-left flex items-center justify-between"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewResults();
+          }}
         >
-          View Detailed Result →
+          <span>View Class Results →</span>
+          <span className="text-xs text-muted-foreground">
+            {exam.totalStudents} students
+          </span>
         </button>
       </CardFooter>
     </Card>

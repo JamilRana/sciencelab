@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation"; 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { updateUserProfileAction } from "@/app/actions/registration";
@@ -53,6 +54,8 @@ export function ProfileEditForm({ userId, initialData, role, isEditable }: Profi
     },
   });
 
+const router = useRouter(); 
+
   const onSubmit = async (data: ProfileFormValues) => {
     setIsLoading(true);
     try {
@@ -60,6 +63,9 @@ export function ProfileEditForm({ userId, initialData, role, isEditable }: Profi
       if (result.success) {
         toast.success("Profile updated successfully");
         setIsEditing(false);
+        
+        // 3. Force a server-side refetch of the profile data
+        router.refresh(); 
       } else {
         toast.error(result.error || "Failed to update profile");
       }
@@ -122,7 +128,7 @@ export function ProfileEditForm({ userId, initialData, role, isEditable }: Profi
               )}
             </div>
 
-            {(role === "STUDENT" || role === "TEACHER") && (
+            {(role === "TEACHER") && (
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Mobile</label>
                 <input

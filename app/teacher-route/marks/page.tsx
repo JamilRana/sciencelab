@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { saveMarkAction, bulkSaveMarksAction } from "@/app/actions/marks";
 import { Search, FileText, User, CheckCircle, Loader2 } from "lucide-react";
 

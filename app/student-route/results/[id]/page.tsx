@@ -36,6 +36,7 @@ export default function ExamResultsPage() {
       try {
         const res = await fetch(`/api/exams/${id}`);
         const data = await res.json();
+        console.log("no data",data);
         setExam(data);
       } catch (error) {
         console.error("Error fetching exam:", error);
@@ -62,7 +63,8 @@ export default function ExamResultsPage() {
       <PrintHeader exam={exam} year={currentYear} />
 
       {results.length === 0 ? (
-        <NoResults examId={exam.id} isStudent={isStudent} />
+        <NoResults examId={exam.id}
+         isStudent={isStudent} />
       ) : (
         <MeritListTable
           data={exam}

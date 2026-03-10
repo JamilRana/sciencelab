@@ -176,11 +176,13 @@ export default async function AdminDashboard({
           <p className="font-semibold text-gray-900">Exams</p>
           <p className="text-xs text-gray-500">Manage exams</p>
         </Link>
+        {isAdmin && (
         <Link href="/admin-route/fees" className="bg-white p-4 rounded-xl shadow-sm border hover:border-orange-300 transition-colors">
           <p className="text-2xl mb-2">💰</p>
           <p className="font-semibold text-gray-900">Fees</p>
           <p className="text-xs text-gray-500">Manage fees</p>
         </Link>
+        )}
         <Link href="/admin-route/marks" className="bg-white p-4 rounded-xl shadow-sm border hover:border-indigo-300 transition-colors">
           <p className="text-2xl mb-2">📊</p>
           <p className="font-semibold text-gray-900">Marks</p>

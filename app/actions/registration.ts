@@ -364,7 +364,8 @@ export async function updateUserProfileAction(
         });
       }
     }
-
+    revalidatePath("/profile"); 
+  
     return { success: true };
   } catch (error) {
     console.error("Error updating profile:", error);

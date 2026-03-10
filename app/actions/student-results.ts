@@ -71,19 +71,23 @@ export type ExamDetailResponse = {
 };
 
 /* ----------------------------------------
-   Helper: Get studentId from session
+   Helper: Get Student ID from Session
 ---------------------------------------- */
 
 async function getStudentIdFromSession(): Promise<number> {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role !== "STUDENT") {
-    throw new Error("Unauthorized: Student session required");
+  if (!session || !session.user) {
+    throw new Error("Unauthorized: No valid session");
+  }
+  
+  if (session.user.role !== "STUDENT") {
+    throw new Error("Unauthorized: Student access required");
   }
   
   const studentId = session.user.studentId;
   
-  if (!studentId) {
+  if (!studentId || typeof studentId !== "number") {
     throw new Error("Student ID not found in session");
   }
   
@@ -92,20 +96,19 @@ async function getStudentIdFromSession(): Promise<number> {
 
 /* ----------------------------------------
    Action 1: Get Exam Summaries (Card View)
-   Returns list of exams with basic stats
 ---------------------------------------- */
 
 export async function getStudentExamSummariesAction(): Promise<ExamSummariesResponse> {
   const studentId = await getStudentIdFromSession();
 
-  // 🔹 Fetch student
+  // 🔹 Fetch student with relations
   const student = await prisma.student.findUnique({
     where: { id: studentId },
     include: { batch: true, school: true },
   });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new Error("Student profile not found");
   }
 
   // 🔹 Fetch exams for this class
@@ -127,7 +130,7 @@ export async function getStudentExamSummariesAction(): Promise<ExamSummariesResp
   // 🔹 Pre-fetch active classmates for position calculation
   const classmates = await prisma.student.findMany({
     where: { class: student.class, active: true },
-    select: { id: true, name: true },
+    select: { id: true },
   });
   const classmateIds = classmates.map((c) => c.id);
 
@@ -175,7 +178,7 @@ export async function getStudentExamSummariesAction(): Promise<ExamSummariesResp
         .sort((a, b) => b.total - a.total);
 
       totalStudents = sorted.length;
-      
+
       if (totalStudents > 0) {
         position = getCompetitionPosition(
           sorted.map((s) => ({ studentId: s.id, total: s.total })),
@@ -214,13 +217,17 @@ export async function getStudentExamSummariesAction(): Promise<ExamSummariesResp
 
 /* ----------------------------------------
    Action 2: Get Detailed Exam Result (Modal)
-   Returns full result sheet for one exam
 ---------------------------------------- */
 
 export async function getStudentExamDetailAction(
   examId: number
 ): Promise<ExamDetailResponse> {
   const studentId = await getStudentIdFromSession();
+
+  // 🔹 Validate examId
+  if (!examId || typeof examId !== "number" || examId <= 0) {
+    throw new Error("Invalid exam ID");
+  }
 
   // 🔹 Fetch student
   const student = await prisma.student.findUnique({
@@ -229,7 +236,7 @@ export async function getStudentExamDetailAction(
   });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new Error("Student profile not found");
   }
 
   // 🔹 Fetch exam with subjects and marks
@@ -251,6 +258,11 @@ export async function getStudentExamDetailAction(
 
   if (!exam) {
     throw new Error("Exam not found");
+  }
+
+  // 🔹 Verify student belongs to this exam's class
+  if (exam.class !== student.class) {
+    throw new Error("Unauthorized: This exam is not for your class");
   }
 
   // 🔹 Calculate subject-wise results with positions
@@ -287,10 +299,7 @@ export async function getStudentExamDetailAction(
   });
 
   // 🔹 Calculate overall stats
-  const overallTotal = subjectsWithPosition.reduce(
-    (sum, s) => sum + s.total,
-    0
-  );
+  const overallTotal = subjectsWithPosition.reduce((sum, s) => sum + s.total, 0);
   const overallMax = subjectsWithPosition.reduce(
     (sum, s) => sum + s.totalMark,
     0
@@ -323,7 +332,6 @@ export async function getStudentExamDetailAction(
 
 /* ----------------------------------------
    Helper: Competition Ranking (1,1,3,4...)
-   Ties get same position, next rank skips
 ---------------------------------------- */
 
 function getCompetitionPosition(
@@ -334,25 +342,25 @@ function getCompetitionPosition(
   if (ranked.length === 0) return null;
 
   let position = 1;
-  
+
   for (let i = 0; i < ranked.length; i++) {
     const entry = ranked[i];
-    
+
     if (entry.studentId === targetStudentId) {
       return position;
     }
-    
+
     // Update position only when score drops (handles ties)
     if (i < ranked.length - 1 && ranked[i + 1].total < entry.total) {
       position = i + 2;
     }
   }
-  
+
   return position;
 }
 
 /* ----------------------------------------
-   Optional: Get Filter Options for Student
+   Optional: Get Filter Options
 ---------------------------------------- */
 
 export async function getStudentResultFiltersAction() {
@@ -385,3 +393,4 @@ export async function getStudentResultFiltersAction() {
 
   return { months: ["All", ...months], types: ["All", ...types] };
 }
+

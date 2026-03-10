@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -9,6 +9,28 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // --- Redirect if session exists ---
+  useEffect(() => {
+    async function checkSession() {
+      const session = await getSession(); // fetch current session
+      if (session?.user?.role) {
+        // Redirect based on role
+        if (session.user.role === "ADMIN" || session.user.role === "STAFF") {
+          router.replace("/admin-route/dashboard");
+        } else if (session.user.role === "TEACHER") {
+          router.replace("/teacher-route/dashboard");
+        } else if (session.user.role === "STUDENT") {
+          router.replace("/student-route/dashboard");
+        } else {
+          router.replace("/admin-route/dashboard");
+        }
+      }
+    }
+
+    checkSession();
+  }, [router]);
+
+  // --- Form submit ---
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -31,26 +53,27 @@ export default function LoginPage() {
       return;
     }
 
-    // Get session to determine user role
+    // Fetch session again after login
     const sessionRes = await fetch("/api/auth/session");
     const session = await sessionRes.json();
-    
-    // Redirect based on user role
+
     if (session?.user?.role === "ADMIN" || session?.user?.role === "STAFF") {
-      window.location.href = "/admin-route/dashboard";
+      router.replace("/admin-route/dashboard");
     } else if (session?.user?.role === "TEACHER") {
-      window.location.href = "/teacher-route/dashboard";
+      router.replace("/teacher-route/dashboard");
     } else if (session?.user?.role === "STUDENT") {
-      window.location.href = "/student-route/dashboard";
+      router.replace("/student-route/dashboard");
     } else {
-      window.location.href = "/admin-route/dashboard";
+      router.replace("/admin-route/dashboard");
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Science Lab Science Lab Coaching Center </h1>
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Science Lab Science Lab Coaching Center
+        </h1>
         <h2 className="text-xl font-bold text-center mb-6">Login</h2>
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

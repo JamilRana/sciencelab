@@ -127,7 +127,7 @@ export function ExamList({ initialExams, role = "STAFF", teacherId, studentClass
               className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
             >
               <option value="">All Classes</option>
-              {["6","7","8","9","10","11","12"].map((c) => (
+              {["Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"].map((c) => (
                 <option key={c} value={c}>Class {c}</option>
               ))}
             </select>
@@ -173,6 +173,7 @@ export function ExamList({ initialExams, role = "STAFF", teacherId, studentClass
                   </div>
                 </div>
               </div>
+              {isAdmin && (
               <div className="flex gap-1 opacity-10 group-hover:opacity-100 transition-opacity">
                 <Link
                   href={`/admin-route/exams/${exam.id}/results?role=${role}${studentId ? `&studentId=${studentId}` : ''}`}
@@ -181,7 +182,7 @@ export function ExamList({ initialExams, role = "STAFF", teacherId, studentClass
                 >
                   <Award className="h-4 w-4" />
                 </Link>
-                {(isAdmin || isTeacher) && (
+                {(isAdmin ) && (
                   <Link
                     href={`/admin-route/exams/attendance?exam=${exam.id}`}
                     className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
@@ -213,6 +214,18 @@ export function ExamList({ initialExams, role = "STAFF", teacherId, studentClass
                   </>
                 )}
               </div>
+              )}
+              {isTeacher && (
+                <div className="flex gap-1 opacity-10 group-hover:opacity-100 transition-opacity">
+                  <Link
+                    href={`/teacher-route/results/${exam.id}?role=${role}${studentId ? `&studentId=${studentId}` : ''}`}
+                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                    title="View Results"
+                  >
+                    <Award className="h-4 w-4" />
+                  </Link>
+                </div>
+              )}
             </div>
 
             <div className="bg-gray-50/50 rounded-xl p-3 border border-gray-100 mb-4">

@@ -1,3 +1,4 @@
+// lib/roll.ts
 export function generateDisplayRoll(batchCode: number, roll: number): number {
   return batchCode * 100 + roll;
 }

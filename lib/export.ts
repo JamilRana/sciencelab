@@ -1,3 +1,4 @@
+// lib/export.ts
 export function exportToCSV(data: any[], filename: string, headers?: { key: string; label: string }[]) {
   if (data.length === 0) return;
 
