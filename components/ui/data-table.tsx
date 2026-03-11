@@ -41,6 +41,8 @@ interface DataTableProps<T> {
   };
   // 🔹 New: Debounce settings
   searchDebounceMs?: number; // Default: 300ms
+  // 🔹 New: Default sort function for complex sorting (e.g., nested properties)
+  defaultSort?: (a: T, b: T) => number;
 }
 
 export function DataTable<T extends { id: number }>({
@@ -57,6 +59,7 @@ export function DataTable<T extends { id: number }>({
   customSearchFn,
   fuzzySearch = { enabled: true, threshold: 0.4, minQueryLength: 2 },
   searchDebounceMs = 300,
+  defaultSort,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -180,6 +183,9 @@ export function DataTable<T extends { id: number }>({
         const comparison = aVal < bVal ? -1 : 1;
         return sortDirection === "asc" ? comparison : -comparison;
       });
+    } else if (defaultSort) {
+      // Use default sort function when no explicit sort is set
+      result.sort(defaultSort);
     }
 
     return {

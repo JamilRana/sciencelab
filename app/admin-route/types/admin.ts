@@ -1,4 +1,4 @@
-export const CLASSES = ["6", "7", "8", "9", "10", "11", "12"];
+export const CLASSES = ["Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
 
 export const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",

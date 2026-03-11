@@ -1,3 +1,4 @@
+// app/api/teacher/results/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     const subjectId = searchParams.get("subjectId");
 
     const teacher = await prisma.teacher.findFirst({
-      where: { mobile: session.user.username },
+      where: { userId: parseInt(session.user.id) },
     });
 
     if (!teacher) {

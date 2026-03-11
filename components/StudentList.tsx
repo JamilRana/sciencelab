@@ -63,27 +63,9 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
       ),
     },
     {
-      key: "class",
-      header: "Class",
-      sortable: true,
-      render: (student) => (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-sm text-gray-700 font-medium">
-            <GraduationCap className="h-4 w-4 text-blue-500" />
-            Class {student.class}
-          </div>
-          <p className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full w-fit">
-            {student.batch?.name || "No Batch"}
-          </p>
-        </div>
-      ),
-    },
-    {
       key: "roll",
       header: "Roll",
       sortable: true,
-      fuzzyWeight: 1.5, // Highest weight for roll (exact matches important)
-      // 🔹 Custom search: Combine batch code + roll for "6105" → roll 5 in batch 61
       searchValue: (student) => {
         const batchCode = student.batch?.code?.toString() || "";
         const roll = student.roll?.toString() || "";
@@ -206,7 +188,7 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     
     // Roll with batch code prefix: "6105" matches roll 5 in batch 61
     const batchCode = student.batch?.code?.toString() || "";
-    const fullRoll = `${batchCode}${student.roll}`;
+    const fullRoll = `${batchCode}${student.roll.toString().padStart(2, '0')}`;
     if (fullRoll.includes(query) || student.roll.toString().includes(query)) return true;
     
     // Email
@@ -262,6 +244,13 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
         }}
         // 🔹 Debounce: Wait 300ms after typing stops before searching
         searchDebounceMs={300}
+        // 🔹 Default sort: batch code first, then roll
+        defaultSort={(a, b) => {
+          const aBatch = a.batch?.code ?? 0;
+          const bBatch = b.batch?.code ?? 0;
+          if (aBatch !== bBatch) return aBatch - bBatch;
+          return a.roll - b.roll;
+        }}
       />
 
       <DataModal

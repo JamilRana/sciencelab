@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { useState, useEffect } from "react";
 import { getTeacherAnalyticsAction, TeacherAnalytics } from "@/app/actions/teacher-analytics";
 import Link from "next/link";
-import { FileText, ClipboardList, User, DollarSign, Calendar, BookOpen, CheckCircle, TrendingUp } from "lucide-react";
+import { FileText, ClipboardList, DollarSign, Calendar, BookOpen, CheckCircle, TrendingUp } from "lucide-react";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 

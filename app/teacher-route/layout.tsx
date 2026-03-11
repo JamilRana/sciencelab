@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { SessionProviderWrapper } from "@/components/providers/SessionProviderWrapper";
 
 const teacherItems = [
   { label: "Dashboard", href: "/teacher-route/dashboard" },
@@ -26,12 +27,14 @@ export default async function TeacherLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar items={teacherItems} role="teacher" />
-      <main className="lg:ml-64 p-4 md:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">
-          {children}
-        </div>
-      </main>
+      <SessionProviderWrapper>
+        <Sidebar items={teacherItems} role="teacher" />
+        <main className="lg:ml-64 p-4 md:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </SessionProviderWrapper>
     </div>
   );
 }

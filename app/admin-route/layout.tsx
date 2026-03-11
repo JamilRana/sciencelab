@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { getNavItemsForRole } from "@/lib/permissions";
+import { SessionProviderWrapper } from "@/components/providers/SessionProviderWrapper";
 
 export default async function AdminLayout({
   children,
@@ -22,12 +23,14 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SessionProviderWrapper>
       <Sidebar items={items} role={roleLabel} />
       <main className="lg:ml-64 p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
           {children}
         </div>
       </main>
+      </SessionProviderWrapper>
     </div>
   );
 }

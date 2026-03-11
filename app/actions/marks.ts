@@ -133,12 +133,29 @@ export async function saveMarkAction(input: unknown) {
   }
 }
 
+// app/actions/marks.ts
+
+// 🔹 Return types
+type BulkSaveSuccess = {
+  success: true;
+  results: Mark[];
+  count: number;
+  message: string;
+};
+
+type BulkSaveError = {
+  success: false;
+  error: string;
+};
+
+type BulkSaveResult = BulkSaveSuccess | BulkSaveError;
+
 export async function bulkSaveMarksAction(entries: Array<{
   examSubjectId: number;
   studentId: number;
   written?: number;
   objective?: number;
-}>) {
+}>): Promise<BulkSaveResult> {  // ✅ Explicit return type
   const auth = await validateAction();
   if (!auth.success) return auth;
 
@@ -159,9 +176,15 @@ export async function bulkSaveMarksAction(entries: Array<{
     }
 
     revalidatePath("/admin-route/marks");
-    return { success: true, results, message: `${results.length} marks saved` };
+    
+    return { 
+      success: true, 
+      results, 
+      count: results.length,
+      message: `${results.length} marks saved` 
+    } satisfies BulkSaveSuccess; // ✅ Type assertion for safety
   } catch (error) {
     console.error("Bulk save error:", error);
-    return { success: false, error: "Failed to save marks" };
+    return { success: false, error: "Failed to save marks" } satisfies BulkSaveError;
   }
 }

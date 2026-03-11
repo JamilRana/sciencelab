@@ -306,6 +306,7 @@ export async function updateUserProfileAction(
   userId: number,
   data: {
     name?: string;
+    username?: string;  // ← Add this
     email?: string;
     mobile?: string;
     fatherName?: string;
@@ -316,6 +317,7 @@ export async function updateUserProfileAction(
   if (!userId) {
     return { success: false, error: "User not found" };
   }
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -325,16 +327,30 @@ export async function updateUserProfileAction(
       return { success: false, error: "User not found" };
     }
 
+    // ← Check if username is being changed and validate uniqueness
+    if (data.username && data.username !== user.username) {
+      const existingUsername = await prisma.user.findUnique({
+        where: { username: data.username },
+      });
+      if (existingUsername && existingUsername.id !== userId) {
+        return { success: false, error: "Username already taken" };
+      }
+    }
+
+    // Update user fields (including username)
     await prisma.user.update({
       where: { id: userId },
-      data: { name: data.name || user.name },
+      data: {
+        name: data.name ?? user.name,
+        username: data.username ?? user.username,  // ← Add this
+      },
     });
 
+    // ... rest of the function remains the same
     if (user.role === "TEACHER") {
       const teacher = await prisma.teacher.findFirst({
         where: { userId } as any,
       });
-
       if (teacher) {
         await prisma.teacher.update({
           where: { id: teacher.id },
@@ -349,7 +365,6 @@ export async function updateUserProfileAction(
       const student = await prisma.student.findFirst({
         where: { userId } as any,
       });
-
       if (student) {
         await prisma.student.update({
           where: { id: student.id },
@@ -364,15 +379,14 @@ export async function updateUserProfileAction(
         });
       }
     }
-    revalidatePath("/profile"); 
-  
+
+    revalidatePath("/profile");
     return { success: true };
   } catch (error) {
     console.error("Error updating profile:", error);
     return { success: false, error: "Failed to update profile" };
   }
 }
-
 export async function getUserProfileAction(userId: number): Promise<UserProfileData | null> {
   try {
     const user = await prisma.user.findUnique({
@@ -391,18 +405,11 @@ export async function getUserProfileAction(userId: number): Promise<UserProfileD
 
     if (user.role === "TEACHER") {
       profile = await prisma.teacher.findFirst({
-        where: { userId: user.id } as any,
-        select: {
-          id: true,
-          name: true,
-          mobile: true,
-          email: true,
-          gender: true,
-        },
+        where: { userId: user.id },
       });
     } else if (user.role === "STUDENT") {
       profile = await prisma.student.findFirst({
-        where: { userId: user.id } as any,
+        where: { userId: user.id },
         include: {
           batch: true,
           school: true,

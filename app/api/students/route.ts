@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const classFilter = searchParams.get("class");
     const batchId = searchParams.get("batchId");
+    const search = searchParams.get("search");
 
     const whereClause: any = {};
     
@@ -17,6 +18,15 @@ export async function GET(request: Request) {
     
     if (batchId) {
       whereClause.batchId = parseInt(batchId);
+    }
+
+    if (search) {
+      const searchNum = parseInt(search);
+      whereClause.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { mobile: { contains: search } },
+        ...(isNaN(searchNum) ? [] : [{ roll: { equals: searchNum } }]),
+      ].filter(Boolean);
     }
 
     const students = await prisma.student.findMany({
