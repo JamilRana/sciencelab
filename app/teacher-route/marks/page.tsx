@@ -209,20 +209,6 @@ export default function TeacherBulkMarksEntryPage() {
     }));
   };
 
-  // 🔹 Reset single entry
-  const resetEntry = (studentId: number) => {
-    const entry = entries[studentId];
-    if (!entry || !entry.hasExistingMark) return;
-    
-    setEntries((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        isDirty: false,
-        isEditing: false,
-      },
-    }));
-  };
 
   // 🔹 Save single mark
   const saveSingle = async (studentId: number) => {

@@ -4,11 +4,9 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
+import { saveMarkAction, bulkSaveMarksAction } from "@/app/actions/marks";
 import { Search, FileText, User, CheckCircle, Loader2, Edit2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 interface Student {
   id: number;
@@ -203,20 +201,6 @@ export default function BulkMarksEntryPage() {
     }));
   };
 
-  // 🔹 Reset single entry to existing value
-  const resetEntry = (studentId: number) => {
-    const entry = entries[studentId];
-    if (!entry || !entry.hasExistingMark) return;
-
-    // Fetch existing mark from server to ensure accuracy
-    setEntries((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        isDirty: false,
-      },
-    }));
-  };
 
   // 🔹 Save single mark
   const saveSingle = async (studentId: number) => {
@@ -224,19 +208,13 @@ export default function BulkMarksEntryPage() {
     if (!entry || !entry.isDirty || !selectedSubjectId) return;
 
     try {
-      const res = await fetch("/api/marks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          examSubjectId: selectedSubjectId,
-          studentId,
-          written: entry.written ? parseFloat(entry.written) : 0,
-          objective: entry.objective ? parseFloat(entry.objective) : 0,
-        }),
-      });
 
-      const result = await res.json();
-
+          const result = await saveMarkAction({
+      examSubjectId: selectedSubjectId,
+      studentId,
+      written: entry.written ? parseFloat(entry.written) : 0,
+      objective: entry.objective ? parseFloat(entry.objective) : 0,
+    });
       if (result.success) {
         setEntries((prev) => ({
           ...prev,
@@ -276,13 +254,8 @@ export default function BulkMarksEntryPage() {
 
     setSaving(true);
     try {
-      const res = await fetch("/api/marks/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dirtyEntries),
-      });
-
-      const result = await res.json();
+      const result = await bulkSaveMarksAction(dirtyEntries);
+      setSaving(false);
 
       if (result.success) {
         setEntries((prev) => {
