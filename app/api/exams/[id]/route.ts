@@ -17,7 +17,11 @@ export async function GET(
         subjects: {
           include: {
             marks: {
-              include: { student: true },
+              include: { 
+                student: {
+                  include: { batch: true }
+                }
+              },
             },
           },
           orderBy: { subject: "asc" },

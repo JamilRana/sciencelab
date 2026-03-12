@@ -232,16 +232,16 @@ export default function ExamAttendancePage() {
                     <table className="w-full text-sm border-collapse print:text-[8pt]">
                       <thead>
                         <tr className="bg-gray-50 print:bg-gray-200">
-                          <th className="px-1 py-1 text-center font-bold border border-gray-300 print:border-gray-600 w-5">
-                            Roll
+                          <th className="px-1 py-2 text-center font-bold border border-gray-300 print:border-gray-600 w-5">
+                            SL No.
                           </th>
-                          <th className="px-1 py-1 text-center font-bold border border-gray-300 print:border-gray-600 w-48">
+                          <th className="px-1 py-2 text-center font-bold border border-gray-300 print:border-gray-600 w-48">
                             Name
                           </th>
                           {examSubjects.map((sub) => (
                             <th
                               key={sub.id}
-                              className="px-1 py-1 text-center font-bold border border-gray-300 print:border-gray-600 min-w-[100px]"
+                              className="px-1 py-2 text-center font-bold border border-gray-300 print:border-gray-600 min-w-[100px]"
                               colSpan={2}
                             >
                               {sub.subject}
@@ -264,20 +264,23 @@ export default function ExamAttendancePage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {maleStudents.map((student) => (
+                        {maleStudents.map((student, index) => (
                           <tr key={student.id} className="hover:bg-gray-50 print:hover:bg-transparent">
-                            <td className="px-3 py-2 border text-center border-gray-300 print:border-gray-600 font-mono font-medium">
-                              {student.batch?.code
-                                ? generateDisplayRoll(student.batch.code, student.roll)
-                                : student.roll}
+                            <td className="px-3 py-3 border text-center border-gray-300 print:border-gray-600 font-mono font-medium">
+                              {index + 1}
                             </td>
-                            <td className="px-3 py-2 border text-left border-gray-300 print:border-gray-600">{student.name}</td>
+                            <td className="px-3 py-3 border text-left border-gray-300 print:border-gray-600">
+                              <span className="font-semibold">{student.name}</span>
+                              <br/>
+                              <span className="font-mono">{student.batch?.code
+                                ? generateDisplayRoll(student.batch.code, student.roll)
+                                : student.roll}</span></td>
                             {examSubjects.map((sub) => {
                               const mark = student.marks.find(m => m.examSubjectId === sub.id);
                               return (
                                 <td
                                   key={`${student.id}-wri-${sub.id}`}
-                                  className="px-2 py-2 text-center border border-gray-300 print:border-gray-600"
+                                  className="px-2 py-3 text-center border border-gray-300 print:border-gray-600"
                                 >
                                   {mark && mark.written > 0 ? mark.written : ""}
                                 </td>
@@ -288,7 +291,7 @@ export default function ExamAttendancePage() {
                               return (
                                 <td
                                   key={`${student.id}-obj-${sub.id}`}
-                                  className="px-2 py-2 text-center border border-gray-300 print:border-gray-600"
+                                  className="px-2 py-3 text-center border border-gray-300 print:border-gray-600"
                                 >
                                   {mark && mark.objective > 0 ? mark.objective : ""}
                                 </td>
@@ -322,7 +325,7 @@ export default function ExamAttendancePage() {
                       <thead>
                         <tr className="bg-gray-50 print:bg-gray-200">
                           <th className="px-3 py-3 text-center font-bold border border-gray-300 print:border-gray-600 w-10">
-                            Roll
+                            Serial No.
                           </th>
                           <th className="px-3 py-3 text-center font-bold border border-gray-300 print:border-gray-600 w-48">
                             Name
@@ -330,7 +333,7 @@ export default function ExamAttendancePage() {
                           {examSubjects.map((sub) => (
                             <th
                               key={sub.id}
-                              className="px-2 py-2 text-center font-bold border border-gray-300 print:border-gray-600 min-w-[100px]"
+                              className="px-2 py-3 text-center font-bold border border-gray-300 print:border-gray-600 min-w-[100px]"
                               colSpan={2}
                             >
                               {sub.subject}
@@ -353,20 +356,24 @@ export default function ExamAttendancePage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {femaleStudents.map((student) => (
+                        {femaleStudents.map((student, index) => (
                           <tr key={student.id} className="hover:bg-gray-50 print:hover:bg-transparent">
-                            <td className="px-3 py-2 text-center border border-gray-300 print:border-gray-600 font-mono font-medium">
-                              {student.batch?.code
-                                ? generateDisplayRoll(student.batch.code, student.roll)
-                                : student.roll}
+                            <td className="px-3 py-3 text-center border border-gray-300 print:border-gray-600 font-mono font-medium">
+                              {index + 1}
                             </td>
-                            <td className="px-3 py-2 text-left border border-gray-300 print:border-gray-600">{student.name}</td>
+                            <td className="px-3 py-3 text-left border border-gray-300 print:border-gray-600">
+                              <span className="font-semibold">{student.name}</span>
+                              <br/>
+                              <span className="font-mono">{student.batch?.code
+                                ? generateDisplayRoll(student.batch.code, student.roll)
+                                : student.roll}</span>
+                            </td>
                             {examSubjects.map((sub) => {
                               const mark = student.marks.find(m => m.examSubjectId === sub.id);
                               return (
                                 <td
                                   key={`${student.id}-wri-${sub.id}`}
-                                  className="px-2 py-2 text-center border border-gray-300 print:border-gray-600"
+                                  className="px-2 py-3 text-center border border-gray-300 print:border-gray-600"
                                 >
                                   {mark && mark.written > 0 ? mark.written : ""}
                                 </td>
@@ -377,7 +384,7 @@ export default function ExamAttendancePage() {
                               return (
                                 <td
                                   key={`${student.id}-obj-${sub.id}`}
-                                  className="px-2 py-2 text-center border border-gray-300 print:border-gray-600"
+                                  className="px-2 py-3 text-center border border-gray-300 print:border-gray-600"
                                 >
                                   {mark && mark.objective > 0 ? mark.objective : ""}
                                 </td>

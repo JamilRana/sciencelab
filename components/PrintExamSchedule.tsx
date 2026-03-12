@@ -59,10 +59,10 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
               {/* Header */}
               <div className="text-center mb-6 border-b pb-3">
                 <h1 className="board-title">
-                  ABC HIGH SCHOOL
+                  Science Lab
                 </h1>
                 <p className="board-subtitle">
-                  Academic Examination Schedule
+                  Coaching Center
                 </p>
                 <p className="exam-meta">
                   {exam.type} Examination – {exam.month} {exam.year}

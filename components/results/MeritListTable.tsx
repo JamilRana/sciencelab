@@ -1,4 +1,5 @@
 import { Trophy } from "lucide-react";
+import { generateDisplayRollString } from "@/lib/roll";
 
 export default function MeritListTable({ data, results }: any) {
 
@@ -22,7 +23,6 @@ export default function MeritListTable({ data, results }: any) {
 
             <th className="p-3">Pos</th>
             <th className="p-3">Student</th>
-            <th className="p-3">Batch</th>
 
             {data.subjects.map((s:any)=>(
               <th key={s.id} className="p-3">{s.subject}</th>
@@ -44,11 +44,11 @@ export default function MeritListTable({ data, results }: any) {
               </td>
 
               <td className="p-3">
-                {r.student.name}
-              </td>
-
-              <td className="p-3">
-                {r.student.batch?.name}
+                <span className="font-semibold">{r.student.name}</span>
+                <br/>
+                <span className="font-mono">{r.student.batch?.code && r.student.roll 
+                  ? generateDisplayRollString(r.student.batch.code, r.student.roll)
+                  : r.student.roll}</span>
               </td>
 
               {data.subjects.map((s:any)=>{
