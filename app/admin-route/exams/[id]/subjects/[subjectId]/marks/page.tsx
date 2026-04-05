@@ -40,35 +40,28 @@ export default async function SubjectMarksPage({ params }: PageProps) {
     );
   }
 
-  // Get unique batch IDs from students who have marks for this subject
-  const batchIds = [...new Set(subject.marks.map(m => m.student.batch?.id).filter(Boolean) as number[])];
-  
-  // If no marks yet, get batch from exam
-  let batches;
-  if (batchIds.length > 0) {
-    batches = await prisma.batch.findMany({
-      where: { id: { in: batchIds } },
-      select: { id: true, name: true, code: true },
-      orderBy: { code: "asc" },
-    });
-  } else {
-    // Default to first batch for this class
-    batches = await prisma.batch.findMany({
-      where: { classId: subject.exam.class },
-      select: { id: true, name: true, code: true },
-      orderBy: { code: "asc" },
-      take: 1,
-    });
-  }
+  // Get all batches for this class
+  const batches = await prisma.batch.findMany({
+    where: { classId: subject.exam.class },
+    select: { id: true, name: true, code: true },
+    orderBy: { code: "asc" },
+  });
 
+  // Fetch all students for this class (all batches)
+  const allStudents = await prisma.student.findMany({
+    where: { class: subject.exam.class, active: true },
+    include: {
+      batch: { select: { id: true, name: true, code: true } },
+    },
+    orderBy: [
+      { batch: { code: "asc" } },
+      { roll: "asc" },
+    ],
+  });
+
+  // Use all students for the form
   const defaultBatchId = batches[0]?.id;
-  
-  // Fetch students for the selected batch
-  let students: any[] = [];
-  if (defaultBatchId) {
-    const studentsResult = await getStudentsByBatchAction(defaultBatchId);
-    students = studentsResult.success ? (studentsResult as any).students : [];
-  }
+  const students = allStudents;
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">

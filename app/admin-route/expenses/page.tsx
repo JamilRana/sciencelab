@@ -10,13 +10,26 @@ export default async function ExpensesPage({
 }) {
   const params = await searchParams;
   const monthParam = params.month as string | undefined;
+  const startDate = params.startDate as string | undefined;
+  const endDate = params.endDate as string | undefined;
   
   const expenses = await getExpensesAction();
   
   let filteredExpenses = expenses;
   let monthlyTotal = 0;
   
-  if (monthParam) {
+  // Filter by date range if provided
+  if (startDate || endDate) {
+    const start = startDate ? new Date(startDate) : new Date(0);
+    const end = endDate ? new Date(endDate) : new Date();
+    end.setHours(23, 59, 59, 999);
+    
+    filteredExpenses = expenses.filter(e => {
+      const expenseDate = new Date(e.date);
+      return expenseDate >= start && expenseDate <= end;
+    });
+  } else if (monthParam) {
+    // Filter by month if no date range
     const monthIndex = MONTHS.indexOf(monthParam);
     if (monthIndex >= 0) {
       const now = new Date();
@@ -27,9 +40,10 @@ export default async function ExpensesPage({
         const expenseDate = new Date(e.date);
         return expenseDate >= filterDate && expenseDate <= endOfMonth;
       });
-      monthlyTotal = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
     }
   }
+  
+  monthlyTotal = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
     <div className="max-w-[1000px] mx-auto py-8 px-4">
@@ -38,9 +52,30 @@ export default async function ExpensesPage({
         <p className="text-gray-500 mt-1">Monitor operational costs and maintaining financial transparency.</p>
       </div>
 
-      {/* Month Filter */}
+      {/* Filters */}
       <div className="bg-white rounded-xl shadow border p-4 mb-6">
         <form className="flex flex-wrap gap-4 items-end">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              defaultValue={startDate || ""}
+              className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              name="endDate"
+              defaultValue={endDate || ""}
+              className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center text-sm text-gray-500 py-2">
+            or
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
             <select
@@ -60,7 +95,7 @@ export default async function ExpensesPage({
           >
             Filter
           </button>
-          {monthParam && (
+          {(startDate || endDate || monthParam) && (
             <a
               href="/admin-route/expenses"
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
@@ -68,7 +103,7 @@ export default async function ExpensesPage({
               Clear
             </a>
           )}
-          {monthParam && (
+          {(startDate || endDate || monthParam) && (
             <div className="ml-auto bg-red-50 px-4 py-2 rounded-lg">
               <span className="text-sm text-red-600">Total: </span>
               <span className="text-lg font-bold text-red-700">৳{monthlyTotal.toLocaleString()}</span>

@@ -117,7 +117,7 @@ model ExamSubject {
 
   exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
   teacher Teacher @relation(fields: [teacherId], references: [id])
-  marks   Mark[]
+  marks   Mark[]  @relation("ExamSubjectMarks")
 
   @@map("exam_subjects")
 }
@@ -129,7 +129,7 @@ model Mark {
   written       Float   @default(0)
   objective     Float   @default(0)
 
-  examSubject ExamSubject @relation(fields: [examSubjectId], references: [id], onDelete: Cascade)
+  examSubject ExamSubject @relation("ExamSubjectMarks", fields: [examSubjectId], references: [id], onDelete: Cascade)
   student     Student     @relation(fields: [studentId], references: [id])
 
   @@unique([examSubjectId, studentId])

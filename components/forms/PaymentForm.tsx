@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,10 +14,17 @@ const paymentSchema = z.object({
 
 export type PaymentFormValues = z.infer<typeof paymentSchema>;
 
+interface Teacher {
+  id: number;
+  name: string;
+  mobile: string;
+  perClass: number;
+}
+
 interface PaymentFormProps {
   onSubmit: (data: PaymentFormValues) => void;
   isLoading?: boolean;
-  teachers: { id: number; name: string }[];
+  teachers: Teacher[];
 }
 
 const months = [
@@ -25,9 +33,13 @@ const months = [
 ];
 
 export function PaymentForm({ onSubmit, isLoading, teachers }: PaymentFormProps) {
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
@@ -38,6 +50,26 @@ export function PaymentForm({ onSubmit, isLoading, teachers }: PaymentFormProps)
       note: "",
     },
   });
+
+  const watchedTeacherId = watch("teacherId");
+
+  // Update selected teacher when dropdown changes
+  useEffect(() => {
+    if (watchedTeacherId) {
+      const teacher = teachers.find(t => t.id === parseInt(watchedTeacherId));
+      setSelectedTeacher(teacher || null);
+    } else {
+      setSelectedTeacher(null);
+    }
+  }, [watchedTeacherId, teachers]);
+
+  // Calculate amount when teacher or month changes
+  useEffect(() => {
+    if (selectedTeacher && selectedTeacher.perClass > 0) {
+      // Set calculated amount (perClass rate)
+      setValue("amount", selectedTeacher.perClass.toString());
+    }
+  }, [selectedTeacher, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -50,12 +82,20 @@ export function PaymentForm({ onSubmit, isLoading, teachers }: PaymentFormProps)
           <option value="">Select Teacher</option>
           {teachers.map((teacher) => (
             <option key={teacher.id} value={teacher.id}>
-              {teacher.name}
+              {teacher.name} ({teacher.perClass > 0 ? `৳${teacher.perClass}/class` : 'No rate set'})
             </option>
           ))}
         </select>
         {errors.teacherId && <p className="text-xs text-red-500">{errors.teacherId.message}</p>}
       </div>
+
+      {selectedTeacher && selectedTeacher.perClass > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-sm text-blue-700">
+            <span className="font-medium">Rate:</span> ৳{selectedTeacher.perClass} per class
+          </p>
+        </div>
+      )}
 
       <div className="space-y-2">
         <label className="text-sm font-semibold text-gray-700">Month</label>
@@ -82,6 +122,11 @@ export function PaymentForm({ onSubmit, isLoading, teachers }: PaymentFormProps)
           placeholder="Enter amount"
         />
         {errors.amount && <p className="text-xs text-red-500">{errors.amount.message}</p>}
+        {selectedTeacher && selectedTeacher.perClass > 0 && (
+          <p className="text-xs text-gray-500">
+            Based on per-class rate: ৳{selectedTeacher.perClass}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">

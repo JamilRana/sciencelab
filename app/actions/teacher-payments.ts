@@ -21,6 +21,7 @@ export async function createTeacherPaymentAction(data: {
   note?: string;
 }) {
   try {
+    // Create payment
     const payment = await prisma.teacherPayment.create({
       data: {
         teacherId: parseInt(data.teacherId),
@@ -29,7 +30,22 @@ export async function createTeacherPaymentAction(data: {
         note: data.note || "",
       },
     });
+
+    // Also create an expense entry for this payment
+    const teacher = await prisma.teacher.findUnique({
+      where: { id: parseInt(data.teacherId) },
+    });
+
+    await prisma.expense.create({
+      data: {
+        description: `Teacher Payment - ${teacher?.name || 'Unknown'} (${data.month})`,
+        amount: parseInt(data.amount),
+        date: new Date(),
+      },
+    });
+
     revalidatePath("/admin-route/payments");
+    revalidatePath("/admin-route/expenses");
     return { success: true, data: payment };
   } catch (error) {
     console.error("Error creating payment:", error);

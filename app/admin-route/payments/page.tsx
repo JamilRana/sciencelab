@@ -10,6 +10,8 @@ export default async function PaymentsPage({
 }) {
   const params = await searchParams;
   const monthParam = params.month as string | undefined;
+  const startDate = params.startDate as string | undefined;
+  const endDate = params.endDate as string | undefined;
   
   const [payments, teachers] = await Promise.all([
     getTeacherPaymentsAction(),
@@ -19,10 +21,21 @@ export default async function PaymentsPage({
   let filteredPayments = payments;
   let monthlyTotal = 0;
   
-  if (monthParam) {
+  // Filter by date range if provided
+  if (startDate || endDate) {
+    const start = startDate ? new Date(startDate) : new Date(0);
+    const end = endDate ? new Date(endDate) : new Date();
+    end.setHours(23, 59, 59, 999);
+    
+    filteredPayments = payments.filter((p: any) => {
+      const paymentDate = new Date(p.date);
+      return paymentDate >= start && paymentDate <= end;
+    });
+  } else if (monthParam) {
     filteredPayments = payments.filter((p: any) => p.month === monthParam);
-    monthlyTotal = filteredPayments.reduce((sum: number, p: any) => sum + p.amount, 0);
   }
+  
+  monthlyTotal = filteredPayments.reduce((sum: number, p: any) => sum + p.amount, 0);
 
   return (
     <div className="py-6 px-4 md:px-6">
@@ -31,9 +44,30 @@ export default async function PaymentsPage({
         <p className="text-gray-500 mt-1">Manage teacher salary payments.</p>
       </div>
 
-      {/* Month Filter */}
+      {/* Filters */}
       <div className="bg-white rounded-xl shadow border p-4 mb-6">
         <form className="flex flex-wrap gap-4 items-end">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              defaultValue={startDate || ""}
+              className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              name="endDate"
+              defaultValue={endDate || ""}
+              className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center text-sm text-gray-500 py-2">
+            or
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
             <select
@@ -53,7 +87,7 @@ export default async function PaymentsPage({
           >
             Filter
           </button>
-          {monthParam && (
+          {(startDate || endDate || monthParam) && (
             <a
               href="/admin-route/payments"
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
@@ -61,9 +95,9 @@ export default async function PaymentsPage({
               Clear
             </a>
           )}
-          {monthParam && (
+          {(startDate || endDate || monthParam) && (
             <div className="ml-auto bg-purple-50 px-4 py-2 rounded-lg">
-              <span className="text-sm text-purple-600">Monthly Total: </span>
+              <span className="text-sm text-purple-600">Total: </span>
               <span className="text-lg font-bold text-purple-700">৳{monthlyTotal.toLocaleString()}</span>
             </div>
           )}

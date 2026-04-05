@@ -29,6 +29,8 @@ export async function getReceiptsAction(filters?: {
   studentId?: number;
   month?: string;
   search?: string;
+  startDate?: string;
+  endDate?: string;
 }) {
   try {
     const where: Prisma.ReceiptWhereInput = {};
@@ -38,6 +40,17 @@ export async function getReceiptsAction(filters?: {
     }
     if (filters?.month) {
       where.month = filters.month;
+    }
+    
+    // Date range filter
+    if (filters?.startDate || filters?.endDate) {
+      const start = filters.startDate ? new Date(filters.startDate) : new Date(0);
+      const end = filters.endDate ? new Date(filters.endDate) : new Date();
+      end.setHours(23, 59, 59, 999);
+      where.date = {
+        gte: start,
+        lte: end,
+      };
     }
     
     if (filters?.search) {

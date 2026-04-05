@@ -107,16 +107,20 @@ export function ReceiptModal({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Format roll: batchCode + roll (e.g., "61" + "1" = "6101")
+  // Format roll: batchCode + roll with padding (e.g., "61" + "01" = "6101")
   const formatRoll = (student: Student) => {
-    return `${student.batch.code}${student.roll}`;
+    return `${student.batch.code}${student.roll.toString().padStart(2, "0")}`;
   };
 
-  // Filter students by search (optional enhancement)
+  // Search state for filtering students
   const [studentSearch, setStudentSearch] = useState("");
-  const filteredStudents = students.filter(s => 
+  
+  // Sort students by id (ascending) and filter by search
+  const sortedStudents = [...students].sort((a, b) => a.id - b.id);
+  const filteredStudents = sortedStudents.filter(s => 
     s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
-    formatRoll(s).includes(studentSearch)
+    formatRoll(s).includes(studentSearch) ||
+    (s as any).mobile?.includes(studentSearch)
   );
 
   return (

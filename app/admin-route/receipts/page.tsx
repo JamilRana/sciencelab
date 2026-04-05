@@ -16,6 +16,8 @@ export default async function ReceiptsPage({
   const batchId = params.batch ? parseInt(params.batch as string) : undefined;
   const month = params.month as string | undefined;
   const search = params.search as string | undefined;
+  const startDate = params.startDate as string | undefined;
+  const endDate = params.endDate as string | undefined;
 
   // Fetch data in parallel
   const [receiptsResult, students] = await Promise.all([
@@ -24,6 +26,8 @@ export default async function ReceiptsPage({
       batchId,
       month,
       search,
+      startDate,
+      endDate,
     }),
     getStudentsAction(),
   ]);
@@ -42,6 +46,29 @@ export default async function ReceiptsPage({
       {/* Filter Bar */}
       <div className="bg-white rounded-xl shadow border p-4 mb-6">
         <form className="flex flex-wrap gap-4 items-end">
+          {/* Date Range */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              defaultValue={startDate}
+              className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              name="endDate"
+              defaultValue={endDate}
+              className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center text-sm text-gray-500 py-2">
+            or
+          </div>
+
           {/* Class Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
