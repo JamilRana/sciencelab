@@ -2,9 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireRole } from "@/lib/auth-guard";
 
 export async function saveFee(studentId: number, month: string, amount: number) {
   try {
+    await requireRole("ADMIN");
     // Check if a receipt already exists for this student and month
     const existingReceipt = await prisma.receipt.findFirst({
       where: {

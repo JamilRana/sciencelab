@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ examId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 🔹 Authenticate
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { examId } = await params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const studentClass = searchParams.get("class");
 
@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: "Class required" }, { status: 400 });
     }
 
-    const examIdNum = parseInt(examId, 10);
+    const examIdNum = parseInt(id, 10);
 
     // 🔹 Fetch exam with all subjects and marks
     const exam = await prisma.exam.findUnique({
@@ -34,6 +34,9 @@ export async function GET(
         subjects: {
           include: {
             marks: {
+              where: {
+                student: { active: true },
+              },
               include: {
                 student: {
                   select: {
@@ -41,6 +44,7 @@ export async function GET(
                     name: true,
                     batch: { select: { name: true, code: true } },
                     class: true,
+                    active: true,
                   },
                 },
               },

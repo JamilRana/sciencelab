@@ -1,18 +1,19 @@
 // components/StudentList.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Edit, Trash2, Plus, User, Phone, GraduationCap, Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Edit, Trash2, Plus, User, Phone, GraduationCap, Download, Eye } from "lucide-react";
 import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { StudentForm, StudentFormValues } from "@/components/forms/StudentForm";
 import { createStudentAction, updateStudentAction, deleteStudentAction } from "@/app/actions/students";
 import { createUserAndProfileAction } from "@/app/actions/registration";
+import { StudentDrawer } from "@/components/students/StudentDrawer";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { toast } from "sonner";
 import type { Student, School, Batch } from "@/types";
 import { generateDisplayRoll } from "@/lib/roll";
-import { exportToCSV } from "@/lib/export";
 
 interface StudentListProps {
   initialStudents: Student[];
@@ -24,59 +25,121 @@ interface StudentListProps {
 export function StudentList({ initialStudents, schools, batches, role = "STAFF" }: StudentListProps) {
   const isAdmin = role === "ADMIN" || role === "STAFF";
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [selectedStudentForDrawer, setSelectedStudentForDrawer] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Read URL search & filter params
+  const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
+  const rawBatch = searchParams.get("batchId") || searchParams.get("batch") || "";
+  const matchedBatch = batches.find(
+    (b) => String(b.id) === rawBatch || b.name.toLowerCase() === rawBatch.toLowerCase()
+  );
+  const urlClass = searchParams.get("class") || "";
+
+  const initialFilters: Record<string, string> = {
+    ...(urlClass ? { class: urlClass } : {}),
+    ...(matchedBatch ? { batchId: String(matchedBatch.id) } : {}),
+  };
+
+  // Auto-open admission modal when query param action=create or action=admission is present
+  useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "create" || action === "admission") {
+      setIsModalOpen(true);
+      setEditingStudent(null);
+    }
+  }, [searchParams]);
+
   const columns: Column<Student>[] = [
+    {
+      key: "roll",
+      header: "Roll",
+      sortable: true,
+      width: "100px",
+      searchValue: (student) => {
+        const batchCode = student.batch?.code?.toString() || "";
+        const roll = student.roll?.toString() || "";
+        return `${batchCode}${roll} ${roll}`;
+      },
+      render: (student) => (
+        <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/70 px-2 py-0.5 rounded tabular-nums">
+          {student.batch?.code
+            ? generateDisplayRoll(student.batch.code, student.roll)
+            : student.roll}
+        </span>
+      ),
+    },
     {
       key: "name",
       header: "Student",
       sortable: true,
-      fuzzyWeight: 1.2, // Higher weight for name matches
+      fuzzyWeight: 1.2,
       render: (student) => (
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-            <User className="h-5 w-5" />
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 font-semibold text-xs shrink-0">
+            {student.name.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <p className="font-semibold text-gray-900">{student.name}</p>
-            <p className="text-xs text-gray-500">{student.gender}</p>
+          <div className="min-w-0">
+            <p className="font-semibold text-zinc-900 truncate">{student.name}</p>
+            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+              <span>{student.gender}</span>
+              {student.school && (
+                <>
+                  <span>·</span>
+                  <span className="truncate max-w-[140px]">{student.school.name}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
+      ),
+    },
+    {
+      key: "class",
+      header: "Class",
+      sortable: true,
+      width: "100px",
+      render: (student) => (
+        <span className="text-xs font-medium text-zinc-700">Class {student.class}</span>
+      ),
+    },
+    {
+      key: "batch",
+      header: "Batch",
+      sortable: true,
+      width: "110px",
+      searchValue: (student) => student.batch?.name || "",
+      render: (student) => (
+        <span className="text-xs font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded">
+          {student.batch?.name || "Unassigned"}
+        </span>
       ),
     },
     {
       key: "mobile",
       header: "Contact",
-      fuzzyWeight: 1.0,
       render: (student) => (
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-            <Phone className="h-3.5 w-3.5 text-gray-400" />
+          <div className="flex items-center gap-1 text-xs text-zinc-700 tabular-nums">
+            <Phone className="h-3 w-3 text-zinc-400" />
             {student.mobile}
           </div>
-          {student.email && (
-            <p className="text-xs text-gray-400 pl-5">{student.email}</p>
+          {student.homeMobile && (
+            <p className="text-[10px] text-zinc-400 pl-4 tabular-nums">Home: {student.homeMobile}</p>
           )}
         </div>
       ),
     },
     {
-      key: "roll",
-      header: "Roll",
+      key: "active",
+      header: "Status",
       sortable: true,
-      searchValue: (student) => {
-        const batchCode = student.batch?.code?.toString() || "";
-        const roll = student.roll?.toString() || "";
-        return `${batchCode}${roll} ${roll}`; // Search both combined and standalone
-      },
+      width: "90px",
       render: (student) => (
-        <span className="text-sm font-medium text-blue-600">
-          {student.batch?.code 
-            ? generateDisplayRoll(student.batch.code, student.roll) 
-            : student.roll}
-        </span>
+        <StatusBadge status={student.active ? "Active" : "Inactive"} />
       ),
     },
   ];
@@ -84,7 +147,7 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
   const filterOptions = [
     {
       key: "class",
-      label: "Select Class",
+      label: "All Classes",
       options: [
         { value: "Six", label: "Class Six" },
         { value: "Seven", label: "Class Seven" },
@@ -95,7 +158,7 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     },
     {
       key: "batchId",
-      label: "Select Batch",
+      label: "All Batches",
       options: batches.map((b) => ({ value: String(b.id), label: b.name })),
     },
   ];
@@ -113,6 +176,9 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
   const handleClose = () => {
     setIsModalOpen(false);
     setEditingStudent(null);
+    if (searchParams.get("action")) {
+      router.replace("/admin-route/students");
+    }
   };
 
   const onSubmit = async (data: StudentFormValues) => {
@@ -122,7 +188,6 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
       if (editingStudent) {
         result = await updateStudentAction(editingStudent.id, data);
       } else {
-        // Create student with user account
         result = await createUserAndProfileAction({
           ...data,
           role: "STUDENT",
@@ -130,7 +195,7 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
       }
 
       if (result.success) {
-        toast.success(editingStudent ? "Student updated" : "Student registered with login");
+        toast.success(editingStudent ? "Student updated successfully" : "Student registered with login credentials");
         handleClose();
         router.refresh();
       } else {
@@ -144,8 +209,8 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this student?")) return;
-    
+    if (!confirm("Are you sure you want to delete this student profile?")) return;
+
     try {
       const result = await deleteStudentAction(id);
       if (result.success) {
@@ -159,92 +224,97 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     }
   };
 
-  const handleExport = () => {
-    const exportData = initialStudents.map(s => ({
-      name: s.name,
-      mobile: s.mobile,
-      email: s.email || '',
-      class: s.class,
-      roll: s.roll,
-      batch: s.batch?.name || '',
-      school: s.school?.name || '',
-      gender: s.gender,
-      fatherName: s.fatherName || '',
-      motherName: s.motherName || '',
-      address: s.address || '',
-    }));
-    exportToCSV(exportData, 'students');
-  };
-
-  // 🔹 Optional: Custom search for advanced scenarios
+  // Custom search covering name, roll, mobile, batch, school, address, and guardians
   const customStudentSearch = (student: Student, query: string): boolean => {
     const q = query.toLowerCase().trim();
-    
-    // Name (fuzzy)
-    if (student.name.toLowerCase().includes(q)) return true;
-    
-    // Mobile (substring - handles partial numbers)
-    if (student.mobile.includes(query)) return true;
-    
-    // Roll with batch code prefix: "6105" matches roll 5 in batch 61
+    if (!q) return true;
+
+    if (student.name?.toLowerCase().includes(q)) return true;
+    if (student.mobile?.includes(query)) return true;
+
     const batchCode = student.batch?.code?.toString() || "";
-    const fullRoll = `${batchCode}${student.roll.toString().padStart(2, '0')}`;
-    if (fullRoll.includes(query) || student.roll.toString().includes(query)) return true;
-    
-    // Email
+    const fullRoll = `${batchCode}${student.roll?.toString().padStart(2, "0")}`;
+    if (fullRoll.includes(query) || student.roll?.toString().includes(query)) return true;
+
+    // Batch name & batch code search
+    if (student.batch?.name?.toLowerCase().includes(q)) return true;
+    if (batchCode && batchCode.includes(q)) return true;
+
+    // School name search
+    if (student.school?.name?.toLowerCase().includes(q)) return true;
+
+    // Class & gender search
+    if (student.class?.toLowerCase().includes(q)) return true;
+    if (student.gender?.toLowerCase() === q) return true;
+
     if (student.email?.toLowerCase().includes(q)) return true;
-    
-    // Parent names
     if (student.fatherName?.toLowerCase().includes(q)) return true;
     if (student.motherName?.toLowerCase().includes(q)) return true;
-    
-    // Address
     if (student.address?.toLowerCase().includes(q)) return true;
-    
+
+    // Multi-word matching (e.g. "Junior-2026 Girls" or "Eight Girls")
+    const words = q.split(/[\s-]+/).filter(Boolean);
+    if (words.length > 1) {
+      const studentSearchText = [
+        student.name,
+        student.mobile,
+        fullRoll,
+        student.roll?.toString(),
+        student.batch?.name,
+        batchCode,
+        student.school?.name,
+        student.class,
+        student.gender,
+        student.fatherName,
+        student.motherName,
+        student.address,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const allWordsMatch = words.every((word) => studentSearchText.includes(word));
+      if (allWordsMatch) return true;
+    }
+
     return false;
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={handleExport}
-          className="flex items-center gap-2 px-4 h-11 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all active:scale-95"
-        >
-          <Download className="h-5 w-5" />
-          Export CSV
-        </button>
-        {isAdmin && (
-          <button
-            onClick={handleOpenCreate}
-            className="flex items-center gap-2 px-5 h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95"
-          >
-            <Plus className="h-5 w-5" />
-            Add Student
-          </button>
-        )}
-      </div>
-
+    <div className="space-y-4">
       <DataTable<Student>
         data={initialStudents}
         columns={columns}
         searchFields={["name", "mobile", "roll"]}
-        placeholder="Search by name, mobile, or roll (e.g., 'john', '017', '6105')..."
+        placeholder="Search students by name, roll (e.g. 6101), batch, school, or mobile..."
         pageSize={15}
+        initialSearch={urlSearch}
+        initialFilters={initialFilters}
+        onRowClick={(student) => setSelectedStudentForDrawer(student)}
         onEdit={isAdmin ? handleOpenEdit : undefined}
         onDelete={isAdmin ? handleDelete : undefined}
+        renderActions={(student) => (
+          <button
+            onClick={() => setSelectedStudentForDrawer(student)}
+            className="p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors focus-ring"
+            title="View Details"
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </button>
+        )}
+        onAdd={isAdmin ? handleOpenCreate : undefined}
+        addLabel="+ Add Student"
         filterOptions={filterOptions}
-        emptyMessage="No students found"
+        emptyTitle="No students found"
+        emptyMessage="Try adjusting your class or batch filters, or enroll a new student."
         customSearchFn={customStudentSearch}
-        // 🔹 Fuzzy search configuration
+        exportFileName="students_roster"
         fuzzySearch={{
           enabled: true,
-          threshold: 0.35, // Slightly lower for more matches
-          minQueryLength: 2, // Only fuzzy match queries with 2+ chars
+          threshold: 0.35,
+          minQueryLength: 2,
         }}
-        // 🔹 Debounce: Wait 300ms after typing stops before searching
-        searchDebounceMs={300}
-        // 🔹 Default sort: batch code first, then roll
+        searchDebounceMs={250}
         defaultSort={(a, b) => {
           const aBatch = a.batch?.code ?? 0;
           const bBatch = b.batch?.code ?? 0;
@@ -253,10 +323,20 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
         }}
       />
 
+      {/* Right-side Student Profile Drawer */}
+      <StudentDrawer
+        student={selectedStudentForDrawer}
+        isOpen={!!selectedStudentForDrawer}
+        onClose={() => setSelectedStudentForDrawer(null)}
+        onEdit={(student) => handleOpenEdit(student)}
+      />
+
+      {/* Add / Edit Student Modal with 3-Step Wizard */}
       <DataModal
         isOpen={isModalOpen}
         onClose={handleClose}
-        title={editingStudent ? "Edit Student Details" : "Register New Student"}
+        title={editingStudent ? "Edit Student Profile" : "New Student Admission Wizard"}
+        className="sm:max-w-2xl max-w-2xl"
       >
         <StudentForm
           initialData={editingStudent}
@@ -264,6 +344,7 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
           isLoading={isLoading}
           schools={schools}
           batches={batches}
+          onCancel={handleClose}
         />
       </DataModal>
     </div>

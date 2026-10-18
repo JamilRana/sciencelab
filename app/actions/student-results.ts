@@ -1,8 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { requireRole } from "@/lib/auth-guard";
 
 /* ----------------------------------------
    Types: Exam Summary (Card View)
@@ -75,23 +74,21 @@ export type ExamDetailResponse = {
 ---------------------------------------- */
 
 async function getStudentIdFromSession(): Promise<number> {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || !session.user) {
-    throw new Error("Unauthorized: No valid session");
+  const session = await requireRole("STUDENT");
+  const student = await prisma.student.findFirst({
+    where: {
+      OR: [
+        { userId: parseInt(session.id, 10) },
+        { mobile: session.username },
+        { email: session.username },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!student) {
+    throw new Error("Student profile not found");
   }
-  
-  if (session.user.role !== "STUDENT") {
-    throw new Error("Unauthorized: Student access required");
-  }
-  
-  const studentId = session.user.studentId;
-  
-  if (!studentId || typeof studentId !== "number") {
-    throw new Error("Student ID not found in session");
-  }
-  
-  return studentId;
+  return student.id;
 }
 
 /* ----------------------------------------

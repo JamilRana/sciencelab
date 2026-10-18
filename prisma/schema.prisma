@@ -35,11 +35,15 @@ model School {
 }
 
 model Batch {
-  id       Int       @id @default(autoincrement())
-  classId  String    // "Six", "Seven", etc.
-  name     String    // "8A", "9B", etc.
-  code     Int       // 2-digit prefix: 61, 62, 71, etc.
-  students Student[]
+  id           Int           @id @default(autoincrement())
+  classId      String        // "Six", "Seven", etc.
+  name         String        // "8A", "9B", etc.
+  code         Int           // 2-digit prefix: 61, 62, 71, etc.
+  students     Student[]
+  programId    Int?
+  program      Program?      @relation(fields: [programId], references: [id])
+  specialExams       SpecialExam[]
+  compiledMarksheets CompiledMarksheet[]
 
   @@map("batches")
 
@@ -47,28 +51,31 @@ model Batch {
 }
 
 model Student {
-  id         Int       @id @default(autoincrement())
-  name       String
-  fatherName String
-  motherName String
-  mobile     String
-  homeMobile String    @default("")
-  image      String    @default("")
-  active     Boolean   @default(true)
-  schoolId   Int
-  batchId    Int
-  roll       Int       // Serial number within batch (1, 2, 3...)
-  address    String
-  gender     String
-  email      String    @default("")
-  dob        DateTime?
-  class      String
-  userId     Int?      @unique
+  id              Int                @id @default(autoincrement())
+  name            String
+  fatherName      String
+  motherName      String
+  mobile          String
+  homeMobile      String             @default("")
+  image           String             @default("")
+  active          Boolean            @default(true)
+  schoolId        Int
+  batchId         Int
+  roll            Int                // Serial number within batch (1, 2, 3...)
+  address         String
+  gender          String
+  email           String             @default("")
+  dob             DateTime?
+  class           String
+  userId          Int?               @unique
 
-  school     School    @relation(fields: [schoolId], references: [id])
-  batch      Batch     @relation(fields: [batchId], references: [id])
-  receipts   Receipt[]
-  marks      Mark[]
+  school          School             @relation(fields: [schoolId], references: [id])
+  batch           Batch              @relation(fields: [batchId], references: [id])
+  receipts        Receipt[]
+  marks           Mark[]
+  courseFees      StudentCourseFee[]
+  studentSubjects StudentSubject[]
+  specialMarks    SpecialMark[]
 
   @@map("students")
   @@index([batchId])
@@ -76,19 +83,21 @@ model Student {
 }
 
 model Teacher {
-  id        Int     @id @default(autoincrement())
-  name      String
-  mobile    String  @unique
-  image     String  @default("")
-  gender    String
-  email     String  @default("")
-  perClass  Int     @default(0)
-  due       Int     @default(0)
-  userId    Int?    @unique
+  id              Int                  @id @default(autoincrement())
+  name            String
+  mobile          String               @unique
+  image           String               @default("")
+  gender          String
+  email           String               @default("")
+  perClass        Int                  @default(0)
+  due             Int                  @default(0)
+  userId          Int?                 @unique
 
-  classLogs    TeacherClassLog[]
-  examSubjects ExamSubject[]
-  payments    TeacherPayment[]
+  classLogs       TeacherClassLog[]
+  examSubjects    ExamSubject[]
+  payments        TeacherPayment[]
+  rates           TeacherRate[]
+  specialSubjects SpecialExamSubject[]
 
   @@map("teachers")
 }
@@ -195,4 +204,208 @@ model TeacherPayment {
 
   @@index([teacherId])
   @@index([month])
+}
+
+// -------------------------------------------------------------
+// SPECIAL BATCH MODULE (SSC & JUNIOR SCHOOL)
+// -------------------------------------------------------------
+
+model Program {
+  id           Int                @id @default(autoincrement())
+  code         String             @unique // e.g. "SSC-2026", "JUNIOR-2026"
+  name         String             // e.g. "SSC Special Batch 2026", "Junior School Special Batch 2026"
+  category     String             // "SSC" | "JSC"
+  year         Int                @default(2026)
+  active       Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+
+  batches      Batch[]
+  subjects     ProgramSubject[]
+  courseFees   StudentCourseFee[]
+  specialExams SpecialExam[]
+  rates              TeacherRate[]
+  compiledMarksheets CompiledMarksheet[]
+
+  @@map("programs")
+}
+
+model ProgramSubject {
+  id                  Int                  @id @default(autoincrement())
+  programId           Int
+  name                String               // e.g. "Bangla 1st", "Physics", "Higher Math"
+  code                String?              // e.g. "101", "126"
+  isCombined          Boolean              @default(false)
+  combinedGroupId     String?              // e.g. "BANGLA", "ENGLISH"
+  isOptional          Boolean              @default(false)
+  hasPractical        Boolean              @default(false)
+  fullMarks           Float                @default(100)
+  cqMax               Float                @default(70)
+  mcqMax              Float                @default(30)
+  practicalMax        Float                @default(0)
+  writtenPass         Float?
+  mcqPass             Float?
+  practicalPass       Float?
+  totalPass           Float?
+  sortOrder           Int                  @default(0)
+
+  program             Program              @relation(fields: [programId], references: [id], onDelete: Cascade)
+  studentSubjects     StudentSubject[]
+  specialExamSubjects SpecialExamSubject[]
+
+  @@map("program_subjects")
+  @@index([programId])
+}
+
+model StudentSubject {
+  id         Int            @id @default(autoincrement())
+  studentId  Int
+  subjectId  Int
+  isOptional Boolean        @default(false)
+
+  student    Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject    ProgramSubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, subjectId])
+  @@map("student_subjects")
+}
+
+model StudentCourseFee {
+  id         Int             @id @default(autoincrement())
+  studentId  Int
+  programId  Int
+  agreedFee  Float?          // Reference agreed amount (no rigid unpaid ledger dues)
+  notes      String          @default("")
+  createdAt  DateTime        @default(now())
+
+  student    Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  program    Program         @relation(fields: [programId], references: [id])
+  payments   CoursePayment[]
+
+  @@unique([studentId, programId])
+  @@map("student_course_fees")
+  @@index([studentId])
+}
+
+model CoursePayment {
+  id                 Int              @id @default(autoincrement())
+  studentCourseFeeId Int
+  amount             Float
+  paymentDate        DateTime         @default(now())
+  receiptNo          String?          @unique
+  paymentMethod      String           @default("CASH") // CASH, BKASH, NAGAD, BANK
+  note               String           @default("")
+
+  courseFee          StudentCourseFee @relation(fields: [studentCourseFeeId], references: [id], onDelete: Cascade)
+
+  @@map("course_payments")
+  @@index([paymentDate])
+  @@index([studentCourseFeeId])
+}
+
+model SpecialExam {
+  id           Int                     @id @default(autoincrement())
+  programId    Int
+  batchId      Int?
+  title        String               // e.g. "Pre-Model Test 1", "Class Test - Chemistry Ch 3"
+  kind         String               // "CLASS_TEST" | "PRE_MODEL" | "MODEL_TEST" | "BOARD_EXAM"
+  lectureNo    Int?                 // e.g. 1, 2, ... 100 (for sequential sorting)
+  lectureLabel String?              // e.g. "L-01", "Ch-03"
+  examDate     DateTime
+  status       String                  @default("SCHEDULED") // "SCHEDULED", "ONGOING", "COMPLETED", "PUBLISHED"
+  createdAt    DateTime                @default(now())
+
+  program      Program                 @relation(fields: [programId], references: [id], onDelete: Cascade)
+  batch        Batch?                  @relation(fields: [batchId], references: [id])
+  subjects     SpecialExamSubject[]
+  compilations CompiledMarksheetExam[]
+
+  @@map("special_exams")
+  @@index([programId])
+  @@index([kind])
+  @@index([programId, lectureNo])
+}
+
+model SpecialExamSubject {
+  id               Int            @id @default(autoincrement())
+  examId           Int
+  programSubjectId Int
+  teacherId        Int?
+  isCompulsory     Boolean        @default(true) // Defined by test creator (compulsory vs optional)
+  cqMax            Float          @default(0)
+  mcqMax           Float          @default(0)
+  practicalMax     Float          @default(0)
+  totalMax         Float          @default(100)
+  examDate         DateTime?
+
+  exam             SpecialExam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  programSubject   ProgramSubject @relation(fields: [programSubjectId], references: [id])
+  teacher          Teacher?       @relation(fields: [teacherId], references: [id])
+  marks            SpecialMark[]
+
+  @@map("special_exam_subjects")
+  @@index([examId])
+}
+
+model SpecialMark {
+  id                   Int                @id @default(autoincrement())
+  specialExamSubjectId Int
+  studentId            Int
+  cq                   Float              @default(0)
+  mcq                  Float              @default(0)
+  practical            Float              @default(0)
+  total                Float              @default(0)
+  isAbsent             Boolean            @default(false)
+
+  examSubject          SpecialExamSubject @relation(fields: [specialExamSubjectId], references: [id], onDelete: Cascade)
+  student              Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([specialExamSubjectId, studentId])
+  @@map("special_marks")
+  @@index([studentId])
+}
+
+model TeacherRate {
+  id          Int      @id @default(autoincrement())
+  teacherId   Int
+  programId   Int?
+  lectureRate Float    @default(0)
+  khataRate   Float    @default(0) // Evaluation rate per script
+
+  teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  program     Program? @relation(fields: [programId], references: [id])
+
+  @@unique([teacherId, programId])
+  @@map("teacher_rates")
+}
+
+model CompiledMarksheet {
+  id          Int                     @id @default(autoincrement())
+  programId   Int
+  batchId     Int?                    // Nullable: if scoped to a specific section batch
+  title       String                  // e.g. "Physics Lectures 01-10 Compilation"
+  description String?                 @default("")
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  createdBy   String?                 @default("")
+
+  program     Program                 @relation(fields: [programId], references: [id], onDelete: Cascade)
+  batch       Batch?                  @relation(fields: [batchId], references: [id])
+  exams       CompiledMarksheetExam[]
+
+  @@index([programId])
+  @@map("compiled_marksheets")
+}
+
+model CompiledMarksheetExam {
+  id                  Int               @id @default(autoincrement())
+  compiledMarksheetId Int
+  specialExamId       Int
+  sortOrder           Int               @default(0) // Order of appearance as columns
+
+  compiledMarksheet   CompiledMarksheet @relation(fields: [compiledMarksheetId], references: [id], onDelete: Cascade)
+  specialExam         SpecialExam       @relation(fields: [specialExamId], references: [id], onDelete: Cascade)
+
+  @@unique([compiledMarksheetId, specialExamId])
+  @@index([compiledMarksheetId])
+  @@map("compiled_marksheet_exams")
 }

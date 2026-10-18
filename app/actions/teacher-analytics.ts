@@ -1,8 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { requireRole } from "@/lib/auth-guard";
 import { revalidatePath } from "next/cache";
 
 export type TeacherAnalytics = {
@@ -23,11 +22,7 @@ export async function createClassLogForTeacherAction(
     month: string;
   }
 ) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "STAFF")) {
-    throw new Error("Unauthorized");
-  }
+  await requireRole(["ADMIN", "STAFF"]);
 
   const teacher = await prisma.teacher.findUnique({
     where: { id: teacherId },
@@ -62,25 +57,16 @@ export async function getTeacherAnalyticsAction(
   month?: string,
   year?: number
 ): Promise<TeacherAnalytics> {
-  const session = await getServerSession(authOptions);
+  const session = await requireRole("TEACHER");
   
-  if (!session || session.user.role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
-  
-  const teacherId = session.user.teacherId;
-  
-  if (!teacherId) {
-    throw new Error("Teacher ID not found");
-  }
-
-  const teacher = await prisma.teacher.findUnique({
-    where: { id: teacherId },
+  const teacher = await prisma.teacher.findFirst({
+    where: { userId: parseInt(session.id, 10) },
   });
-
+  
   if (!teacher) {
-    throw new Error("Teacher not found");
+    throw new Error("Teacher profile not found");
   }
+  const teacherId = teacher.id;
 
   let monthFilter = month;
   let yearFilter = year || new Date().getFullYear();
@@ -146,6 +132,16 @@ export async function getTeacherPaymentHistoryAction(
   teacherId: number,
   month?: string
 ) {
+  const session = await requireRole(["ADMIN", "STAFF", "TEACHER"]);
+  if (session.role === "TEACHER") {
+    const teacher = await prisma.teacher.findFirst({
+      where: { userId: parseInt(session.id, 10) },
+    });
+    if (!teacher || teacher.id !== teacherId) {
+      throw new Error("Unauthorized");
+    }
+  }
+
   const whereClause: any = { teacherId };
   
   if (month && month !== "All") {
@@ -171,17 +167,16 @@ export type TeacherClassLogInput = {
 };
 
 export async function createTeacherClassLogAction(data: TeacherClassLogInput) {
-  const session = await getServerSession(authOptions);
+  const session = await requireRole("TEACHER");
   
-  if (!session || session.user.role !== "TEACHER") {
-    throw new Error("Unauthorized");
+  const teacher = await prisma.teacher.findFirst({
+    where: { userId: parseInt(session.id, 10) },
+  });
+  
+  if (!teacher) {
+    throw new Error("Teacher profile not found");
   }
-  
-  const teacherId = session.user.teacherId;
-  
-  if (!teacherId) {
-    throw new Error("Teacher ID not found");
-  }
+  const teacherId = teacher.id;
 
   return await prisma.teacherClassLog.create({
     data: {
@@ -197,11 +192,14 @@ export async function createTeacherClassLogAction(data: TeacherClassLogInput) {
 }
 
 export async function updateTeacherClassLogAction(id: number, data: TeacherClassLogInput) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || session.user.role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const session = await requireRole("TEACHER");
+  const teacher = await prisma.teacher.findFirst({
+    where: { userId: parseInt(session.id, 10) },
+  });
+  if (!teacher) throw new Error("Teacher profile not found");
+
+  const log = await prisma.teacherClassLog.findUnique({ where: { id } });
+  if (!log || log.teacherId !== teacher.id) throw new Error("Unauthorized");
 
   return await prisma.teacherClassLog.update({
     where: { id },
@@ -216,11 +214,14 @@ export async function updateTeacherClassLogAction(id: number, data: TeacherClass
 }
 
 export async function deleteTeacherClassLogAction(id: number) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || session.user.role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const session = await requireRole("TEACHER");
+  const teacher = await prisma.teacher.findFirst({
+    where: { userId: parseInt(session.id, 10) },
+  });
+  if (!teacher) throw new Error("Teacher profile not found");
+
+  const log = await prisma.teacherClassLog.findUnique({ where: { id } });
+  if (!log || log.teacherId !== teacher.id) throw new Error("Unauthorized");
 
   return await prisma.teacherClassLog.delete({
     where: { id },
@@ -233,6 +234,15 @@ export async function getTeacherClassLogsAction(
   page: number = 1,
   limit: number = 10
 ) {
+  const session = await requireRole(["ADMIN", "STAFF", "TEACHER"]);
+  if (session.role === "TEACHER") {
+    const teacher = await prisma.teacher.findFirst({
+      where: { userId: parseInt(session.id, 10) },
+    });
+    if (!teacher || teacher.id !== teacherId) {
+      throw new Error("Unauthorized");
+    }
+  }
   const whereClause: any = { teacherId };
   
   if (month && month !== "All") {
@@ -260,6 +270,7 @@ export async function getTeacherClassLogsAction(
 }
 
 export async function getTeacherWithPerClassAction(teacherId: number) {
+  await requireRole("ADMIN");
   const teacher = await prisma.teacher.findUnique({
     where: { id: teacherId },
     select: { id: true, name: true, perClass: true },
@@ -276,6 +287,7 @@ export async function getAllClassLogsAction(
   page: number = 1,
   limit: number = 20
 ) {
+  await requireRole(["ADMIN", "STAFF"]);
   const whereClause: any = {};
   
   if (month && month !== "All") {
@@ -316,6 +328,8 @@ export async function getAllClassLogsAction(
 
 
 export async function getClassLogStatsAction(month?: string) {
+  const session = await requireRole(["ADMIN", "STAFF"]);
+  const canSeeFinance = session.role === "ADMIN";
   const whereClause: any = {};
   
   if (month) {
@@ -329,11 +343,13 @@ export async function getClassLogStatsAction(month?: string) {
         teacher: { select: { id: true, name: true, perClass: true } },
       },
     }),
-    prisma.teacher.findMany({
-      include: {
-        payments: true,
-      },
-    }),
+    canSeeFinance
+      ? prisma.teacher.findMany({
+          include: {
+            payments: true,
+          },
+        })
+      : Promise.resolve([]),
   ]);
 
   const totalClasses = logs.reduce((sum, log) => sum + log.classes + log.notebook + log.other, 0);
@@ -358,9 +374,9 @@ export async function getClassLogStatsAction(month?: string) {
 
   return {
     totalClasses,
-    totalPaid,
-    totalDue,
-    teacherCount: teachers.length,
+    totalPaid: canSeeFinance ? totalPaid : 0,
+    totalDue: canSeeFinance ? totalDue : 0,
+    teacherCount: canSeeFinance ? teachers.length : 0,
     logsCount: logs.length,
   };
 }
@@ -371,6 +387,8 @@ export async function getAllTeachersWithStatsAction(
   endDate?: string,
   hideFinancials: boolean = false  // For staff role
 ) {
+  const session = await requireRole(["ADMIN", "STAFF"]);
+  const shouldHideFinancials = session.role === "STAFF" || hideFinancials;
   const whereClause: any = {};
   
   if (month && month !== "All") {
@@ -388,7 +406,7 @@ export async function getAllTeachersWithStatsAction(
       classLogs: {
         where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
       },
-      payments: true,
+      payments: !shouldHideFinancials,
     },
   });
 
@@ -396,7 +414,7 @@ export async function getAllTeachersWithStatsAction(
     const totalClasses = t.classLogs.reduce((sum, log) => sum + log.classes + log.notebook + log.other, 0);
     
     // Staff cannot see financial data
-    if (hideFinancials) {
+    if (shouldHideFinancials) {
       return {
         id: t.id,
         name: t.name,
@@ -408,7 +426,7 @@ export async function getAllTeachersWithStatsAction(
       };
     }
     
-    const totalPaid = t.payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalPaid = t.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
     const calculatedDue = (totalClasses * t.perClass) - totalPaid;
     
     return {
@@ -434,11 +452,7 @@ export async function updateClassLogAction(
     month: string;
   }
 ) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "STAFF")) {
-    throw new Error("Unauthorized");
-  }
+  await requireRole(["ADMIN", "STAFF"]);
 
   const updated = await prisma.teacherClassLog.update({
     where: { id },
@@ -457,11 +471,7 @@ export async function updateClassLogAction(
 
 // ✅ NEW: Delete log (admin only - staff cannot delete)
 export async function deleteClassLogAction(id: number) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || session.user.role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("ADMIN");
 
   await prisma.teacherClassLog.delete({ where: { id } });
   revalidatePath("/admin-route/class-log");

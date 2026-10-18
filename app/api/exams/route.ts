@@ -1,17 +1,26 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiAuth } from "@/lib/auth-guard";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const auth = await requireApiAuth(["ADMIN", "STAFF", "TEACHER"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
   try {
     const exams = await prisma.exam.findMany({
       orderBy: { id: "desc" },
-      select: {
-        id: true,
-        type: true,
-        month: true,
-        class: true,
+      include: {
+        subjects: {
+          include: {
+            teacher: { select: { id: true, name: true } },
+            _count: { select: { marks: true } },
+          },
+          orderBy: { subject: "asc" },
+        },
       },
     });
     return NextResponse.json(exams);

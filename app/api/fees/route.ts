@@ -1,14 +1,13 @@
-// app/api/fees/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { requireApiAuth } from "@/lib/auth-guard";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || !["ADMIN", "STAFF"].includes(session.user.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth("ADMIN");
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
   const { searchParams } = new URL(request.url);

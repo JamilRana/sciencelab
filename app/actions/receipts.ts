@@ -4,9 +4,8 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
+import { requireRole } from "@/lib/auth-guard";
 
 const receiptSchema = z.object({
   studentId: z.number().min(1),
@@ -16,11 +15,12 @@ const receiptSchema = z.object({
 });
 
 async function validateAction() {
-  const session = await getServerSession(authOptions);
-  if (!session || !["ADMIN", "STAFF"].includes(session.user.role)) {
-    return { success: false, error: "Unauthorized" } as const;
+  try {
+    const session = await requireRole("ADMIN");
+    return { success: true, user: session } as const;
+  } catch (err: any) {
+    return { success: false, error: err.message || "Unauthorized" } as const;
   }
-  return { success: true } as const;
 }
 
 export async function getReceiptsAction(filters?: {
@@ -33,6 +33,7 @@ export async function getReceiptsAction(filters?: {
   endDate?: string;
 }) {
   try {
+    await requireRole("ADMIN");
     const where: Prisma.ReceiptWhereInput = {};
     
     if (filters?.studentId) {
@@ -203,6 +204,7 @@ export async function deleteReceiptAction(id: number) {
 
 export async function getBatchesByClassAction(className: string) {
   try {
+    await requireRole(["ADMIN", "STAFF", "TEACHER"]);
     const batches = await prisma.batch.findMany({
       where: { classId: className },
       select: { id: true, classId: true, name: true, code: true },

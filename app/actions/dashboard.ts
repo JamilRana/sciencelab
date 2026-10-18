@@ -3,14 +3,15 @@
 
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import { requireRole } from "@/lib/auth-guard";
 
 /* ----------------------------------------
    MAIN DASHBOARD STATS
 ---------------------------------------- */
 
-export async function getDashboardStats(role: Role) {
-
-  const canViewFinancial = role === "ADMIN";
+export async function getDashboardStats(_role?: Role) {
+  const session = await requireRole(["ADMIN", "STAFF"]);
+  const canViewFinancial = session.role === "ADMIN";
 
   const [
     studentCount,
@@ -38,12 +39,22 @@ export async function getDashboardStats(role: Role) {
 
   if (!canViewFinancial) return baseStats;
 
-  const [receiptStats, expenseStats] = await Promise.all([
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  const [monthReceiptStats, monthExpenseStats, allReceiptStats] = await Promise.all([
     prisma.receipt.aggregate({
+      where: { date: { gte: startOfMonth, lte: endOfMonth } },
       _sum: { amount: true },
       _count: true,
     }),
     prisma.expense.aggregate({
+      where: { date: { gte: startOfMonth, lte: endOfMonth } },
+      _sum: { amount: true },
+      _count: true,
+    }),
+    prisma.receipt.aggregate({
       _sum: { amount: true },
       _count: true,
     }),
@@ -51,13 +62,14 @@ export async function getDashboardStats(role: Role) {
 
   return {
     ...baseStats,
-    totalRevenue: receiptStats._sum.amount ?? 0,
-    totalExpenses: expenseStats._sum.amount ?? 0,
-    receiptCount: receiptStats._count,
-    expenseCount: expenseStats._count,
+    totalRevenue: monthReceiptStats._sum.amount ?? 0,
+    allTimeRevenue: allReceiptStats._sum.amount ?? 0,
+    totalExpenses: monthExpenseStats._sum.amount ?? 0,
+    receiptCount: monthReceiptStats._count,
+    expenseCount: monthExpenseStats._count,
     netBalance:
-      (receiptStats._sum.amount ?? 0) -
-      (expenseStats._sum.amount ?? 0),
+      (monthReceiptStats._sum.amount ?? 0) -
+      (monthExpenseStats._sum.amount ?? 0),
   };
 }
 
@@ -66,7 +78,7 @@ export async function getDashboardStats(role: Role) {
 ---------------------------------------- */
 
 export async function getStudentAnalytics() {
-
+  await requireRole(["ADMIN", "STAFF", "TEACHER"]);
   const [genderStats, classStats, schoolStats] =
     await Promise.all([
       prisma.student.groupBy({
@@ -118,7 +130,7 @@ export async function getStudentAnalytics() {
 ---------------------------------------- */
 
 export async function getExamAnalytics() {
-
+  await requireRole(["ADMIN", "STAFF", "TEACHER"]);
   const exams = await prisma.exam.findMany({
     include: {
       subjects: {
@@ -164,7 +176,7 @@ export async function getExamAnalytics() {
 ---------------------------------------- */
 
 export async function getTeacherAnalytics() {
-
+  await requireRole(["ADMIN", "STAFF"]);
   const teachers = await prisma.teacher.findMany({
     include: {
       classLogs: true,
@@ -201,10 +213,8 @@ export async function getTeacherAnalytics() {
    FINANCIAL ANALYTICS
 ---------------------------------------- */
 
-export async function getFinancialAnalytics(role: Role) {
-
-  if (role !== "ADMIN")
-    throw new Error("Unauthorized");
+export async function getFinancialAnalytics(_role?: Role) {
+  await requireRole("ADMIN");
 
   const [receipts, expenses] = await Promise.all([
     prisma.receipt.findMany({

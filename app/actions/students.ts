@@ -3,8 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StudentFormValues } from "@/components/forms/StudentForm";
+import { requireRole } from "@/lib/auth-guard";
 
-async function getNextRollNumber(batchId: number): Promise<number> {
+export async function getNextRollNumber(batchId: number): Promise<number> {
   const lastStudent = await prisma.student.findFirst({
     where: { batchId },
     orderBy: { roll: "desc" },
@@ -14,8 +15,34 @@ async function getNextRollNumber(batchId: number): Promise<number> {
   return lastStudent ? lastStudent.roll + 1 : 1;
 }
 
+export async function getNextRollForBatchAction(batchId: number) {
+  try {
+    await requireRole(["ADMIN", "STAFF"]);
+    const nextRoll = await getNextRollNumber(batchId);
+    const batch = await prisma.batch.findUnique({
+      where: { id: batchId },
+      select: { id: true, name: true, code: true, classId: true },
+    });
+    const batchCode = batch?.code || 0;
+    const displayRoll = batchCode * 100 + nextRoll;
+    return {
+      success: true,
+      nextRoll,
+      batchCode,
+      displayRoll,
+      batchName: batch?.name || "",
+      classId: batch?.classId || "",
+    };
+  } catch (error) {
+    console.error("Error getting next roll:", error);
+    return { success: false, error: "Failed to calculate next roll" };
+  }
+}
+
+
 export async function createStudentAction(data: StudentFormValues) {
   try {
+    await requireRole(["ADMIN", "STAFF"]);
     const batchId = parseInt(data.batchId);
     
     // Get next roll number for this batch
@@ -49,6 +76,7 @@ export async function createStudentAction(data: StudentFormValues) {
 
 export async function updateStudentAction(id: number, data: StudentFormValues) {
   try {
+    await requireRole(["ADMIN", "STAFF"]);
     const student = await prisma.student.update({
       where: { id },
       data: {
@@ -76,6 +104,7 @@ export async function updateStudentAction(id: number, data: StudentFormValues) {
 
 export async function deleteStudentAction(id: number) {
   try {
+    await requireRole(["ADMIN", "STAFF"]);
     await prisma.student.delete({
       where: { id },
     });

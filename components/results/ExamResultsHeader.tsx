@@ -1,59 +1,160 @@
-import Link from "next/link";
-import { ArrowLeft, FileText } from "lucide-react";
+"use client";
 
-export default function ExamResultsHeader({ exam, year, role }) {
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, FileText, Printer, SlidersHorizontal } from "lucide-react";
+
+interface ExamResultsHeaderProps {
+  exam: any;
+  year: number;
+  role: string | null;
+  printLimit?: number | null;
+  onPrintLimitChange?: (limit: number | null) => void;
+  totalStudents?: number;
+}
+
+export default function ExamResultsHeader({
+  exam,
+  year,
+  role,
+  printLimit = null,
+  onPrintLimitChange,
+  totalStudents = 0,
+}: ExamResultsHeaderProps) {
+  const [customInput, setCustomInput] = useState<string>("");
+
+  const handleCustomChange = (val: string) => {
+    setCustomInput(val);
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      onPrintLimitChange?.(parsed);
+    } else if (val === "") {
+      onPrintLimitChange?.(null);
+    }
+  };
+
+  const presets = [
+    { label: "All", value: null },
+    { label: "Top 10", value: 10 },
+    { label: "Top 20", value: 20 },
+    { label: "Top 30", value: 30 },
+    { label: "Top 50", value: 50 },
+  ];
+
   return (
-    <div className="mb-6 no-print">
+    <div className="mb-6 no-print space-y-4">
+      {/* Back Link */}
       {(role === "ADMIN" || role === "STAFF") && (
         <Link
           href="/admin-route/exams"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 mb-4"
+          className="inline-flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
-        Back to Exams
-      </Link>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Back to Exams</span>
+        </Link>
       )}
       {role === "STUDENT" && (
         <Link
           href="/student-route/results"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 mb-4"
+          className="inline-flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
-        Back to Results
-      </Link>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Back to Results</span>
+        </Link>
       )}
       {role === "TEACHER" && (
         <Link
           href="/teacher-route/results"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 mb-4"
+          className="inline-flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
-        Back to Results
-      </Link>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Back to Results</span>
+        </Link>
       )}
 
-      <div className="flex justify-between items-center">
-        <div className="flex gap-3">
-          <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-            <FileText className="h-6 w-6" />
+      {/* Main Header Card with Print Controls */}
+      <div className="bg-white rounded-xl border border-zinc-200/80 p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="h-11 w-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+            <FileText className="h-5 w-5" />
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold">Exam Results</h1>
-            <p className="text-gray-500">
-              {exam.type} - {exam.month} {year} (Class {exam.class})
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-zinc-900">Exam Results & Merit List</h1>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                Class {exam.class}
+              </span>
+            </div>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {exam.type} Examination · {exam.month} {year} · {totalStudents} Active Students
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => window.print()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-        >
-          Print
-        </button>
-      </div>
+        {/* Print Configuration Controls */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Print Scope Selector */}
+          <div className="flex items-center gap-1 bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80">
+            <div className="flex items-center gap-1 px-2 text-[11px] font-semibold text-zinc-500">
+              <SlidersHorizontal className="h-3 w-3" />
+              <span>Print:</span>
+            </div>
 
+            {presets.map((preset) => {
+              const isActive =
+                preset.value === null
+                  ? printLimit === null && !customInput
+                  : printLimit === preset.value;
+
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => {
+                    setCustomInput("");
+                    onPrintLimitChange?.(preset.value);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    isActive
+                      ? "bg-white text-zinc-900 shadow-xs border border-zinc-200/80"
+                      : "text-zinc-500 hover:text-zinc-900"
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              );
+            })}
+
+            {/* Custom limit input */}
+            <div className="flex items-center gap-1 pl-1.5 pr-1 border-l border-zinc-200">
+              <span className="text-[10px] text-zinc-400 font-medium">Top</span>
+              <input
+                type="number"
+                min="1"
+                max={totalStudents || 999}
+                placeholder="N"
+                value={customInput}
+                onChange={(e) => handleCustomChange(e.target.value)}
+                className="w-11 h-6 px-1 text-center bg-white border border-zinc-300 rounded text-xs font-semibold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                title="Print specific number of top students"
+              />
+            </div>
+          </div>
+
+          {/* Print Trigger Button */}
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors active:scale-98"
+          >
+            <Printer className="h-4 w-4" />
+            <span>
+              Print {printLimit ? `Top ${printLimit}` : "Results"}
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

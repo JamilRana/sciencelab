@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import NextTopLoader from "nextjs-toploader";
@@ -8,11 +8,19 @@ import { cn } from "@/lib/utils";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const bengali = Hind_Siliguri({
+  variable: "--font-bengali",
+  subsets: ["bengali"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Science Lab Science Lab Coaching Center",
-  description: "Management System",
+  title: "Science Lab Coaching Center",
+  description: "Academic & Administrative Management System",
 };
 
 export default function RootLayout({
@@ -21,11 +29,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={cn(inter.variable, "font-sans antialiased")}>
-        <NextTopLoader showSpinner={false} color="#2563eb" />
+    <html lang="en" className={cn(inter.variable, bengali.variable)}>
+      <body className="font-sans antialiased bg-zinc-50 text-zinc-950 selection:bg-indigo-100 selection:text-indigo-900">
+        <NextTopLoader showSpinner={false} color="#4f46e5" height={2.5} />
         {children}
-        <Toaster position="top-center" richColors />
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

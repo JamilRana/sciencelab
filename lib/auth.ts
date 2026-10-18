@@ -41,22 +41,23 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username as string },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { username: credentials.username as string },
+          });
 
-        if (!user || !user.active) {
-          return null;
-        }
+          if (!user || !user.active) {
+            return null;
+          }
 
-        const isValidPassword = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+          const isValidPassword = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
 
-        if (!isValidPassword) {
-          return null;
-        }
+          if (!isValidPassword) {
+            return null;
+          }
 
         // Look up teacher or student by userId or mobile/email
         let teacherId: number | undefined;
@@ -95,9 +96,13 @@ export const authOptions: NextAuthOptions = {
           teacherId,
           studentId,
         };
-      },
-    }),
-  ],
+      } catch (authError) {
+        console.error("[NextAuth authorize error - check DATABASE_URL]:", authError);
+        return null;
+      }
+    },
+  }),
+],
   session: {
     strategy: "jwt",
   },
@@ -110,10 +115,31 @@ export const authOptions: NextAuthOptions = {
         token.name = (user as { name?: string }).name || "";
         token.teacherId = (user as { teacherId?: number }).teacherId;
         token.studentId = (user as { studentId?: number }).studentId;
+      } else if (token?.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: parseInt(token.id as string) },
+            select: { active: true, role: true },
+          });
+
+          // Invalidate session if user was deleted or deactivated
+          if (!dbUser || !dbUser.active) {
+            return {} as any;
+          }
+
+          token.role = dbUser.role;
+        } catch {
+          // If DB check fails, fail safely
+          return token;
+        }
       }
       return token;
     },
     async session({ session, token }) {
+      if (!token || !token.id) {
+        return null as any;
+      }
+
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;

@@ -9,9 +9,9 @@ import {
   deleteReceiptAction 
 } from "@/app/actions/receipts";
 import { ReceiptModal } from "./ReceiptModal";
-import { AdminTable } from "@/app/admin-route/components/AdminTable";
-import type { Month } from "@/app/admin-route/types/admin";
+import { DataTable, type Column } from "@/components/ui/data-table";
 import { exportToCSV } from "@/lib/export";
+import { Receipt as ReceiptIcon, Calendar, DollarSign } from "lucide-react";
 
 interface Student {
   id: number;
@@ -35,28 +35,32 @@ interface ReceiptListProps {
   students: Student[];
   filters?: { class?: string; batchId?: number; month?: string; search?: string };
   totalAmount?: number;
+  dateRangeLabel?: string;
 }
 
-export function ReceiptList({ initialReceipts, students, filters, totalAmount }: ReceiptListProps) {
-  const [receipts, setReceipts] = useState(initialReceipts);
+export function ReceiptList({ initialReceipts, students, filters, totalAmount, dateRangeLabel }: ReceiptListProps) {
+  const [receipts, setReceipts] = useState<Receipt[]>(initialReceipts);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingReceipt, setEditingReceipt] = useState<Receipt | null>(null);
 
   const formatRoll = (student: Student) => {
+    if (!student?.batch?.code) return student?.roll ? student.roll.toString() : "-";
     return `${student.batch.code}${student.roll.toString().padStart(2, '0')}`;
   };
 
-  const handleDelete = async (row: any) => {
+  const handleDelete = async (row: { id: number }) => {
+    if (!confirm("Are you sure you want to delete this fee receipt?")) return;
     const result = await deleteReceiptAction(row.id);
     if (result.success) {
       setReceipts((prev) => prev.filter((r) => r.id !== row.id));
+      toast.success("Receipt deleted successfully");
     } else {
       toast.error(result.error || "Failed to delete");
     }
   };
 
-  const handleEdit = (row: any) => {
-    setEditingReceipt(row as Receipt);
+  const handleEdit = (row: Receipt) => {
+    setEditingReceipt(row);
     setModalOpen(true);
   };
 
@@ -79,44 +83,77 @@ export function ReceiptList({ initialReceipts, students, filters, totalAmount }:
     }
   };
 
-  const columns = [
+  const columns: Column<Receipt>[] = [
     {
       key: "date",
-      header: "Date",
-      render: (row: any) => new Date(row.date).toLocaleDateString(),
+      header: "Payment Date",
+      sortable: true,
+      width: "130px",
+      render: (row) => (
+        <span className="text-zinc-700 font-medium tabular-nums">
+          {new Date(row.date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          })}
+        </span>
+      ),
+      searchValue: (row) => new Date(row.date).toLocaleDateString(),
     },
     {
       key: "roll",
       header: "Roll",
-      render: (row: any) => (
-        <span className="font-mono font-medium">{formatRoll(row.student)}</span>
+      sortable: true,
+      width: "100px",
+      render: (row) => (
+        <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
+          {formatRoll(row.student)}
+        </span>
       ),
+      searchValue: (row) => formatRoll(row.student),
     },
     {
       key: "name",
       header: "Student",
-      render: (row: any) => row.student.name,
+      sortable: true,
+      render: (row) => (
+        <div>
+          <div className="font-semibold text-zinc-900">{row.student?.name || "Unknown"}</div>
+        </div>
+      ),
+      searchValue: (row) => row.student?.name || "",
     },
     {
       key: "classBatch",
-      header: "Class/Batch",
-      render: (row: any) => `${row.student.class} • ${row.student.batch.name}`,
+      header: "Class / Batch",
+      render: (row) => (
+        <span className="text-zinc-600">
+          Class {row.student?.class} • <span className="font-medium text-zinc-800">{row.student?.batch?.name}</span>
+        </span>
+      ),
+      searchValue: (row) => `${row.student?.class || ""} ${row.student?.batch?.name || ""}`,
     },
     {
       key: "month",
-      header: "Month",
-      render: (row: any) => (
-        <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+      header: "Fee For",
+      sortable: true,
+      width: "110px",
+      align: "center",
+      render: (row) => (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
           {row.month}
         </span>
       ),
+      searchValue: (row) => row.month,
     },
     {
       key: "amount",
       header: "Amount",
-      align: 'right' as const,
-      render: (row: any) => (
-        <span className="font-semibold text-green-700">
+      sortable: true,
+      align: "right",
+      width: "120px",
+      render: (row) => (
+        <span className="font-bold text-emerald-700 tabular-nums">
           ৳{row.amount.toLocaleString()}
         </span>
       ),
@@ -124,34 +161,42 @@ export function ReceiptList({ initialReceipts, students, filters, totalAmount }:
   ];
 
   return (
-    <>
-      {totalAmount !== undefined && totalAmount > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-          <div className="flex justify-between items-center">
-            <span className="text-green-700 font-medium">Total Amount</span>
-            <span className="text-2xl font-bold text-green-700">৳{totalAmount.toLocaleString()}</span>
+    <div className="space-y-4">
+      {totalAmount !== undefined && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-xl p-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-emerald-100 rounded-lg text-emerald-700">
+                <DollarSign className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+                  {dateRangeLabel || "Total Collection"}
+                </p>
+                <p className="text-xs text-emerald-600 mt-0.5">
+                  Calculated based on actual payment dates
+                </p>
+              </div>
+            </div>
+            <div className="text-2xl font-black text-emerald-800 tabular-nums">
+              ৳{totalAmount.toLocaleString()}
+            </div>
           </div>
         </div>
       )}
-      <AdminTable
-        title="Fee Receipts"
+
+      <DataTable<Receipt>
         data={receipts}
         columns={columns}
+        pageSize={15}
+        placeholder="Filter receipts by student name, roll, or class..."
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onDelete={(id) => handleDelete({ id: Number(id) })}
         onAdd={handleAddNew}
-        onExport={() => {
-          const exportData = receipts.map(r => ({
-            date: new Date(r.date).toLocaleDateString(),
-            student: r.student?.name || '',
-            roll: r.student ? `${r.student.batch?.code || ''}${r.student.roll.toString().padStart(2, '0')}` : '',
-            class: r.student?.class || '',
-            month: r.month,
-            amount: r.amount,
-          }));
-          exportToCSV(exportData, 'receipts');
-        }}
-        searchPlaceholder="Filter receipts..."
+        addLabel="+ New Receipt"
+        exportFileName="fee_receipts"
+        emptyTitle="No receipts found"
+        emptyMessage="No fee receipts match your active filters or date range."
       />
 
       {modalOpen && (
@@ -168,6 +213,6 @@ export function ReceiptList({ initialReceipts, students, filters, totalAmount }:
           } : undefined}
         />
       )}
-    </>
+    </div>
   );
 }

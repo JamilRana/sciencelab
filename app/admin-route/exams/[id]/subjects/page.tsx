@@ -5,9 +5,26 @@ import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { ChevronLeft, Printer } from "lucide-react";
 
-export default async function ExamSubjectsPage({ params }: { params: { id: string } }) {
-  const examId = parseInt(params.id);
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function ExamSubjectsPage({ params }: PageProps) {
+  const { id } = await params;
+  const examId = parseInt(id, 10);
   
+  if (isNaN(examId)) {
+    return (
+      <div className="p-8 text-center bg-white rounded-xl border border-zinc-200 max-w-lg mx-auto my-12">
+        <h1 className="text-xl font-bold text-zinc-900">Invalid Exam ID</h1>
+        <p className="text-xs text-zinc-500 mt-1">Please select a valid exam schedule.</p>
+        <Link href="/admin-route/exams" className="inline-block mt-4 text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+          ← Back to Exams
+        </Link>
+      </div>
+    );
+  }
+
   // Get current user session
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id ? Number(session.user.id) : undefined;
@@ -23,7 +40,17 @@ export default async function ExamSubjectsPage({ params }: { params: { id: strin
     prisma.teacher.findMany({ orderBy: { name: "asc" } }),
   ]);
 
-  if (!exam) return <div>Exam not found</div>;
+  if (!exam) {
+    return (
+      <div className="p-8 text-center bg-white rounded-xl border border-zinc-200 max-w-lg mx-auto my-12">
+        <h1 className="text-xl font-bold text-zinc-900">Exam not found</h1>
+        <p className="text-xs text-zinc-500 mt-1">The requested assessment schedule does not exist.</p>
+        <Link href="/admin-route/exams" className="inline-block mt-4 text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+          ← Back to Exams
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[1000px] mx-auto py-8 px-4">

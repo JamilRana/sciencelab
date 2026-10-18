@@ -51,7 +51,10 @@ export async function GET(
 
     // 🔹 Fetch existing marks for this subject
     const marks = await prisma.mark.findMany({
-      where: { examSubjectId },
+      where: {
+        examSubjectId,
+        student: { active: true },
+      },
       select: {
         studentId: true,
         written: true,

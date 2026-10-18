@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit3, Search, Loader2, Download } from "lucide-react";
+import { Plus, Trash2, Edit3, Search, Loader2, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { exportToCSV } from "@/lib/export";
 
 interface AdminTableRow {
@@ -31,6 +31,7 @@ interface AdminTableProps {
   loading?: boolean;
   noDataText?: string;
   className?: string;
+  pageSize?: number;
 }
 
 export function AdminTable({
@@ -45,8 +46,11 @@ export function AdminTable({
   loading = false,
   noDataText = 'No records found',
   className = '',
+  pageSize = 15,
 }: AdminTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(pageSize);
 
   // Use useMemo to filter data so it updates automatically when 'data' prop changes
   const filteredData = useMemo(() => {
@@ -61,6 +65,14 @@ export function AdminTable({
       });
     });
   }, [data, searchTerm, columns]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / perPage));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (validCurrentPage - 1) * perPage;
+    return filteredData.slice(startIndex, startIndex + perPage);
+  }, [filteredData, validCurrentPage, perPage]);
 
   const handleDelete = async (row: AdminTableRow) => {
     if (!confirm(`Are you sure you want to delete this ${title?.toLowerCase() || 'record'}?`)) return;
@@ -167,7 +179,7 @@ export function AdminTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredData.map((row) => (
+                {paginatedData.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50/80 transition-colors group">
                     {visibleColumns.map((column) => (
                       <td
@@ -209,6 +221,63 @@ export function AdminTable({
             </table>
           )}
         </div>
+
+        {/* Pagination Footer */}
+        {filteredData.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3.5 border-t border-gray-200 bg-gray-50/60 text-xs text-gray-600">
+            <div className="flex items-center gap-2">
+              <span>
+                Showing <span className="font-semibold text-gray-900 tabular-nums">{(validCurrentPage - 1) * perPage + 1}</span> to{" "}
+                <span className="font-semibold text-gray-900 tabular-nums">
+                  {Math.min(validCurrentPage * perPage, filteredData.length)}
+                </span>{" "}
+                of <span className="font-semibold text-gray-900 tabular-nums">{filteredData.length}</span> records
+              </span>
+
+              <span className="text-gray-300">|</span>
+
+              <div className="flex items-center gap-1.5">
+                <span>Per page:</span>
+                <select
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="px-2 py-1 border border-gray-200 rounded-md bg-white text-gray-700 outline-none"
+                >
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={validCurrentPage <= 1}
+                className="p-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <span className="px-2 py-1 text-xs font-medium text-gray-700 tabular-nums">
+                Page {validCurrentPage} of {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={validCurrentPage >= totalPages}
+                className="p-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

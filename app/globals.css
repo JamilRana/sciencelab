@@ -2,83 +2,150 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  :root {
+    --background: #fafafa; /* zinc-50 */
+    --foreground: #09090b; /* zinc-950 */
+    --card: #ffffff;
+    --card-foreground: #09090b;
+    --popover: #ffffff;
+    --popover-foreground: #09090b;
+    --primary: #4f46e5; /* indigo-600 */
+    --primary-foreground: #ffffff;
+    --secondary: #f4f4f5; /* zinc-100 */
+    --secondary-foreground: #18181b; /* zinc-900 */
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a; /* zinc-500 */
+    --accent: #eef2ff; /* indigo-50 */
+    --accent-foreground: #4338ca; /* indigo-700 */
+    --destructive: #e11d48; /* rose-600 */
+    --destructive-foreground: #ffffff;
+    --border: #e4e4e7; /* zinc-200 */
+    --input: #e4e4e7;
+    --ring: #6366f1; /* indigo-500 */
+    --radius: 0.5rem;
+  }
 
-/* Remove dark mode media query - no theme provider exists */
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+  .dark {
+    --background: #09090b; /* zinc-950 */
+    --foreground: #fafafa; /* zinc-50 */
+    --card: #18181b; /* zinc-900 */
+    --card-foreground: #fafafa;
+    --popover: #18181b;
+    --popover-foreground: #fafafa;
+    --primary: #6366f1;
+    --primary-foreground: #ffffff;
+    --secondary: #27272a; /* zinc-800 */
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #1e1b4b;
+    --accent-foreground: #a5b4fc;
+    --destructive: #f43f5e;
+    --destructive-foreground: #ffffff;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #818cf8;
+  }
 
-/* Force light mode for all form inputs */
-input, select, textarea {
-  background-color: #ffffff !important;
-  color: #171717 !important;
-  border-color: #d1d5db !important;
-}
-
-/* Ensure placeholder text is visible */
-input::placeholder, textarea::placeholder {
-  color: #9ca3af !important;
-}
-
-/* Select dropdown styling */
-select {
-  appearance: auto !important;
-  -webkit-appearance: auto !important;
-  background-color: #ffffff !important;
-  color: #171717 !important;
-}
-
-@media print {
-  @page {
-    size: A4 portrait;
-    margin: 5mm;
+  * {
+    border-color: var(--border);
   }
 
   body {
-    background: white !important;
-    -webkit-print-color-adjust: exact;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Tabular numerals for monetary amounts, marks, and statistics */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle, calm scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* Focus ring standard */
+.focus-ring {
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2;
+}
+
+/* High-contrast and professional Print Stylesheet */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
   }
 
-  .no-print, button {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print,
+  button:not(.allow-print),
+  aside,
+  header,
+  nav,
+  .top-bar-container,
+  .sidebar-container {
     display: none !important;
   }
 
-  .overflow-x-auto {
-    overflow: visible !important;
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .print-header {
+    display: block !important;
   }
 
   table {
     width: 100% !important;
     border-collapse: collapse !important;
+    margin-top: 10px !important;
   }
 
-  th, td {
-    border: 1pt solid #000 !important;
-    padding: 2px !important;
-    color: black !important;
+  th,
+  td {
+    border: 1pt solid #cbd5e1 !important;
+    padding: 6px 8px !important;
+    color: #000000 !important;
   }
 
   th {
-    background-color: #f3f4f6 !important;
-    text-transform: uppercase;
+    background-color: #f1f5f9 !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 9pt !important;
   }
 
-  .bg-green-100, .bg-yellow-100, .bg-red-100 {
-    background-color: transparent !important;
-  }
-
-  .text-green-700, .text-yellow-700, .text-red-700 {
-    color: black !important;
-    font-weight: bold;
-  }
-
-  .hidden\.print\:block {
-    display: block !important;
+  .page-break {
+    page-break-before: always;
   }
 }

@@ -34,7 +34,10 @@ export async function GET(request: Request) {
       where: whereClause,
       include: {
         exam: true,
-        marks: { include: { student: true } },
+        marks: {
+          where: { student: { active: true } },
+          include: { student: true },
+        },
       },
       orderBy: { examDate: "desc" },
     });

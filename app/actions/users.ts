@@ -3,9 +3,20 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
+import { requireRole } from "@/lib/auth-guard";
+
+const SAFE_USER_SELECT = {
+  id: true,
+  username: true,
+  name: true,
+  role: true,
+  active: true,
+} as const;
 
 export async function getUsersAction() {
+  await requireRole("ADMIN");
   return await prisma.user.findMany({
+    select: SAFE_USER_SELECT,
     orderBy: { id: "desc" },
   });
 }
@@ -16,16 +27,26 @@ export async function createUserAction(data: {
   name: string;
   role: string;
 }) {
+  await requireRole("ADMIN");
   try {
+    const existing = await prisma.user.findUnique({
+      where: { username: data.username.trim() },
+    });
+    if (existing) {
+      return { success: false, error: "Username already exists" };
+    }
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = await prisma.user.create({
       data: {
-        username: data.username,
+        username: data.username.trim(),
         password: hashedPassword,
-        name: data.name,
+        name: data.name.trim(),
         role: data.role as "ADMIN" | "STAFF" | "TEACHER" | "STUDENT",
       },
+      select: SAFE_USER_SELECT,
     });
+
     revalidatePath("/admin-route/users");
     return { success: true, data: user };
   } catch (error) {
@@ -39,24 +60,27 @@ export async function updateUserAction(id: number, data: {
   role: string;
   password?: string;
 }) {
+  await requireRole("ADMIN");
   try {
     const updateData: {
       name: string;
       role: "ADMIN" | "STAFF" | "TEACHER" | "STUDENT";
       password?: string;
     } = {
-      name: data.name,
+      name: data.name.trim(),
       role: data.role as "ADMIN" | "STAFF" | "TEACHER" | "STUDENT",
     };
 
-    if (data.password) {
+    if (data.password && data.password.trim().length > 0) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
 
     const user = await prisma.user.update({
       where: { id },
       data: updateData,
+      select: SAFE_USER_SELECT,
     });
+
     revalidatePath("/admin-route/users");
     return { success: true, data: user };
   } catch (error) {
@@ -66,6 +90,11 @@ export async function updateUserAction(id: number, data: {
 }
 
 export async function deleteUserAction(id: number) {
+  const currentAdmin = await requireRole("ADMIN");
+  if (parseInt(currentAdmin.id) === id) {
+    return { success: false, error: "Cannot delete your own active administrator account" };
+  }
+
   try {
     await prisma.user.delete({
       where: { id },
@@ -79,6 +108,11 @@ export async function deleteUserAction(id: number) {
 }
 
 export async function toggleUserAction(id: number) {
+  const currentAdmin = await requireRole("ADMIN");
+  if (parseInt(currentAdmin.id) === id) {
+    return { success: false, error: "Cannot deactivate your own administrator account" };
+  }
+
   try {
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return { success: false, error: "User not found" };
@@ -86,7 +120,9 @@ export async function toggleUserAction(id: number) {
     await prisma.user.update({
       where: { id },
       data: { active: !user.active },
+      select: SAFE_USER_SELECT,
     });
+
     revalidatePath("/admin-route/users");
     return { success: true };
   } catch (error) {

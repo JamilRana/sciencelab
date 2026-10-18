@@ -13,6 +13,9 @@ export interface School {
   id: number;
   name: string;
   students?: Student[];
+  _count?: {
+    students: number;
+  };
 }
 
 export interface Batch {
@@ -21,6 +24,9 @@ export interface Batch {
   name: string;
   code: number;
   students?: Student[];
+  _count?: {
+    students: number;
+  };
 }
 
 export interface Student {

@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiAuth } from "@/lib/auth-guard";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const auth = await requireApiAuth(["ADMIN", "STAFF", "TEACHER"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const examId = searchParams.get("examId");
@@ -22,7 +28,7 @@ export async function GET(request: Request) {
     }
 
     const students = await prisma.student.findMany({
-      where: { class: exam.class },
+      where: { class: exam.class, active: true },
       include: {
         batch: { select: { code: true } },
         marks: {

@@ -4,10 +4,9 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { Mark, ServiceResult } from "@/types";
 import { Prisma } from "@prisma/client";
+import { requireRole } from "@/lib/auth-guard";
 
 const markSchema = z.object({
   examSubjectId: z.number().min(1),
@@ -17,15 +16,17 @@ const markSchema = z.object({
 });
 
 async function validateAction() {
-  const session = await getServerSession(authOptions);
-  if (!session || !["ADMIN", "STAFF", "TEACHER"].includes(session.user.role)) {
-    return { success: false, error: "Unauthorized" } as const;
+  try {
+    const session = await requireRole(["ADMIN", "STAFF", "TEACHER"]);
+    return { success: true, user: session } as const;
+  } catch (err: any) {
+    return { success: false, error: err.message || "Unauthorized" } as const;
   }
-  return { success: true } as const;
 }
 
 export async function getExamsByClassAction(className?: string) {
   try {
+    await requireRole(["ADMIN", "STAFF", "TEACHER"]);
     const where: Prisma.ExamWhereInput = {};
     if (className) where.class = className;
 
@@ -52,6 +53,7 @@ export async function getExamsByClassAction(className?: string) {
 
 export async function getStudentsByBatchAction(batchId: number) {
   try {
+    await requireRole(["ADMIN", "STAFF", "TEACHER"]);
     const students = await prisma.student.findMany({
       where: { active: true, batchId },
       select: {
@@ -71,10 +73,11 @@ export async function getStudentsByBatchAction(batchId: number) {
 
 export async function getMarksForSubjectAction(examSubjectId: number, batchId: number) {
   try {
+    await requireRole(["ADMIN", "STAFF", "TEACHER"]);
     const marks = await prisma.mark.findMany({
       where: {
         examSubjectId,
-        student: { batchId },
+        student: { batchId, active: true },
       },
       include: {
         student: {

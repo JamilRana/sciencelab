@@ -5,8 +5,12 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import crypto from "crypto";
+import { requireRole, requireAuth } from "@/lib/auth-guard";
 
-const DEFAULT_PASSWORD = "Sl@bcc2015";
+function generateSecureTemporaryPassword(): string {
+  return `ScLab-${crypto.randomBytes(4).toString("hex")}`;
+}
 
 const studentRegistrationSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -68,6 +72,7 @@ async function generateUsername(name: string, role: string): Promise<string> {
 export async function createUserAndProfileAction(
   rawData: RegistrationInput
 ): Promise<RegistrationResult> {
+  await requireRole(["ADMIN", "STAFF"]);
   try {
     let validatedData: z.infer<typeof studentRegistrationSchema | typeof teacherRegistrationSchema | typeof staffRegistrationSchema>;
     let role: string;
@@ -83,7 +88,9 @@ export async function createUserAndProfileAction(
       role = rawData.role;
     }
 
-    const password = validatedData.password || DEFAULT_PASSWORD;
+    const password = validatedData.password && validatedData.password.trim().length > 0
+      ? validatedData.password.trim()
+      : generateSecureTemporaryPassword();
     const hashedPassword = await bcrypt.hash(password, 10);
     const username = "username" in validatedData 
       ? validatedData.username 
@@ -235,6 +242,11 @@ export async function changePasswordAction(
   newPassword: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const sessionUser = await requireAuth();
+    if (parseInt(sessionUser.id) !== userId && sessionUser.role !== "ADMIN") {
+      return { success: false, error: "Forbidden: You can only change your own password" };
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -266,14 +278,17 @@ export async function resetUserPasswordAction(
   userId: number
 ): Promise<{ success: boolean; error?: string; newPassword?: string }> {
   try {
-    const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+    await requireRole("ADMIN");
+
+    const newPassword = generateSecureTemporaryPassword();
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
     });
 
-    return { success: true, newPassword: DEFAULT_PASSWORD };
+    return { success: true, newPassword };
   } catch (error) {
     console.error("Error resetting password:", error);
     return { success: false, error: "Failed to reset password" };
@@ -316,6 +331,11 @@ export async function updateUserProfileAction(
 ): Promise<{ success: boolean; error?: string }> {
   if (!userId) {
     return { success: false, error: "User not found" };
+  }
+
+  const sessionUser = await requireAuth();
+  if (parseInt(sessionUser.id) !== userId && sessionUser.role !== "ADMIN") {
+    return { success: false, error: "Forbidden: You can only edit your own profile" };
   }
 
   try {
@@ -387,7 +407,13 @@ export async function updateUserProfileAction(
     return { success: false, error: "Failed to update profile" };
   }
 }
+
 export async function getUserProfileAction(userId: number): Promise<UserProfileData | null> {
+  const sessionUser = await requireAuth();
+  if (parseInt(sessionUser.id) !== userId && !["ADMIN", "STAFF"].includes(sessionUser.role)) {
+    return null;
+  }
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },

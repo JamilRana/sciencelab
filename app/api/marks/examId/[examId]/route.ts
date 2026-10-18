@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { examId: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!hasPermission(session?.user?.role as UserRole, "marks:read")) {
@@ -65,16 +65,20 @@ export async function GET(
   }
 
   try {
-    const examId = parseInt(params.examId);
+    const { examId } = await params;
+    const examIdNum = parseInt(examId);
 
     // Fetch exam details with subjects
     const exam = await prisma.exam.findUnique({
-      where: { id: examId },
+      where: { id: examIdNum },
       include: {
         subjects: {
           include: {
             teacher: true,
             marks: {
+              where: {
+                student: { active: true },
+              },
               include: {
                 student: true,
               },

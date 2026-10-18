@@ -5,6 +5,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { hasPermission, type UserRole } from "@/lib/rbac";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!hasPermission(session?.user?.role as UserRole, "marks:read")) {

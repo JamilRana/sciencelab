@@ -10,8 +10,19 @@ interface PageProps {
 
 export default async function TeacherSubjectMarksPage({ params }: PageProps) {
   const { id: examId, subjectId } = await params;
-  const examIdNum = parseInt(examId);
-  const subjectIdNum = parseInt(subjectId);
+  const examIdNum = parseInt(examId, 10);
+  const subjectIdNum = parseInt(subjectId, 10);
+
+  if (isNaN(subjectIdNum)) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-900">Invalid Subject ID</h1>
+        <Link href="/teacher-route/exams" className="text-blue-600 hover:underline mt-2 inline-block">
+          Back to Exams
+        </Link>
+      </div>
+    );
+  }
 
   const subject = await prisma.examSubject.findUnique({
     where: { id: subjectIdNum },
@@ -19,6 +30,9 @@ export default async function TeacherSubjectMarksPage({ params }: PageProps) {
       exam: true,
       teacher: { select: { id: true, name: true } },
       marks: {
+        where: {
+          student: { active: true },
+        },
         include: {
           student: { select: { id: true, name: true, roll: true, batch: { select: { id: true, code: true } } } },
         },

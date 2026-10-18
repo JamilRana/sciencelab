@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiAuth } from "@/lib/auth-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +8,11 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth(["ADMIN", "STAFF", "TEACHER", "STUDENT"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
   try {
     const { id } = await params;
     const examId = parseInt(id);
@@ -17,6 +23,9 @@ export async function GET(
         subjects: {
           include: {
             marks: {
+              where: {
+                student: { active: true },
+              },
               include: { 
                 student: {
                   include: { batch: true }

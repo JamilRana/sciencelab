@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { generateDisplayRoll } from "@/lib/roll";
 import Link from "next/link";
+import { PrintButton } from "@/components/ui/print-button";
 
 export default async function StudentPrintPage({
   searchParams,
@@ -36,12 +37,7 @@ export default async function StudentPrintPage({
           >
             ← Back to Students
           </Link>
-          <button
-            onClick={() => window.print()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Print
-          </button>
+          <PrintButton />
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border p-6 mb-6 no-print">
