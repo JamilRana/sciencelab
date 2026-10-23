@@ -54,16 +54,16 @@ export default async function SubjectMarksPage({ params }: PageProps) {
     );
   }
 
-  // Get all batches for this class
+  // Get all regular batches for this class
   const batches = await prisma.batch.findMany({
-    where: { classId: subject.exam.class },
+    where: { classId: subject.exam.class, programId: null },
     select: { id: true, name: true, code: true },
     orderBy: { code: "asc" },
   });
 
-  // Fetch all students for this class (all batches)
+  // Fetch all students for this class (regular batches only)
   const allStudents = await prisma.student.findMany({
-    where: { class: subject.exam.class, active: true },
+    where: { class: subject.exam.class, active: true, batch: { programId: null } },
     include: {
       batch: { select: { id: true, name: true, code: true } },
     },

@@ -1,8 +1,7 @@
 // app/api/marks/exam-subject/[subjectId]/route.ts
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { requireApiAuth } from "@/lib/auth-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -11,11 +10,11 @@ export async function GET(
   { params }: { params: Promise<{ subjectId: string }> }
 ) {
   try {
-    // 🔹 Authenticate
-    const session = await getServerSession(authOptions);
-    if (!session || !["ADMIN", "STAFF", "TEACHER"].includes(session.user.role)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await requireApiAuth(["ADMIN", "STAFF", "TEACHER"]);
+    if (auth.errorResponse) {
+      return auth.errorResponse;
     }
+    const session = { user: auth.user };
 
     const { subjectId } = await params;
     const examSubjectId = parseInt(subjectId, 10);
@@ -37,9 +36,28 @@ export async function GET(
       return NextResponse.json({ error: "Subject not found" }, { status: 404 });
     }
 
-    // 🔹 Fetch all students in the exam's class
+    if (session.user.role === "TEACHER") {
+      let teacherId = session.user.teacherId;
+      if (!teacherId) {
+        const teacher = await prisma.teacher.findFirst({
+          where: {
+            OR: [
+              { userId: parseInt(session.user.id, 10) },
+              { mobile: session.user.username },
+            ],
+          },
+          select: { id: true },
+        });
+        teacherId = teacher?.id;
+      }
+      if (!teacherId || subject.teacherId !== teacherId) {
+        return NextResponse.json({ error: "Unauthorized: not assigned to this subject" }, { status: 403 });
+      }
+    }
+
+    // 🔹 Fetch all students in the exam's class (regular batches only)
     const students = await prisma.student.findMany({
-      where: { class: subject.exam.class, active: true },
+      where: { class: subject.exam.class, active: true, batch: { programId: null } },
       include: {
         batch: { select: { id: true, name: true, code: true } },
       },

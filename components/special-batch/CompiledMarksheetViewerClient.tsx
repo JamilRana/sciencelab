@@ -257,9 +257,13 @@ export function CompiledMarksheetViewerClient({
       {/* PRINT-ONLY HEADER (visible during print) */}
       <div className="hidden print:block">
         <div className="text-center mb-4 border-b-2 border-black pb-3">
-          <h1 className="text-xl font-black uppercase tracking-wider text-black">
-            Science Lab Coaching Center
-          </h1>
+          <div className="flex items-center justify-center gap-2.5 mb-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo2.png" alt="Science Lab Logo" className="h-9 w-auto object-contain" />
+            <h1 className="text-xl font-black uppercase tracking-wider text-black">
+              Science Lab Coaching Center
+            </h1>
+          </div>
           <p className="text-xs font-semibold text-gray-700 uppercase">
             Special Batch Assessment Division · {marksheet.program?.name}
           </p>

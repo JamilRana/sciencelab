@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Edit, Trash2, Plus, User, Phone, GraduationCap, Download, Eye } from "lucide-react";
+import Link from "next/link";
+import { Edit, Trash2, Plus, User, Phone, GraduationCap, Download, Eye, Printer } from "lucide-react";
 import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { StudentForm, StudentFormValues } from "@/components/forms/StudentForm";
@@ -14,6 +15,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { toast } from "sonner";
 import type { Student, School, Batch } from "@/types";
 import { generateDisplayRoll } from "@/lib/roll";
+import { exportToCSV, ExportHeader } from "@/lib/export";
 
 interface StudentListProps {
   initialStudents: Student[];
@@ -110,12 +112,19 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
       key: "batch",
       header: "Batch",
       sortable: true,
-      width: "110px",
+      width: "120px",
       searchValue: (student) => student.batch?.name || "",
       render: (student) => (
-        <span className="text-xs font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded">
-          {student.batch?.name || "Unassigned"}
-        </span>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded w-fit">
+            {student.batch?.name || "Unassigned"}
+          </span>
+          {student.batch?.programId && (
+            <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-1.5 py-0.5 rounded w-fit">
+              Special Batch
+            </span>
+          )}
+        </div>
       ),
     },
     {
@@ -159,7 +168,10 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     {
       key: "batchId",
       label: "All Batches",
-      options: batches.map((b) => ({ value: String(b.id), label: b.name })),
+      options: batches.map((b) => ({
+        value: String(b.id),
+        label: (b as any).programId ? `${b.name} (Special Batch)` : b.name,
+      })),
     },
   ];
 
@@ -195,7 +207,14 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
       }
 
       if (result.success) {
-        toast.success(editingStudent ? "Student updated successfully" : "Student registered with login credentials");
+        if (!editingStudent && result.data?.temporaryPassword) {
+          toast.success(
+            `Student registered! Login: ${result.data.username} | Password: ${result.data.temporaryPassword}`,
+            { duration: 15000 }
+          );
+        } else {
+          toast.success(editingStudent ? "Student updated successfully" : "Student registered with login credentials");
+        }
         handleClose();
         router.refresh();
       } else {
@@ -280,6 +299,128 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
     return false;
   };
 
+  const handleExportStudents = (
+    dataToExport: Student[],
+    activeFilters: Record<string, string> = {},
+    searchQuery: string = ""
+  ) => {
+    if (!dataToExport || dataToExport.length === 0) {
+      toast.error("No student records to export");
+      return;
+    }
+
+    // Build intelligent descriptive filename based on active filters
+    const nameParts: string[] = ["students_roster"];
+    if (activeFilters.class) {
+      nameParts.push(`Class_${activeFilters.class}`);
+    }
+    if (activeFilters.batchId) {
+      const b = batches.find((item) => String(item.id) === activeFilters.batchId);
+      if (b) {
+        nameParts.push(b.name.replace(/[^a-zA-Z0-9_-]/g, "_"));
+      }
+    }
+    if (searchQuery.trim()) {
+      nameParts.push("filtered");
+    }
+    nameParts.push(new Date().toISOString().split("T")[0]);
+    const filename = nameParts.join("_");
+
+    const exportHeaders: ExportHeader[] = [
+      {
+        key: "displayRoll",
+        label: "Display Roll",
+        format: (_, student: Student) =>
+          student.batch?.code
+            ? generateDisplayRoll(student.batch.code, student.roll)
+            : String(student.roll),
+      },
+      {
+        key: "roll",
+        label: "Raw Roll",
+        format: (val) => String(val),
+      },
+      {
+        key: "name",
+        label: "Student Name",
+      },
+      {
+        key: "gender",
+        label: "Gender",
+      },
+      {
+        key: "class",
+        label: "Class",
+        format: (c) => `Class ${c}`,
+      },
+      {
+        key: "batch.name",
+        label: "Batch",
+        format: (_, student: Student) => student.batch?.name || "Unassigned",
+      },
+      {
+        key: "batch.code",
+        label: "Batch Code",
+        format: (_, student: Student) =>
+          student.batch?.code ? String(student.batch.code) : "",
+      },
+      {
+        key: "batchType",
+        label: "Batch Type",
+        format: (_, student: Student) =>
+          student.batch?.programId ? "Special Batch" : "Regular Batch",
+      },
+      {
+        key: "school.name",
+        label: "School",
+        format: (_, student: Student) => student.school?.name || "",
+      },
+      {
+        key: "mobile",
+        label: "Student Mobile",
+        format: (m) => m || "",
+      },
+      {
+        key: "homeMobile",
+        label: "Guardian Mobile",
+        format: (hm) => hm || "",
+      },
+      {
+        key: "fatherName",
+        label: "Father Name",
+        format: (fn) => fn || "",
+      },
+      {
+        key: "motherName",
+        label: "Mother Name",
+        format: (mn) => mn || "",
+      },
+      {
+        key: "address",
+        label: "Address",
+        format: (addr) => addr || "",
+      },
+      {
+        key: "email",
+        label: "Email",
+        format: (e) => e || "",
+      },
+      {
+        key: "dob",
+        label: "Date of Birth",
+        format: (dob) => (dob ? new Date(dob).toISOString().split("T")[0] : ""),
+      },
+      {
+        key: "active",
+        label: "Status",
+        format: (act) => (act ? "Active" : "Inactive"),
+      },
+    ];
+
+    exportToCSV(dataToExport, filename, exportHeaders);
+    toast.success(`Exported ${dataToExport.length} student records`);
+  };
+
   return (
     <div className="space-y-4">
       <DataTable<Student>
@@ -308,6 +449,27 @@ export function StudentList({ initialStudents, schools, batches, role = "STAFF" 
         emptyTitle="No students found"
         emptyMessage="Try adjusting your class or batch filters, or enroll a new student."
         customSearchFn={customStudentSearch}
+        onExport={handleExportStudents}
+        extraToolbarActions={(_, activeFilters) => {
+          const printQuery = new URLSearchParams();
+          if (activeFilters.class) printQuery.set("class", activeFilters.class);
+          if (activeFilters.batchId) printQuery.set("batch", activeFilters.batchId);
+          const printHref = `/admin-route/students/print${
+            printQuery.toString() ? `?${printQuery.toString()}` : ""
+          }`;
+
+          return (
+            <Link
+              href={printHref}
+              target="_blank"
+              className="p-1.5 px-2.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-lg transition-colors flex items-center gap-1.5 focus-ring"
+              title="Print Filtered Roster"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Print Roster</span>
+            </Link>
+          );
+        }}
         exportFileName="students_roster"
         fuzzySearch={{
           enabled: true,

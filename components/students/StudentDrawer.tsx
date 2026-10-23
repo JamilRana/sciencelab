@@ -17,9 +17,11 @@ import {
   Edit,
   Printer,
   Shield,
+  History,
 } from "lucide-react";
 import type { Student, School, Batch } from "@/types";
 import Link from "next/link";
+import { getStudentAcademicHistoriesAction } from "@/app/actions/archiving";
 
 interface StudentDrawerProps {
   student: Student | null;
@@ -34,6 +36,24 @@ export function StudentDrawer({
   onClose,
   onEdit,
 }: StudentDrawerProps) {
+  const [histories, setHistories] = React.useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isOpen && student?.id) {
+      setLoadingHistory(true);
+      getStudentAcademicHistoriesAction(student.id)
+        .then((res) => {
+          if (res.success && res.data) {
+            setHistories(res.data);
+          }
+        })
+        .finally(() => setLoadingHistory(false));
+    } else {
+      setHistories([]);
+    }
+  }, [isOpen, student?.id]);
+
   if (!student) return null;
 
   const displayRoll = student.batch?.code
@@ -194,6 +214,50 @@ export function StudentDrawer({
             <p className="font-medium text-zinc-800 leading-relaxed">{student.address || "No address entered"}</p>
           </div>
         </div>
+      </div>
+
+      {/* Academic Progression History */}
+      <div className="space-y-3 pt-2">
+        <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
+          <History className="h-3.5 w-3.5 text-indigo-500" />
+          Academic Session History
+        </h4>
+
+        {loadingHistory ? (
+          <div className="p-3 text-center text-xs text-zinc-400">Loading academic history...</div>
+        ) : histories.length === 0 ? (
+          <div className="p-3 text-center text-xs text-zinc-400 bg-zinc-50 rounded-xl border border-zinc-200">
+            No previous academic session records.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {histories.map((h) => (
+              <div
+                key={h.id}
+                className="bg-indigo-50/40 p-2.5 rounded-xl border border-indigo-100 text-xs flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-semibold text-zinc-900">
+                    Session {h.year}: Class {h.class}
+                  </div>
+                  <div className="text-[11px] text-zinc-500">
+                    {h.batch?.name || "Regular Batch"}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="font-mono font-bold text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-200 text-xs">
+                    Roll #{h.roll}
+                  </span>
+                  {h.note && (
+                    <div className="text-[10px] text-zinc-400 mt-0.5 max-w-[120px] truncate">
+                      {h.note}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Drawer>
   );

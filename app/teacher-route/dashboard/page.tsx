@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getTeacherAnalyticsAction, TeacherAnalytics } from "@/app/actions/teacher-analytics";
 import Link from "next/link";
 import { FileText, ClipboardList, DollarSign, Calendar, BookOpen, CheckCircle, TrendingUp } from "lucide-react";
+import { TeacherUpcomingWidget } from "@/components/routine/TeacherUpcomingWidget";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -90,6 +91,9 @@ export default function TeacherDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Upcoming Classes & Routine Widget */}
+      <TeacherUpcomingWidget />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

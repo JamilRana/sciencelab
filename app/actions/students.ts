@@ -6,6 +6,7 @@ import { StudentFormValues } from "@/components/forms/StudentForm";
 import { requireRole } from "@/lib/auth-guard";
 
 export async function getNextRollNumber(batchId: number): Promise<number> {
+  await requireRole(["ADMIN", "STAFF"]);
   const lastStudent = await prisma.student.findFirst({
     where: { batchId },
     orderBy: { roll: "desc" },

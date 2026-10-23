@@ -70,9 +70,13 @@ export function TeacherPaymentReceiptModal({
         <div className="p-8 text-zinc-900 font-sans print:p-4">
           {/* Header */}
           <div className="text-center border-b-2 border-zinc-900 pb-3 mb-5">
-            <h1 className="text-lg font-black uppercase tracking-wider text-zinc-900">
-              Science Lab Coaching Center
-            </h1>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo2.png" alt="Logo" className="h-8 w-auto object-contain" />
+              <h1 className="text-lg font-black uppercase tracking-wider text-zinc-900">
+                Science Lab Coaching Center
+              </h1>
+            </div>
             <p className="text-[11px] text-zinc-600 font-medium tracking-wide uppercase">
               Academic Care & Coaching Wing · Teacher Remuneration Slip
             </p>

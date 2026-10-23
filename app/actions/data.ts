@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth-guard";
 export async function getStudentsAction() {
   await requireRole(["ADMIN", "STAFF"]);
   return await prisma.student.findMany({
+    where: { isArchived: false },
     include: { school: true, batch: true },
     orderBy: { id: "desc" },
   });

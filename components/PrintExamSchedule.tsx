@@ -58,12 +58,18 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
             <div key={copy} className="print-area">
               {/* Header */}
               <div className="text-center mb-6 border-b pb-3">
-                <h1 className="board-title">
-                  Science Lab
-                </h1>
-                <p className="board-subtitle">
-                  Coaching Center
-                </p>
+                <div className="flex items-center justify-center gap-3 mb-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/logo2.png" alt="Science Lab" className="h-10 w-auto object-contain" />
+                  <div>
+                    <h1 className="board-title">
+                      Science Lab
+                    </h1>
+                    <p className="board-subtitle">
+                      Coaching Center
+                    </p>
+                  </div>
+                </div>
                 <p className="exam-meta">
                   {exam.type} Examination – {exam.month} {exam.year}
                 </p>

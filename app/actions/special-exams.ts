@@ -198,6 +198,54 @@ export async function getSpecialExamsAction(programId?: number) {
   }
 }
 
+export async function getTeacherAssignedSpecialExamsAction() {
+  try {
+    const session = await requireRole(["TEACHER", "ADMIN", "STAFF"]);
+    let teacherId = session.teacherId;
+    if (!teacherId) {
+      const teacher = await prisma.teacher.findFirst({
+        where: {
+          OR: [
+            { userId: parseInt(session.id, 10) },
+            { mobile: session.username },
+          ],
+        },
+        select: { id: true },
+      });
+      teacherId = teacher?.id;
+    }
+
+    if (!teacherId && session.role === "TEACHER") {
+      return { success: true, data: [] };
+    }
+
+    const whereSubject = teacherId && session.role === "TEACHER"
+      ? { teacherId }
+      : {};
+
+    const subjects = await prisma.specialExamSubject.findMany({
+      where: whereSubject,
+      include: {
+        exam: {
+          include: {
+            program: { select: { id: true, name: true, code: true } },
+            batch: { select: { id: true, name: true, code: true } },
+          },
+        },
+        programSubject: true,
+        teacher: { select: { id: true, name: true } },
+        _count: { select: { marks: true } },
+      },
+      orderBy: { exam: { examDate: "desc" } },
+    });
+
+    return { success: true, data: subjects };
+  } catch (error) {
+    console.error("Error fetching teacher special exams:", error);
+    return { success: false, error: "Failed to fetch special exams", data: [] };
+  }
+}
+
 export async function getSpecialExamDetailsAction(examId: number) {
   try {
     await requireRole(["ADMIN", "STAFF", "TEACHER", "STUDENT"]);
@@ -288,12 +336,44 @@ export async function saveSpecialMarksAction(input: SaveSpecialMarksInput) {
       return { success: false, error: "Exam subject not found" };
     }
 
+    let marksToProcess = marks;
+
     if (session.role === "TEACHER") {
-      const teacher = await prisma.teacher.findFirst({
-        where: { userId: parseInt(session.id, 10) },
+      let teacherId = session.teacherId;
+      if (!teacherId) {
+        const teacher = await prisma.teacher.findFirst({
+          where: {
+            OR: [
+              { userId: parseInt(session.id, 10) },
+              { mobile: session.username },
+            ],
+          },
+          select: { id: true },
+        });
+        teacherId = teacher?.id;
+      }
+
+      if (!teacherId || subject.teacherId !== teacherId) {
+        return { success: false, error: "You can only enter marks for your assigned subjects." };
+      }
+
+      // Check existing marks in database - teacher cannot edit existing marks
+      const existingMarks = await prisma.specialMark.findMany({
+        where: {
+          specialExamSubjectId,
+          studentId: { in: marks.map((m) => m.studentId) },
+        },
+        select: { studentId: true },
       });
-      if (!teacher || (subject.teacherId && subject.teacherId !== teacher.id)) {
-        return { success: false, error: "You are not authorized to record marks for this subject" };
+
+      const existingSet = new Set(existingMarks.map((m) => m.studentId));
+      marksToProcess = marks.filter((m) => !existingSet.has(m.studentId));
+
+      if (marksToProcess.length === 0) {
+        return {
+          success: false,
+          error: "These marks have already been recorded. Teachers cannot edit existing marks; only staff and admin can edit them.",
+        };
       }
     }
 
@@ -308,7 +388,7 @@ export async function saveSpecialMarksAction(input: SaveSpecialMarksInput) {
 
     const isMultiComponent = (subject.cqMax > 0 && subject.mcqMax > 0) || subject.practicalMax > 0;
 
-    for (const m of marks) {
+    for (const m of marksToProcess) {
       if (m.isAbsent) {
         validatedMarks.push({
           studentId: m.studentId,
@@ -398,10 +478,30 @@ export async function saveSpecialMarksAction(input: SaveSpecialMarksInput) {
     );
 
     revalidatePath("/admin-route/marks");
+    revalidatePath("/teacher-route/marks");
+    revalidatePath(`/teacher-route/exams/special/${subject.examId}/marks`);
+    revalidatePath(`/admin-route/exams/special/${subject.examId}/marks`);
     return { success: true };
   } catch (error: any) {
     console.error("Error saving special marks:", error);
     return { success: false, error: error.message || "Failed to save marks" };
+  }
+}
+
+export async function updateSpecialExamStatusAction(examId: number, status: string) {
+  try {
+    await requireRole(["ADMIN", "STAFF"]);
+    const updated = await prisma.specialExam.update({
+      where: { id: examId },
+      data: { status },
+    });
+    revalidatePath("/admin-route/special-batch");
+    revalidatePath("/teacher-route/exams");
+    revalidatePath("/student-route/results");
+    return { success: true, data: updated };
+  } catch (error: any) {
+    console.error("Error updating special exam status:", error);
+    return { success: false, error: error.message || "Failed to update status" };
   }
 }
 

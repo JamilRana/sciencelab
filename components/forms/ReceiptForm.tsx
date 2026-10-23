@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect } from "react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const receiptSchema = z.object({
   studentId: z.string().min(1, "Please select a student"),
@@ -36,6 +37,8 @@ export function ReceiptForm({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(receiptSchema),
@@ -58,21 +61,24 @@ export function ReceiptForm({
     }
   }, [initialData, reset]);
 
+  const currentStudentId = watch("studentId");
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-semibold text-gray-700">Student</label>
-        <select
-          {...register("studentId")}
-          className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-        >
-          <option value="">Select Student</option>
-          {students.map((student) => (
-            <option key={student.id} value={student.id}>
-              {student.name} ({student.class})
-            </option>
-          ))}
-        </select>
+        <SearchableSelect
+          value={currentStudentId}
+          onChange={(val) => setValue("studentId", val, { shouldValidate: true })}
+          options={students.map((student) => ({
+            value: student.id.toString(),
+            label: student.name,
+            badge: student.class,
+          }))}
+          placeholder="Select or search student..."
+          searchPlaceholder="Search student by name or class..."
+          error={Boolean(errors.studentId)}
+        />
         {errors.studentId && <p className="text-xs text-red-500">{errors.studentId.message as string}</p>}
       </div>
 

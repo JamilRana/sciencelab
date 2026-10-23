@@ -216,10 +216,10 @@ export function ExamList({ initialExams, role = "STAFF", teacherId, studentClass
               </div>
               )}
               {isTeacher && (
-                <div className="flex gap-1 opacity-10 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-1">
                   <Link
                     href={`/teacher-route/results/${exam.id}?role=${role}${studentId ? `&studentId=${studentId}` : ''}`}
-                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                    className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all"
                     title="View Results"
                   >
                     <Award className="h-4 w-4" />
@@ -250,6 +250,16 @@ export function ExamList({ initialExams, role = "STAFF", teacherId, studentClass
               >
                 Manage Subjects
                 <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            )}
+
+            {(isTeacher || isStudent) && (
+              <Link
+                href={isStudent ? `/student-route/results/${exam.id}` : `/teacher-route/results/${exam.id}`}
+                className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95"
+              >
+                <Award className="h-4 w-4" />
+                View Published Results
               </Link>
             )}
           </div>

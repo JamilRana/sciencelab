@@ -1,20 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { requireApiAuth } from "@/lib/auth-guard";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || session.user.role !== "STUDENT") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await requireApiAuth(["ADMIN", "STAFF", "STUDENT"]);
+    if (auth.errorResponse) {
+      return auth.errorResponse;
     }
+    const session = { user: auth.user };
 
     const student = await prisma.student.findFirst({
-      where: { mobile: session.user.username },
+      where: {
+        OR: [
+          { userId: parseInt(session.user.id, 10) },
+          { mobile: session.user.username },
+          { email: session.user.username },
+        ],
+      },
     });
 
     if (!student) {

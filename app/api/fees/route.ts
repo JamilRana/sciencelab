@@ -14,12 +14,19 @@ export async function GET(request: Request) {
   const className = searchParams.get("class");
   const batchId = searchParams.get("batchId"); // ← FIX: Read "batchId" to match component
   const search = searchParams.get("search");
+  const yearParam = searchParams.get("year");
+  const feeYear = yearParam ? parseInt(yearParam) : new Date().getFullYear();
 
   try {
-    const where: any = { active: true };
+    const where: any = { active: true, isArchived: false };
     
     if (className) where.class = className;
-    if (batchId) where.batchId = parseInt(batchId); // Filter by batchId (Int)
+    if (batchId) {
+      where.batchId = parseInt(batchId);
+    } else {
+      // Monthly tuition fees are for regular batches only
+      where.batch = { programId: null };
+    }
     
     if (search) {
       // Try to parse as number first
@@ -36,7 +43,10 @@ export async function GET(request: Request) {
           class: true,
           mobile: true,
           batch: { select: { code: true } },
-          receipts: { select: { month: true, amount: true } },
+          receipts: {
+            where: { year: feeYear },
+            select: { month: true, year: true, amount: true },
+          },
         },
       });
 
@@ -71,7 +81,8 @@ export async function GET(request: Request) {
           }
         },
         receipts: {
-          select: { month: true, amount: true },
+          where: { year: feeYear },
+          select: { month: true, year: true, amount: true },
         },
       },
       orderBy: [{ batch: { code: "asc" } }, { roll: "asc" }],

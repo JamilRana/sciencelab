@@ -34,6 +34,8 @@ export default async function SpecialExamResultsPage({
       exam={result.data.exam}
       meritList={result.data.meritList}
       subjectsConfig={result.data.subjectsConfig}
+      canEditMarks={true}
+      backUrl="/admin-route/special-batch?tab=exams"
     />
   );
 }

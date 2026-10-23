@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Role } from "@prisma/client";
+import { PlanningBanner } from "@/components/routine/PlanningBanner";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -40,6 +41,7 @@ export default async function AdminDashboard() {
   const [
     studentCount,
     activeStudents,
+    specialStudentCount,
     teacherCount,
     examCount,
     batchCount,
@@ -55,11 +57,12 @@ export default async function AdminDashboard() {
     recentReceipts,
     recentStudents,
   ] = await Promise.all([
-    prisma.student.count(),
-    prisma.student.count({ where: { active: true } }),
+    prisma.student.count({ where: { batch: { programId: null } } }),
+    prisma.student.count({ where: { active: true, batch: { programId: null } } }),
+    prisma.student.count({ where: { active: true, batch: { programId: { not: null } } } }),
     prisma.teacher.count(),
     prisma.exam.count(),
-    prisma.batch.count(),
+    prisma.batch.count({ where: { programId: null } }),
     isAdmin
       ? prisma.receipt.aggregate({
           where: {
@@ -139,6 +142,7 @@ export default async function AdminDashboard() {
     }),
     prisma.student.groupBy({
       by: ["class"],
+      where: { batch: { programId: null }, active: true },
       _count: { id: true },
       orderBy: { class: "asc" },
     }),
@@ -219,17 +223,20 @@ export default async function AdminDashboard() {
         </div>
       </PageHeader>
 
+      {/* Tomorrow's Schedule Planning Alert Banner */}
+      <PlanningBanner />
+
       {/* KPI Cards: Responsive Grid (6 cards for Admin, 4 for Staff) */}
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${isAdmin ? "lg:grid-cols-3 xl:grid-cols-6" : "lg:grid-cols-4"} gap-4`}>
         {/* KPI 1: Students */}
         <StatCard
           title="Total Students"
           value={studentCount}
-          subtitle={`${activeStudents} currently active`}
+          subtitle={`${activeStudents} regular active${specialStudentCount > 0 ? ` · +${specialStudentCount} special batch` : ""}`}
           change={{
             value: `${activeStudents} active`,
             trend: "up",
-            label: `in ${batchCount} batches`,
+            label: `in ${batchCount} regular batches`,
           }}
           icon={<Users className="h-4 w-4" />}
           sparklineData={[35, 42, 50, 58, 64, activeStudents]}
@@ -668,9 +675,16 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {classGroups.map((cg) => (
               <div key={cg.class} className="p-3 rounded-lg bg-zinc-50 border border-zinc-200/70 text-xs">
-                <span className="text-zinc-500 font-medium">Class {cg.class}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-500 font-medium">Class {cg.class}</span>
+                  {cg.class === "Eight" && specialStudentCount > 0 && (
+                    <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200/70 px-1.5 py-0.2 rounded" title="Enrolled in Junior Special Batch">
+                      +{specialStudentCount} Special
+                    </span>
+                  )}
+                </div>
                 <p className="text-lg font-bold text-zinc-900 mt-1 tabular-nums">
-                  {cg._count.id} <span className="text-[11px] font-normal text-zinc-400">students</span>
+                  {cg._count.id} <span className="text-[11px] font-normal text-zinc-400">regular students</span>
                 </p>
               </div>
             ))}

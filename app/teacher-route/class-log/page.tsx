@@ -11,6 +11,7 @@ import {
 } from "@/app/actions/teacher-analytics";
 import { Calendar, Plus, Pencil, Save, X, BookOpen, Clock, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { earnedAmount } from "@/lib/teacher-earnings";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -22,6 +23,8 @@ interface ClassLog {
   other: number;
   month: string;
   perClass: number;
+  dutyAmount?: number;
+  source?: string;
 }
 
 interface PaginatedLogs {
@@ -159,12 +162,15 @@ export default function TeacherClassLogPage() {
     });
   };
 
-  const calculateAmount = (classes: number, notebook: number, other: number) => {
-    return (classes + notebook + other) * perClass;
+  const calculateAmount = (logOrClasses: any, notebook?: number, other?: number) => {
+    if (logOrClasses && typeof logOrClasses === "object") {
+      return earnedAmount(logOrClasses, perClass);
+    }
+    return earnedAmount({ classes: Number(logOrClasses) || 0, notebook: Number(notebook) || 0, other: Number(other) || 0 }, perClass);
   };
 
   const totalAmount = logs.reduce((sum, log) => 
-    sum + calculateAmount(log.classes, log.notebook, log.other), 0
+    sum + calculateAmount(log), 0
   );
 
   const totalActivities = logs.reduce((sum, log) => 
@@ -357,9 +363,11 @@ export default function TeacherClassLogPage() {
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Source</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Classes</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Notebook</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Other</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Duty Pay</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Total</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -368,7 +376,7 @@ export default function TeacherClassLogPage() {
                 <tbody className="divide-y">
                   {logs.map((log) => {
                     const activityTotal = log.classes + log.notebook + log.other;
-                    const amount = calculateAmount(log.classes, log.notebook, log.other);
+                    const amount = calculateAmount(log);
                     
                     return (
                       <tr key={log.id} className="hover:bg-gray-50 transition-colors">
@@ -383,9 +391,23 @@ export default function TeacherClassLogPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm font-medium">{log.month}</td>
+                        <td className="px-4 py-3 text-center text-xs">
+                          {log.source === "AUTO" ? (
+                            <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold text-[10px]">
+                              AUTO
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium text-[10px]">
+                              MANUAL
+                            </span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-center text-sm">{log.classes}</td>
                         <td className="px-4 py-3 text-center text-sm">{log.notebook}</td>
                         <td className="px-4 py-3 text-center text-sm">{log.other}</td>
+                        <td className="px-4 py-3 text-center text-sm text-pink-700 font-medium">
+                          {log.dutyAmount && log.dutyAmount > 0 ? `৳${log.dutyAmount}` : "—"}
+                        </td>
                         <td className="px-4 py-3 text-center text-sm font-semibold">{activityTotal}</td>
                         <td className="px-4 py-3 text-right text-sm font-bold text-green-600">
                           ৳{amount}

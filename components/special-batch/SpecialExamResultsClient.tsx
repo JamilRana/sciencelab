@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { PrintBoardMarksheet } from "@/components/special-batch/PrintBoardMarksheet";
 import { GuardianMessageModal } from "@/components/special-batch/GuardianMessageModal";
 import { 
@@ -13,27 +14,60 @@ import {
   Eye, 
   FileText,
   MessageSquare,
-  Edit3
+  Edit3,
+  GraduationCap,
+  Globe,
 } from "lucide-react";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { ProcessedStudentExamResult } from "@/lib/special-batch-results";
+import {
+  ResultLanguage,
+  tTerm,
+  formatResultNumber,
+} from "@/lib/results-i18n";
 
 interface SpecialExamResultsClientProps {
   exam: any;
   meritList: ProcessedStudentExamResult[];
   subjectsConfig: any[];
+  canEditMarks?: boolean;
+  enterMarksUrl?: string;
+  backUrl?: string;
 }
 
 export function SpecialExamResultsClient({
   exam,
   meritList,
   subjectsConfig,
+  canEditMarks = false,
+  enterMarksUrl,
+  backUrl,
 }: SpecialExamResultsClientProps) {
   const isModelTest = exam.kind === "MODEL_TEST";
   const [selectedStudentForMarksheet, setSelectedStudentForMarksheet] = useState<ProcessedStudentExamResult | null>(null);
   const [isGuardianModalOpen, setIsGuardianModalOpen] = useState(false);
   const [printLimit, setPrintLimit] = useState<number | null>(null);
   const [customLimit, setCustomLimit] = useState<string>("");
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const urlLang = searchParams?.get("lang") as ResultLanguage | null;
+  const [language, setLanguage] = useState<ResultLanguage>(
+    urlLang === "bn" || urlLang === "bilingual" || urlLang === "en" ? urlLang : "en"
+  );
+
+  const handleLanguageChange = (newLang: ResultLanguage) => {
+    setLanguage(newLang);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (newLang === "en") {
+        url.searchParams.delete("lang");
+      } else {
+        url.searchParams.set("lang", newLang);
+      }
+      router.replace(url.pathname + url.search, { scroll: false });
+    }
+  };
 
   const top3 = meritList.slice(0, 3);
   const printedList = printLimit ? meritList.slice(0, printLimit) : meritList;
@@ -49,16 +83,16 @@ export function SpecialExamResultsClient({
   };
 
   const presets = [
-    { label: "All", value: null },
-    { label: "Top 10", value: 10 },
-    { label: "Top 20", value: 20 },
-    { label: "Top 50", value: 50 },
+    { label: language === "bn" ? "সকল" : "All", value: null },
+    { label: language === "bn" ? "সেরা ১০" : "Top 10", value: 10 },
+    { label: language === "bn" ? "সেরা ২০" : "Top 20", value: 20 },
+    { label: language === "bn" ? "সেরা ৫০" : "Top 50", value: 50 },
   ];
 
   const baseColumns: Column<ProcessedStudentExamResult>[] = [
     {
       key: "rank",
-      header: "Rank",
+      header: tTerm("rank", language),
       width: "80px",
       sortable: true,
       render: (r) => {
@@ -69,26 +103,26 @@ export function SpecialExamResultsClient({
 
         return (
           <span className={`inline-flex items-center justify-center h-6 w-8 rounded text-xs tabular-nums ${badgeStyle}`}>
-            #{r.rank}
+            #{formatResultNumber(r.rank, language)}
           </span>
         );
       },
     },
     {
       key: "roll",
-      header: "Roll",
+      header: tTerm("roll", language),
       width: "100px",
       sortable: true,
       searchValue: (r) => `${r.student.displayRoll} ${r.student.roll}`,
       render: (r) => (
         <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/70 px-2 py-0.5 rounded tabular-nums">
-          {r.student.displayRoll}
+          {formatResultNumber(r.student.displayRoll, language)}
         </span>
       ),
     },
     {
       key: "name",
-      header: "Student",
+      header: tTerm("studentName", language),
       sortable: true,
       searchValue: (r) => r.student.name,
       render: (r) => (
@@ -100,23 +134,26 @@ export function SpecialExamResultsClient({
     },
     {
       key: "totalMarksObtained",
-      header: "Total Marks",
+      header: tTerm("totalMarks", language),
       sortable: true,
       align: "right",
       render: (r) => (
         <span className="font-bold text-zinc-900 tabular-nums">
-          {r.totalMarksObtained} <span className="text-[10px] text-zinc-400 font-normal">/ {r.totalMarksPossible}</span>
+          {formatResultNumber(r.totalMarksObtained, language)}{" "}
+          <span className="text-[10px] text-zinc-400 font-normal">
+            / {formatResultNumber(r.totalMarksPossible, language)}
+          </span>
         </span>
       ),
     },
     {
       key: "percentage",
-      header: "Percentage",
+      header: tTerm("percentage", language),
       sortable: true,
       align: "right",
       render: (r) => (
         <span className="font-semibold text-zinc-700 tabular-nums">
-          {r.overallPercentage}%
+          {formatResultNumber(r.overallPercentage, language)}%
         </span>
       ),
     },
@@ -125,7 +162,7 @@ export function SpecialExamResultsClient({
   const modelTestColumns: Column<ProcessedStudentExamResult>[] = [
     {
       key: "gpa",
-      header: "Board GPA",
+      header: tTerm("gpa", language),
       sortable: true,
       align: "right",
       render: (r) => (
@@ -134,13 +171,13 @@ export function SpecialExamResultsClient({
             r.gpa === 5 ? "text-emerald-700" : r.gpa >= 4 ? "text-indigo-700" : "text-zinc-800"
           }`}
         >
-          {r.gpa.toFixed(2)}
+          {formatResultNumber(r.gpa.toFixed(2), language)}
         </span>
       ),
     },
     {
       key: "finalGradeLetter",
-      header: "Grade",
+      header: tTerm("grade", language),
       width: "90px",
       render: (r) => (
         <span
@@ -158,8 +195,8 @@ export function SpecialExamResultsClient({
     },
     {
       key: "status",
-      header: "Status",
-      width: "100px",
+      header: tTerm("status", language),
+      width: "110px",
       render: (r) => (
         <span
           className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
@@ -167,13 +204,13 @@ export function SpecialExamResultsClient({
           }`}
         >
           {r.isPassed ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-          {r.isPassed ? "Passed" : "Failed"}
+          {r.isPassed ? tTerm("passed", language) : tTerm("failed", language)}
         </span>
       ),
     },
     {
       key: "actions",
-      header: "Transcript",
+      header: tTerm("marksheet", language),
       width: "120px",
       align: "right",
       render: (r) => (
@@ -182,7 +219,7 @@ export function SpecialExamResultsClient({
           className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 rounded-lg shadow-2xs transition-colors"
         >
           <Eye className="h-3 w-3 text-zinc-400" />
-          <span>Marksheet</span>
+          <span>{tTerm("marksheet", language)}</span>
         </button>
       ),
     },
@@ -199,7 +236,7 @@ export function SpecialExamResultsClient({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Link
-              href="/admin-route/special-batch?tab=exams"
+              href={backUrl || "/admin-route/special-batch?tab=exams"}
               className="text-xs text-zinc-500 hover:text-zinc-800 transition-colors inline-flex items-center gap-1"
             >
               <ArrowLeft className="h-3 w-3" />
@@ -212,19 +249,29 @@ export function SpecialExamResultsClient({
           </div>
           <h2 className="text-xl font-bold text-zinc-900">{exam.title}</h2>
           <p className="text-xs text-zinc-500">
-            {exam.program?.name} · {exam.batch?.name || "All Batches"} · {isModelTest ? "Official Board Standard (GPA & Grades)" : "Marks Only Assessment"}
+            {exam.program?.name} · {exam.batch?.name || "All Batches"} · {isModelTest ? tTerm("boardStandardNote", language) : tTerm("marksOnlyNote", language)}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Enter Marks Shortcut */}
-          <Link
-            href={`/admin-route/exams/special/${exam.id}/marks`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-lg shadow-2xs transition-colors"
-          >
-            <Edit3 className="h-3.5 w-3.5 text-indigo-600" />
-            <span>Enter / Edit Marks</span>
-          </Link>
+          {canEditMarks ? (
+            <Link
+              href={`/admin-route/exams/special/${exam.id}/marks`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-lg shadow-2xs transition-colors"
+            >
+              <Edit3 className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Enter / Edit Marks</span>
+            </Link>
+          ) : enterMarksUrl ? (
+            <Link
+              href={enterMarksUrl}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-lg shadow-2xs transition-colors"
+            >
+              <GraduationCap className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Enter Marks</span>
+            </Link>
+          ) : null}
 
           {/* Guardian SMS / Message generator */}
           <button
@@ -233,7 +280,7 @@ export function SpecialExamResultsClient({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-lg shadow-2xs transition-colors"
           >
             <MessageSquare className="h-3.5 w-3.5 text-zinc-500" />
-            <span>Guardian Messages</span>
+            <span>{tTerm("guardianMessages", language)}</span>
           </button>
 
           {exam.subjects && exam.subjects[0] && (
@@ -242,9 +289,50 @@ export function SpecialExamResultsClient({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-lg shadow-2xs transition-colors"
             >
               <FileText className="h-3.5 w-3.5 text-zinc-500" />
-              <span>Signature Sheet</span>
+              <span>{tTerm("signatureSheet", language)}</span>
             </Link>
           )}
+
+          {/* Language Switcher */}
+          <div className="flex items-center gap-1 bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 text-xs">
+            <div className="flex items-center gap-1 px-1.5 text-[11px] font-semibold text-zinc-500">
+              <Globe className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Lang:</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleLanguageChange("en")}
+              className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all ${
+                language === "en"
+                  ? "bg-white text-zinc-900 shadow-xs border border-zinc-200 font-bold"
+                  : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLanguageChange("bn")}
+              className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all ${
+                language === "bn"
+                  ? "bg-white text-zinc-900 shadow-xs border border-zinc-200 font-bold"
+                  : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              বাংলা
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLanguageChange("bilingual")}
+              className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all ${
+                language === "bilingual"
+                  ? "bg-white text-zinc-900 shadow-xs border border-zinc-200 font-bold"
+                  : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              Dual / উভয়
+            </button>
+          </div>
 
           {/* Print Scope Presets */}
           <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-xl border border-zinc-200 text-xs">
@@ -273,7 +361,9 @@ export function SpecialExamResultsClient({
               );
             })}
             <div className="flex items-center gap-1 pl-1 border-l border-zinc-200">
-              <span className="text-[10px] text-zinc-400">Top</span>
+              <span className="text-[10px] text-zinc-400">
+                {language === "bn" ? "শীর্ষ" : "Top"}
+              </span>
               <input
                 type="number"
                 min="1"
@@ -292,7 +382,13 @@ export function SpecialExamResultsClient({
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors"
           >
             <Printer className="h-3.5 w-3.5" />
-            <span>Print {printLimit ? `Top ${printLimit}` : "Tabulation"}</span>
+            <span>
+              {language === "bn"
+                ? `প্রিন্ট ${printLimit ? `(সেরা ${formatResultNumber(printLimit, "bn")})` : "ফলাফল"}`
+                : language === "bilingual"
+                ? "Print / প্রিন্ট"
+                : `Print ${printLimit ? `Top ${printLimit}` : "Tabulation"}`}
+            </span>
           </button>
         </div>
       </div>
@@ -320,23 +416,23 @@ export function SpecialExamResultsClient({
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
-                      Rank #{winner.rank} Position
+                      {tTerm("rank", language)} #{formatResultNumber(winner.rank, language)}
                     </span>
                     <h4 className="font-bold text-zinc-900 text-sm truncate max-w-[150px]">
                       {winner.student.name}
                     </h4>
                     <p className="text-[11px] text-zinc-500 font-medium tabular-nums">
-                      Roll #{winner.student.displayRoll} · {winner.student.schoolName || "Science Lab"}
+                      {tTerm("roll", language)} #{formatResultNumber(winner.student.displayRoll, language)} · {winner.student.schoolName || "Science Lab"}
                     </p>
                   </div>
                 </div>
 
                 <div className="text-right">
                   <span className="text-xl font-black text-indigo-700 tabular-nums block">
-                    {winner.gpa.toFixed(2)}
+                    {formatResultNumber(winner.gpa.toFixed(2), language)}
                   </span>
                   <span className="text-[11px] font-semibold text-zinc-600 tabular-nums">
-                    {winner.totalMarksObtained} Marks
+                    {formatResultNumber(winner.totalMarksObtained, language)} {tTerm("totalShort", language)}
                   </span>
                 </div>
               </div>
@@ -351,7 +447,11 @@ export function SpecialExamResultsClient({
           <div className="flex items-center gap-2">
             <Printer className="h-4 w-4 text-indigo-600 shrink-0" />
             <span>
-              Print scope active: Showing <strong>Top {printLimit}</strong> students on paper/PDF ({meritList.length - printLimit} remaining students excluded in printout).
+              {language === "bn" ? (
+                <>প্রিন্ট সীমাবদ্ধতা সক্রিয়: কাগজে/পিডিএফ-এ <strong>সেরা {formatResultNumber(printLimit, "bn")}</strong> জন শিক্ষার্থী দেখানো হচ্ছে।</>
+              ) : (
+                <>Print scope active: Showing <strong>Top {printLimit}</strong> students on paper/PDF ({meritList.length - printLimit} remaining students excluded in printout).</>
+              )}
             </span>
           </div>
           <button
@@ -362,7 +462,7 @@ export function SpecialExamResultsClient({
             }}
             className="text-xs font-bold text-indigo-700 hover:text-indigo-900 underline ml-3 shrink-0"
           >
-            Reset to print all ({meritList.length})
+            {language === "bn" ? `সকল (${formatResultNumber(meritList.length, "bn")}) দেখতে রিসেট করুন` : `Reset to print all (${meritList.length})`}
           </button>
         </div>
       )}
@@ -370,63 +470,96 @@ export function SpecialExamResultsClient({
       {/* Printable Sheet (visible only during print) */}
       <div className="hidden print:block">
         <div className="text-center mb-6 border-b-2 border-black pb-4">
-          <h1 className="text-2xl font-bold uppercase tracking-wide">
-            Science Lab Coaching Center
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo2.png" alt="Science Lab Logo" className="h-10 w-auto object-contain" />
+            <h1 className="text-2xl font-bold uppercase tracking-wide">
+              {tTerm("instituteName", language)}
+            </h1>
+          </div>
           <h2 className="text-lg font-semibold mt-1">
-            {exam.title} — Tabulation & Merit List
+            {exam.title} — {tTerm("tabulationSheet", language)}
           </h2>
           <p className="text-sm font-medium mt-1">
-            Program: {exam.program?.name} · {exam.batch?.name || "All Batches"} · {printLimit ? `Top ${printLimit} Students` : `Complete Merit List (${meritList.length} Students)`}
+            {tTerm("programBatch", language)}: {exam.program?.name} · {exam.batch?.name || "All Batches"} ·{" "}
+            {printLimit
+              ? `${tTerm("topScope", language)} ${formatResultNumber(printLimit, language)}`
+              : `${tTerm("allStudents", language)} (${formatResultNumber(meritList.length, language)})`}
           </p>
           <p className="text-[11px] text-gray-500 mt-1">
-            Generated on: {new Date().toLocaleDateString()}
+            {tTerm("generatedOn", language)}: {new Date().toLocaleDateString(language === "bn" ? "bn-BD" : "en-GB")}
           </p>
         </div>
 
         <table className="w-full border-collapse border border-black text-xs">
           <thead>
             <tr className="bg-gray-100 border-b border-black text-[11px]">
-              <th className="border border-black p-1.5 text-center w-12">Rank</th>
-              <th className="border border-black p-1.5 text-center w-20">Roll</th>
-              <th className="border border-black p-1.5 text-left">Student Name</th>
-              <th className="border border-black p-1.5 text-left">Feeder School</th>
-              <th className="border border-black p-1.5 text-center w-16">GPA</th>
-              <th className="border border-black p-1.5 text-center w-16">Grade</th>
-              <th className="border border-black p-1.5 text-center w-20">Marks</th>
-              <th className="border border-black p-1.5 text-center w-16">Result</th>
+              <th className="border border-black p-1.5 text-center w-12">{tTerm("rank", language)}</th>
+              <th className="border border-black p-1.5 text-center w-20">{tTerm("roll", language)}</th>
+              <th className="border border-black p-1.5 text-left">{tTerm("studentName", language)}</th>
+              <th className="border border-black p-1.5 text-left">{tTerm("feederSchool", language)}</th>
+              <th className="border border-black p-1.5 text-center w-16">{tTerm("gpa", language)}</th>
+              <th className="border border-black p-1.5 text-center w-16">{tTerm("grade", language)}</th>
+              <th className="border border-black p-1.5 text-center w-20">{tTerm("totalMarks", language)}</th>
+              <th className="border border-black p-1.5 text-center w-16">{tTerm("status", language)}</th>
             </tr>
           </thead>
           <tbody>
             {printedList.map((r) => (
               <tr key={r.student.id} className="border-b border-black">
-                <td className="border border-black p-1.5 text-center font-bold">#{r.rank}</td>
-                <td className="border border-black p-1.5 text-center font-mono font-bold">{r.student.displayRoll}</td>
+                <td className="border border-black p-1.5 text-center font-bold">
+                  #{formatResultNumber(r.rank, language)}
+                </td>
+                <td className="border border-black p-1.5 text-center font-mono font-bold">
+                  {formatResultNumber(r.student.displayRoll, language)}
+                </td>
                 <td className="border border-black p-1.5 font-semibold">{r.student.name}</td>
                 <td className="border border-black p-1.5">{r.student.schoolName || "Science Lab"}</td>
-                <td className="border border-black p-1.5 text-center font-bold">{r.gpa.toFixed(2)}</td>
+                <td className="border border-black p-1.5 text-center font-bold">
+                  {formatResultNumber(r.gpa.toFixed(2), language)}
+                </td>
                 <td className="border border-black p-1.5 text-center font-bold">{r.finalGradeLetter}</td>
-                <td className="border border-black p-1.5 text-center font-bold">{r.totalMarksObtained}</td>
-                <td className="border border-black p-1.5 text-center font-bold">{r.isPassed ? "PASSED" : "FAILED"}</td>
+                <td className="border border-black p-1.5 text-center font-bold">
+                  {formatResultNumber(r.totalMarksObtained, language)}
+                </td>
+                <td className="border border-black p-1.5 text-center font-bold">
+                  {r.isPassed ? tTerm("passed", language) : tTerm("failed", language)}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {/* Tabulation Sheet Signatures */}
+        <div className="flex items-end justify-between text-xs text-zinc-900 pt-12 mt-8 border-t border-zinc-400">
+          <div className="text-center">
+            <div className="w-36 border-b border-black mb-1" />
+            <p className="font-semibold">{tTerm("preparedBy", language)}</p>
+          </div>
+          <div className="text-center">
+            <div className="w-36 border-b border-black mb-1" />
+            <p className="font-semibold">{tTerm("controllerOfExams", language)}</p>
+          </div>
+          <div className="text-center">
+            <div className="w-36 border-b border-black mb-1" />
+            <p className="font-semibold">{tTerm("directorPrincipal", language)}</p>
+          </div>
+        </div>
       </div>
 
       {/* Full Ranked Tabulation Merit List */}
       <div className="bg-white rounded-xl border border-zinc-200 p-4 shadow-xs print:hidden">
         <div className="mb-4">
-          <h3 className="text-sm font-bold text-zinc-900">Ranked Tabulation & Merit List</h3>
+          <h3 className="text-sm font-bold text-zinc-900">{tTerm("rankedTabulation", language)}</h3>
           <p className="text-xs text-zinc-500">
-            Ties resolved by total marks obtained; optional subject bonus points applied automatically.
+            {tTerm("tieBreakNote", language)}
           </p>
         </div>
 
         <DataTable
           data={meritList}
           columns={columns}
-          placeholder="Filter candidate by name or roll..."
+          placeholder={tTerm("filterCandidate", language)}
           pageSize={20}
           customSearchFn={(r, query) => {
             const q = query.toLowerCase();
@@ -446,6 +579,8 @@ export function SpecialExamResultsClient({
             <PrintBoardMarksheet
               exam={exam}
               studentResult={selectedStudentForMarksheet}
+              language={language}
+              onLanguageChange={setLanguage}
               onClose={() => setSelectedStudentForMarksheet(null)}
             />
           </div>

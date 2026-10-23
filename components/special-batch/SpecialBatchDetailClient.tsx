@@ -31,6 +31,7 @@ import { CompileMarksheetModal } from "@/components/special-batch/CompileMarkshe
 import { AssignOptionalSubjectsModal } from "@/components/special-batch/AssignOptionalSubjectsModal";
 import { SpecialCourseFeesTable } from "@/components/accounts/SpecialCourseFeesTable";
 import { GuardianMessageModal } from "@/components/special-batch/GuardianMessageModal";
+import { EnrollSpecialBatchStudentModal } from "@/components/special-batch/EnrollSpecialBatchStudentModal";
 
 interface SpecialBatchDetailClientProps {
   batch: {
@@ -87,6 +88,7 @@ export function SpecialBatchDetailClient({
   const [examFilterKind, setExamFilterKind] = useState<string>("ALL");
 
   // Modals state
+  const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
   const [isCreateExamOpen, setIsCreateExamOpen] = useState(false);
   const [isAssignSubjectsOpen, setIsAssignSubjectsOpen] = useState(false);
   const [isCompileModalOpen, setIsCompileModalOpen] = useState(false);
@@ -214,8 +216,16 @@ export function SpecialBatchDetailClient({
           </button>
 
           <button
+            onClick={() => setIsEnrollModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-2xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Enroll Student
+          </button>
+
+          <button
             onClick={() => setIsCreateExamOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-lg transition-colors shadow-2xs"
           >
             <Calendar className="w-3.5 h-3.5" />
             Schedule Exam
@@ -397,6 +407,13 @@ export function SpecialBatchDetailClient({
               <span className="text-xs text-zinc-500">
                 Showing {filteredStudents.length} of {students.length} students
               </span>
+              <button
+                onClick={() => setIsEnrollModalOpen(true)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Enroll Student
+              </button>
               <button
                 onClick={() => setIsAssignSubjectsOpen(true)}
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
@@ -733,6 +750,14 @@ export function SpecialBatchDetailClient({
           )}
         </div>
       )}
+
+      <EnrollSpecialBatchStudentModal
+        isOpen={isEnrollModalOpen}
+        onClose={() => setIsEnrollModalOpen(false)}
+        batchId={batch.id}
+        batchName={batch.name}
+        onEnrolled={() => router.refresh()}
+      />
 
       {/* Modals */}
       <CreateSpecialExamModal

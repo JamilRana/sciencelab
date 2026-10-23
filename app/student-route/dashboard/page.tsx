@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { StudentScheduleWidget } from "@/components/routine/StudentScheduleWidget";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -137,6 +138,9 @@ export default async function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Class Schedule Widget */}
+      <StudentScheduleWidget />
 
       {/* Latest Exam Card */}
       {latestExam ? (

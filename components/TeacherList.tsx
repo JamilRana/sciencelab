@@ -52,10 +52,19 @@ export function TeacherList({ initialTeachers, role = "STAFF" }: TeacherListProp
             <Phone className="h-3.5 w-3.5 text-gray-400" />
             {teacher.mobile}
           </div>
+          {teacher.whatsappNumber && (
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+              <span className="font-semibold text-[10px] bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200">WA</span>
+              {teacher.whatsappNumber}
+            </div>
+          )}
           {teacher.email && (
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
               <Mail className="h-3 w-3" />
               {teacher.email}
+              {teacher.notifyEmail === false && (
+                <span className="text-[10px] text-amber-600">(Muted)</span>
+              )}
             </div>
           )}
         </div>
@@ -123,7 +132,14 @@ export function TeacherList({ initialTeachers, role = "STAFF" }: TeacherListProp
       }
 
       if (result.success) {
-        toast.success(editingTeacher ? "Teacher updated" : "Teacher added with login");
+        if (!editingTeacher && result.data?.temporaryPassword) {
+          toast.success(
+            `Teacher added! Login: ${result.data.username} | Password: ${result.data.temporaryPassword}`,
+            { duration: 15000 }
+          );
+        } else {
+          toast.success(editingTeacher ? "Teacher updated" : "Teacher added with login");
+        }
         handleClose();
         router.refresh();
       } else {

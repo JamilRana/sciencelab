@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-guard";
 import { revalidatePath } from "next/cache";
+import { earnedAmount, calculateTeacherEarningsSummary } from "@/lib/teacher-earnings";
+import { isTeacherMonthLocked } from "@/lib/sessions";
 
 export type TeacherAnalytics = {
   totalExamAssigned: number;
@@ -22,19 +24,26 @@ export async function createClassLogForTeacherAction(
     month: string;
   }
 ) {
-  await requireRole(["ADMIN", "STAFF"]);
+  const session = await requireRole(["ADMIN", "STAFF"]);
 
   const teacher = await prisma.teacher.findUnique({
     where: { id: teacherId },
-    select: { perClass: true },
+    select: { id: true, name: true, perClass: true },
   });
 
   if (!teacher) {
     throw new Error("Teacher not found");
   }
 
-  const totalActivities = data.classes + data.notebook + data.other;
-  const amount = totalActivities * teacher.perClass;
+  // Month-lock check
+  if (session.role !== "ADMIN") {
+    const lock = await isTeacherMonthLocked(teacherId, data.date);
+    if (lock.isLocked) {
+      throw new Error(
+        `Teacher ${teacher.name}'s payment for ${lock.month} has already been processed. Only an Admin can add manual logs.`
+      );
+    }
+  }
 
   const log = await prisma.teacherClassLog.create({
     data: {
@@ -46,6 +55,7 @@ export async function createClassLogForTeacherAction(
       month: data.month,
       perClass: teacher.perClass,
       paid: 0,
+      source: "MANUAL",
     },
   });
 
@@ -102,7 +112,7 @@ if (examSubjectIds.length > 0) {
       teacherId,
       month: monthFilter,
     },
-    select: { classes: true, notebook: true, other: true },
+    select: { classes: true, notebook: true, other: true, perClass: true, dutyAmount: true },
   });
   
   classesTaken = classLogs.reduce((sum, log) => sum + log.classes + log.notebook + log.other, 0);
@@ -115,8 +125,9 @@ if (examSubjectIds.length > 0) {
   });
   totalPaid = payments._sum.amount || 0;
 
-  // Current due = (classesTaken * perClass) - totalPaid
-  const calculatedDue = (classesTaken * teacher.perClass) - totalPaid;
+  // Total earned includes (classes + notebook + other) * rate + dutyAmount
+  const totalEarned = classLogs.reduce((sum, log) => sum + earnedAmount(log, teacher.perClass), 0);
+  const calculatedDue = totalEarned - totalPaid;
   const currentDue = Math.max(0, calculatedDue);
 
   return {
@@ -357,8 +368,9 @@ export async function getClassLogStatsAction(month?: string) {
   const teacherStats = teachers.map((t) => {
     const teacherLogs = logs.filter((l) => l.teacherId === t.id);
     const teacherClasses = teacherLogs.reduce((sum, log) => sum + log.classes + log.notebook + log.other, 0);
+    const totalEarned = teacherLogs.reduce((sum, log) => sum + earnedAmount(log, t.perClass), 0);
     const totalPaid = t.payments.reduce((sum, p) => sum + p.amount, 0);
-    const calculatedDue = (teacherClasses * t.perClass) - totalPaid;
+    const calculatedDue = totalEarned - totalPaid;
     
     return {
       id: t.id,
@@ -426,8 +438,7 @@ export async function getAllTeachersWithStatsAction(
       };
     }
     
-    const totalPaid = t.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
-    const calculatedDue = (totalClasses * t.perClass) - totalPaid;
+    const summary = calculateTeacherEarningsSummary(t.classLogs, t.payments || [], t.perClass);
     
     return {
       id: t.id,
@@ -435,8 +446,8 @@ export async function getAllTeachersWithStatsAction(
       mobile: t.mobile,
       perClass: t.perClass,
       totalClasses,
-      totalPaid,
-      due: Math.max(0, calculatedDue),
+      totalPaid: summary.totalPaid,
+      due: summary.dueAmount,
     };
   });
 }
@@ -450,9 +461,29 @@ export async function updateClassLogAction(
     notebook: number;
     other: number;
     month: string;
+    dutyAmount?: number;
   }
 ) {
-  await requireRole(["ADMIN", "STAFF"]);
+  const session = await requireRole(["ADMIN", "STAFF"]);
+
+  const existing = await prisma.teacherClassLog.findUnique({
+    where: { id },
+    include: { teacher: { select: { id: true, name: true } } },
+  });
+
+  if (!existing) {
+    throw new Error("Class log not found");
+  }
+
+  // Month-lock check
+  if (session.role !== "ADMIN") {
+    const lock = await isTeacherMonthLocked(existing.teacherId, existing.date);
+    if (lock.isLocked) {
+      throw new Error(
+        `Teacher ${existing.teacher?.name}'s payment for ${lock.month} has already been processed. Only an Admin can edit this class log.`
+      );
+    }
+  }
 
   const updated = await prisma.teacherClassLog.update({
     where: { id },
@@ -462,6 +493,7 @@ export async function updateClassLogAction(
       notebook: data.notebook,
       other: data.other,
       month: data.month,
+      ...(data.dutyAmount !== undefined ? { dutyAmount: data.dutyAmount } : {}),
     },
   });
 

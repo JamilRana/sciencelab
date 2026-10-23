@@ -16,20 +16,23 @@ export async function getDashboardStats(_role?: Role) {
   const [
     studentCount,
     activeStudents,
+    specialStudentCount,
     teacherCount,
     examCount,
     batchCount,
   ] = await Promise.all([
-    prisma.student.count(),
-    prisma.student.count({ where: { active: true } }),
+    prisma.student.count({ where: { batch: { programId: null } } }),
+    prisma.student.count({ where: { active: true, batch: { programId: null } } }),
+    prisma.student.count({ where: { active: true, batch: { programId: { not: null } } } }),
     prisma.teacher.count(),
     prisma.exam.count(),
-    prisma.batch.count(),
+    prisma.batch.count({ where: { programId: null } }),
   ]);
 
   const baseStats = {
     studentCount,
     activeStudents,
+    specialStudentCount,
     inactiveStudents: studentCount - activeStudents,
     teacherCount,
     examCount,

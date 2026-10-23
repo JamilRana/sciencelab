@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Database,
   Loader2,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { SpecialCourseFeesTable } from "@/components/accounts/SpecialCourseFeesTable";
@@ -28,6 +29,7 @@ import { CompiledMarksheetsTable } from "@/components/special-batch/CompiledMark
 import { CompileMarksheetModal } from "@/components/special-batch/CompileMarksheetModal";
 import { AssignOptionalSubjectsModal } from "@/components/special-batch/AssignOptionalSubjectsModal";
 import { ManageCurriculumModal } from "@/components/special-batch/ManageCurriculumModal";
+import { EnrollSpecialBatchStudentModal } from "@/components/special-batch/EnrollSpecialBatchStudentModal";
 import { seedStandardProgramsAction } from "@/app/actions/course-fees";
 
 interface SpecialBatchHubProps {
@@ -68,6 +70,7 @@ export function SpecialBatchHub({
   const [selectedProgramForSubjects, setSelectedProgramForSubjects] = useState<any>(null);
   const [isCurriculumModalOpen, setIsCurriculumModalOpen] = useState(false);
   const [selectedProgramForCurriculum, setSelectedProgramForCurriculum] = useState<any>(null);
+  const [enrollBatch, setEnrollBatch] = useState<{ id: number; name: string } | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState<{
     text: string;
@@ -618,11 +621,19 @@ export function SpecialBatchHub({
                   )}
 
                   <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setEnrollBatch({ id: bk.batchId, name: bk.batchName })}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded transition-colors"
+                      title={`Enroll student in ${bk.batchName}`}
+                    >
+                      <UserPlus className="w-3 h-3" /> Enroll
+                    </button>
                     <Link
                       href={`/admin-route/special-batch/batches/${bk.batchId}`}
                       className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
                     >
-                      Open Batch Module <ArrowRight className="w-3 h-3" />
+                      Open Module <ArrowRight className="w-3 h-3" />
                     </Link>
                     <Link
                       href={`/admin-route/students?search=${encodeURIComponent(bk.batchName)}`}
@@ -870,10 +881,19 @@ export function SpecialBatchHub({
                                 </div>
                               </div>
 
-                              <div className="text-right flex items-center gap-2">
-                                <span className="text-xs font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded-full">
+                              <div className="text-right flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded-full mr-1">
                                   {batch._count?.students || 0} sts
                                 </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setEnrollBatch({ id: batch.id, name: batch.name })}
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded transition-colors"
+                                  title="Enroll student in batch"
+                                >
+                                  <UserPlus className="w-3 h-3" />
+                                  Enroll
+                                </button>
                                 <Link
                                   href={`/admin-route/special-batch/batches/${batch.id}`}
                                   className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors px-1.5 py-0.5 bg-indigo-50 hover:bg-indigo-100 rounded"
@@ -1197,6 +1217,16 @@ export function SpecialBatchHub({
           onClose={() => setIsCurriculumModalOpen(false)}
           program={selectedProgramForCurriculum}
           onUpdated={() => router.refresh()}
+        />
+      )}
+
+      {enrollBatch && (
+        <EnrollSpecialBatchStudentModal
+          isOpen={!!enrollBatch}
+          onClose={() => setEnrollBatch(null)}
+          batchId={enrollBatch.id}
+          batchName={enrollBatch.name}
+          onEnrolled={() => router.refresh()}
         />
       )}
     </div>

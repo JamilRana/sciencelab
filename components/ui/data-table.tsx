@@ -69,8 +69,9 @@ interface DataTableProps<T> {
   loading?: boolean;
   onAdd?: () => void;
   addLabel?: string;
-  onExport?: () => void;
+  onExport?: (filteredData: T[], activeFilters: Record<string, string>, searchQuery: string) => void;
   exportFileName?: string;
+  extraToolbarActions?: (filteredData: T[], activeFilters: Record<string, string>, searchQuery: string) => React.ReactNode;
   initialSearch?: string;
   initialFilters?: Record<string, string>;
 }
@@ -97,6 +98,7 @@ export function DataTable<T extends { id: number | string }>({
   addLabel = "+ Add New",
   onExport,
   exportFileName = "export",
+  extraToolbarActions,
   initialSearch = "",
   initialFilters = {},
 }: DataTableProps<T>) {
@@ -259,7 +261,7 @@ export function DataTable<T extends { id: number | string }>({
   // CSV Export
   const handleExportCSV = () => {
     if (onExport) {
-      onExport();
+      onExport(sortedData, activeFilters, searchQuery);
       return;
     }
     const exportHeaders = columns.map((col) => ({
@@ -378,6 +380,10 @@ export function DataTable<T extends { id: number | string }>({
             <Download className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Export</span>
           </button>
+
+          {/* Extra Toolbar Actions (e.g. Print, custom actions) */}
+          {extraToolbarActions &&
+            extraToolbarActions(sortedData, activeFilters, searchQuery)}
 
           {/* Add CTA */}
           {onAdd && (

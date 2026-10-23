@@ -35,16 +35,21 @@ export function getNavigationForRole(role: Role | string): NavGroup[] {
       {
         title: "Academics",
         items: [
+          { label: "Class Routine", href: "/admin-route/routine", iconName: "CalendarClock" },
+          { label: "Notification Log", href: "/admin-route/routine/notifications", iconName: "Bell" },
           { label: "Exams", href: "/admin-route/exams", iconName: "CalendarDays" },
           { label: "Attendance Sheet", href: "/admin-route/exams/attendance", iconName: "BookOpenCheck" },
           { label: "Marks Entry", href: "/admin-route/marks", iconName: "GraduationCap" },
           { label: "Class Log", href: "/admin-route/class-log", iconName: "CalendarPlus" },
+          { label: "Annual Promotion", href: "/admin-route/promotion", iconName: "GraduationCap" },
+          { label: "Class 10 & SSC Lifecycle", href: "/admin-route/class-ten-lifecycle", iconName: "Sparkles" },
         ],
       },
       {
         title: "People",
         items: [
           { label: "Students", href: "/admin-route/students", iconName: "Users" },
+          { label: "Archived Students", href: "/admin-route/students/archived", iconName: "Archive" },
           { label: "Teachers", href: "/admin-route/teachers", iconName: "UserCheck" },
           { label: "Batches", href: "/admin-route/batches", iconName: "Layers" },
           { label: "Special Batches", href: "/admin-route/special-batch", iconName: "Sparkles" },
@@ -65,6 +70,7 @@ export function getNavigationForRole(role: Role | string): NavGroup[] {
         title: "System",
         items: [
           { label: "User Access", href: "/admin-route/users", iconName: "ShieldAlert" },
+          { label: "Backup & Restore", href: "/admin-route/backup", iconName: "Database" },
           { label: "Print Rosters", href: "/admin-route/students/print", iconName: "Printer" },
           { label: "Settings & Profile", href: "/admin-route/profile", iconName: "User" },
         ],
@@ -82,16 +88,21 @@ export function getNavigationForRole(role: Role | string): NavGroup[] {
       {
         title: "Academics",
         items: [
+          { label: "Class Routine", href: "/admin-route/routine", iconName: "CalendarClock" },
+          { label: "Notification Log", href: "/admin-route/routine/notifications", iconName: "Bell" },
           { label: "Exams", href: "/admin-route/exams", iconName: "CalendarDays" },
           { label: "Attendance Sheet", href: "/admin-route/exams/attendance", iconName: "BookOpenCheck" },
           { label: "Marks Entry", href: "/admin-route/marks", iconName: "GraduationCap" },
           { label: "Class Log", href: "/admin-route/class-log", iconName: "CalendarPlus" },
+          { label: "Annual Promotion", href: "/admin-route/promotion", iconName: "GraduationCap" },
+          { label: "Class 10 & SSC Lifecycle", href: "/admin-route/class-ten-lifecycle", iconName: "Sparkles" },
         ],
       },
       {
         title: "People",
         items: [
           { label: "Students", href: "/admin-route/students", iconName: "Users" },
+          { label: "Archived Students", href: "/admin-route/students/archived", iconName: "Archive" },
           { label: "Teachers", href: "/admin-route/teachers", iconName: "UserCheck" },
           { label: "Batches", href: "/admin-route/batches", iconName: "Layers" },
           { label: "Special Batches", href: "/admin-route/special-batch", iconName: "Sparkles" },
@@ -118,6 +129,7 @@ export function getNavigationForRole(role: Role | string): NavGroup[] {
       {
         title: "Academics",
         items: [
+          { label: "Class Routine", href: "/teacher-route/routine", iconName: "CalendarClock" },
           { label: "My Exams", href: "/teacher-route/exams", iconName: "CalendarDays" },
           { label: "Marks Entry", href: "/teacher-route/marks", iconName: "GraduationCap" },
           { label: "Results & Merit", href: "/teacher-route/results", iconName: "Award" },
@@ -144,6 +156,7 @@ export function getNavigationForRole(role: Role | string): NavGroup[] {
     {
       items: [
         { label: "Home", href: "/student-route/dashboard", iconName: "LayoutDashboard" },
+        { label: "Class Schedule", href: "/student-route/schedule", iconName: "CalendarClock" },
         { label: "My Results", href: "/student-route/results", iconName: "Award" },
         { label: "Fees & Receipts", href: "/student-route/fees", iconName: "Receipt" },
         { label: "My Profile", href: "/student-route/profile", iconName: "User" },

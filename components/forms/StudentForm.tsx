@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getNextRollForBatchAction } from "@/app/actions/students";
 import { generateDisplayRoll } from "@/lib/roll";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -77,6 +78,7 @@ export function StudentForm({
     trigger,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
@@ -396,17 +398,18 @@ export function StudentForm({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-zinc-700">Feeder School *</label>
-                <select
-                  {...register("schoolId")}
-                  className="w-full h-9 px-3 bg-zinc-50/50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all"
-                >
-                  <option value="">Select regular school...</option>
-                  {schools.map((school) => (
-                    <option key={school.id} value={school.id}>
-                      {school.name}
-                    </option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  value={selectedSchoolId}
+                  onChange={(val) => setValue("schoolId", val, { shouldValidate: true })}
+                  options={schools.map((school) => ({
+                    value: school.id.toString(),
+                    label: school.name,
+                  }))}
+                  placeholder="Select or search regular school..."
+                  searchPlaceholder="Search school by name..."
+                  error={Boolean(errors.schoolId)}
+                  size="sm"
+                />
                 {errors.schoolId && <p className="text-[11px] text-rose-500">{errors.schoolId.message}</p>}
               </div>
             </div>
@@ -428,17 +431,19 @@ export function StudentForm({
                   Showing batches for {selectedClass || "All Classes"}
                 </span>
               </label>
-              <select
-                {...register("batchId")}
-                className="w-full h-9 px-3 bg-zinc-50/50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all"
-              >
-                <option value="">Select a batch...</option>
-                {displayBatches.map((batch) => (
-                  <option key={batch.id} value={batch.id}>
-                    {batch.name} {batch.code ? `(Code: ${batch.code})` : ""}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={selectedBatchId}
+                onChange={(val) => setValue("batchId", val, { shouldValidate: true })}
+                options={displayBatches.map((batch) => ({
+                  value: batch.id.toString(),
+                  label: batch.name,
+                  badge: batch.code ? `Code: ${batch.code}` : undefined,
+                }))}
+                placeholder="Select or search a batch..."
+                searchPlaceholder="Search batch by name or code..."
+                error={Boolean(errors.batchId)}
+                size="sm"
+              />
               {errors.batchId && <p className="text-[11px] text-rose-500">{errors.batchId.message}</p>}
             </div>
 
@@ -493,7 +498,7 @@ export function StudentForm({
                   <p className="font-medium text-zinc-800">Automatic Login Credentials:</p>
                   <p className="text-zinc-500">
                     Username: <span className="font-mono text-indigo-700 font-semibold">stu{studentName ? studentName.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) : "name"}###</span>
-                    {" "}· Default password: <span className="font-mono text-zinc-700 font-semibold">Sl@bcc2015</span>
+                    {" "}· Password: <span className="font-mono text-emerald-700 font-semibold">Auto-generated secure password (displayed upon registration)</span>
                   </p>
                 </div>
               </div>

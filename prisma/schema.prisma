@@ -21,6 +21,8 @@ model User {
   role     Role
   active   Boolean @default(true)
 
+  notifications Notification[]
+
   @@map("users")
 }
 
@@ -40,10 +42,13 @@ model Batch {
   name         String        // "8A", "9B", etc.
   code         Int           // 2-digit prefix: 61, 62, 71, etc.
   students     Student[]
+  academicHistories StudentAcademicHistory[]
   programId    Int?
   program      Program?      @relation(fields: [programId], references: [id])
   specialExams       SpecialExam[]
   compiledMarksheets CompiledMarksheet[]
+  routineSlots       RoutineSlot[]
+  classSessions      ClassSession[]
 
   @@map("batches")
 
@@ -59,6 +64,10 @@ model Student {
   homeMobile      String             @default("")
   image           String             @default("")
   active          Boolean            @default(true)
+  isArchived      Boolean            @default(false)
+  archivedYear    Int?
+  archivedReason  String?
+  archivedAt      DateTime?
   schoolId        Int
   batchId         Int
   roll            Int                // Serial number within batch (1, 2, 3...)
@@ -76,10 +85,12 @@ model Student {
   courseFees      StudentCourseFee[]
   studentSubjects StudentSubject[]
   specialMarks    SpecialMark[]
+  academicHistories StudentAcademicHistory[]
 
   @@map("students")
   @@index([batchId])
   @@index([class])
+  @@index([isArchived])
 }
 
 model Teacher {
@@ -92,12 +103,17 @@ model Teacher {
   perClass        Int                  @default(0)
   due             Int                  @default(0)
   userId          Int?                 @unique
+  notifyEmail     Boolean              @default(true)
+  whatsappNumber  String?
 
   classLogs       TeacherClassLog[]
   examSubjects    ExamSubject[]
   payments        TeacherPayment[]
   rates           TeacherRate[]
   specialSubjects SpecialExamSubject[]
+  routineSlots    RoutineSlot[]
+  classSessions   ClassSession[]
+  notificationLogs NotificationLog[]
 
   @@map("teachers")
 }
@@ -106,12 +122,15 @@ model Exam {
   id       Int           @id @default(autoincrement())
   type     String        // "Monthly", "Annual"
   month    String        // "Jan", "Feb", etc.
+  year     Int           @default(2026)
   class    String        // "Six", "Seven", etc.
   subjects ExamSubject[]
+  classSessions ClassSession[]
 
   @@map("exams")
 
   @@index([month])
+  @@index([year, month])
 }
 
 model ExamSubject {
@@ -149,6 +168,7 @@ model Receipt {
   id        Int      @id @default(autoincrement())
   studentId Int
   month     String
+  year      Int      @default(2026)
   amount    Int
   date      DateTime @default(now())
 
@@ -158,6 +178,26 @@ model Receipt {
 
   @@index([studentId])
   @@index([month])
+  @@index([year, month])
+}
+
+model StudentAcademicHistory {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  year      Int
+  class     String
+  batchId   Int
+  roll      Int
+  note      String?
+  createdAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  batch   Batch   @relation(fields: [batchId], references: [id])
+
+  @@unique([studentId, year])
+  @@index([studentId])
+  @@index([year, class])
+  @@map("student_academic_histories")
 }
 
 model Expense {
@@ -172,22 +212,29 @@ model Expense {
 }
 
 model TeacherClassLog {
-  id        Int      @id @default(autoincrement())
-  teacherId Int
-  date      DateTime
-  classes   Int      @default(0)
-  month     String
-  notebook  Int      @default(0)
-  other     Int      @default(0)
-  paid      Int      @default(0)
-  perClass  Int      @default(0)
+  id         Int            @id @default(autoincrement())
+  teacherId  Int
+  date       DateTime
+  classes    Int            @default(0)
+  month      String
+  notebook   Int            @default(0)
+  other      Int            @default(0)
+  paid       Int            @default(0)
+  perClass   Int            @default(0)
+  source     String         @default("MANUAL") // MANUAL, AUTO
+  dutyAmount Int            @default(0)
+  autoKey    String?        @unique
+  programId  Int?
 
-  teacher Teacher @relation(fields: [teacherId], references: [id])
+  teacher    Teacher        @relation(fields: [teacherId], references: [id])
+  program    Program?       @relation(fields: [programId], references: [id])
+  sessions   ClassSession[]
 
   @@map("teacher_class_logs")
 
   @@index([teacherId])
   @@index([month])
+  @@index([programId])
 }
 
 model TeacherPayment {
@@ -225,6 +272,8 @@ model Program {
   specialExams SpecialExam[]
   rates              TeacherRate[]
   compiledMarksheets CompiledMarksheet[]
+  classSessions      ClassSession[]
+  teacherClassLogs   TeacherClassLog[]
 
   @@map("programs")
 }
@@ -251,6 +300,8 @@ model ProgramSubject {
   program             Program              @relation(fields: [programId], references: [id], onDelete: Cascade)
   studentSubjects     StudentSubject[]
   specialExamSubjects SpecialExamSubject[]
+  routineSlots        RoutineSlot[]
+  classSessions       ClassSession[]
 
   @@map("program_subjects")
   @@index([programId])
@@ -318,6 +369,7 @@ model SpecialExam {
   batch        Batch?                  @relation(fields: [batchId], references: [id])
   subjects     SpecialExamSubject[]
   compilations CompiledMarksheetExam[]
+  classSessions ClassSession[]
 
   @@map("special_exams")
   @@index([programId])
@@ -408,4 +460,153 @@ model CompiledMarksheetExam {
   @@unique([compiledMarksheetId, specialExamId])
   @@index([compiledMarksheetId])
   @@map("compiled_marksheet_exams")
+}
+
+// -------------------------------------------------------------
+// CLASS ROUTINE, NOTIFICATIONS & AUTO CLASS LOGGING
+// -------------------------------------------------------------
+
+model ClassSession {
+  id                Int                  @id @default(autoincrement())
+  kind              String               @default("CLASS") // "CLASS" | "EXAM_DUTY" | "EXTRA"
+  batchId           Int?
+  programId         Int?
+  subjectName       String               @default("")
+  programSubjectId  Int?
+  lectureLabel      String?              // e.g. "L-12", "Ch-04"
+  teacherId         Int
+  date              DateTime             @db.Date
+  startTime         String               // "HH:mm" e.g. "16:00"
+  endTime           String?              // "HH:mm" e.g. "17:30"
+  room              String?
+  examId            Int?
+  specialExamId     Int?
+  status            String               @default("SCHEDULED") // "SCHEDULED" | "CONDUCTED" | "CANCELLED" | "RESCHEDULED"
+  payAmount         Float?               // For EXAM_DUTY
+  routineSlotId     Int?
+  originalSessionId Int?
+  changeReason      String?
+  countedLogId      Int?
+  countedAt         DateTime?
+  createdById       Int?
+  updatedById       Int?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  batch             Batch?               @relation(fields: [batchId], references: [id])
+  program           Program?             @relation(fields: [programId], references: [id])
+  programSubject    ProgramSubject?      @relation(fields: [programSubjectId], references: [id])
+  teacher           Teacher              @relation(fields: [teacherId], references: [id])
+  exam              Exam?                @relation(fields: [examId], references: [id])
+  specialExam       SpecialExam?         @relation(fields: [specialExamId], references: [id])
+  routineSlot       RoutineSlot?         @relation(fields: [routineSlotId], references: [id])
+  countedLog        TeacherClassLog?     @relation(fields: [countedLogId], references: [id])
+  originalSession   ClassSession?        @relation("SessionRescheduleHistory", fields: [originalSessionId], references: [id])
+  rescheduledSessions ClassSession[]     @relation("SessionRescheduleHistory")
+  changeLogs        SessionChangeLog[]
+
+  @@index([date])
+  @@index([teacherId, date])
+  @@index([batchId, date])
+  @@index([status])
+  @@map("class_sessions")
+}
+
+model RoutineSlot {
+  id                Int                  @id @default(autoincrement())
+  batchId           Int
+  subjectName       String
+  programSubjectId  Int?
+  teacherId         Int
+  weekday           Int                  // 0 = Sun, 1 = Mon ... 6 = Sat
+  startTime         String               // "HH:mm"
+  endTime           String?
+  room              String?
+  validFrom         DateTime             @db.Date
+  validTo           DateTime?            @db.Date
+  active            Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  batch             Batch                @relation(fields: [batchId], references: [id])
+  programSubject    ProgramSubject?      @relation(fields: [programSubjectId], references: [id])
+  teacher           Teacher              @relation(fields: [teacherId], references: [id])
+  sessions          ClassSession[]
+
+  @@index([batchId, weekday])
+  @@index([teacherId, weekday])
+  @@map("routine_slots")
+}
+
+model SessionChangeLog {
+  id                Int                  @id @default(autoincrement())
+  sessionId         Int
+  action            String               // CREATE, UPDATE, REASSIGN, RESCHEDULE, CANCEL, ADJUST, COUNT
+  before            Json?
+  after             Json?
+  reason            String?
+  byUserId          Int?
+  byUsername        String?
+  createdAt         DateTime             @default(now())
+
+  session           ClassSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("session_change_logs")
+}
+
+model Notification {
+  id                Int                  @id @default(autoincrement())
+  userId            Int
+  kind              String               // SCHEDULE_CHANGE, CANCEL, RESCHEDULE, ASSIGN, ANNOUNCEMENT
+  title             String
+  body              String
+  href              String?
+  sessionId         Int?
+  dedupeKey         String?              @unique
+  createdAt         DateTime             @default(now())
+  readAt            DateTime?
+
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model NotificationLog {
+  id                Int                  @id @default(autoincrement())
+  teacherId         Int
+  channel           String               // EMAIL, IN_APP, WHATSAPP_LINK
+  kind              String               // DAILY_DIGEST, ASSIGN, CHANGE, CANCEL
+  forDate           String               // YYYY-MM-DD
+  status            String               @default("PENDING") // PENDING, SENT, FAILED, SKIPPED
+  recipient         String?
+  providerMessageId String?
+  error             String?
+  attempts          Int                  @default(1)
+  sentAt            DateTime?
+  dedupeKey         String?              @unique
+  createdAt         DateTime             @default(now())
+
+  teacher           Teacher              @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, forDate])
+  @@index([status])
+  @@map("notification_logs")
+}
+
+model JobRun {
+  id                Int                  @id @default(autoincrement())
+  job               String               // DAILY_DIGEST, DAY_CLOSE, PLANNING_REMINDER
+  forDate           String               // YYYY-MM-DD
+  startedAt         DateTime             @default(now())
+  finishedAt        DateTime?
+  status            String               // SUCCESS, FAILED, RUNNING
+  summary           Json?
+  error             String?
+
+  @@index([job, forDate])
+  @@map("job_runs")
 }

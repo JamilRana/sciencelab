@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -54,8 +55,14 @@ export function Sidebar({
           href={role === "STUDENT" ? "/student-route/dashboard" : role === "TEACHER" ? "/teacher-route/dashboard" : "/admin-route/dashboard"}
           className="flex items-center gap-2.5 min-w-0"
         >
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
-            <GraduationCap className="h-5 w-5" />
+          <div className="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-200/80 flex items-center justify-center p-1 shrink-0 shadow-2xs overflow-hidden">
+            <Image
+              src="/logo2.png"
+              alt="Science Lab"
+              width={32}
+              height={32}
+              className="h-full w-auto object-contain"
+            />
           </div>
           {!isCollapsed && (
             <div className="min-w-0">

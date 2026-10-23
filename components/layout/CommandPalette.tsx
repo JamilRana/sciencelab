@@ -33,6 +33,8 @@ export function CommandPalette({ isOpen, onClose, role = "ADMIN" }: CommandPalet
   // Static navigation items based on role
   const defaultItems: CommandItem[] = [
     { id: "nav-dash", title: "Dashboard", category: "Navigation", href: role === "STUDENT" ? "/student-route/dashboard" : role === "TEACHER" ? "/teacher-route/dashboard" : "/admin-route/dashboard" },
+    { id: "nav-routine", title: "Class Routine & Day Planner", subtitle: "Daily schedule, assign faculty, exam duty", category: "Navigation", href: "/admin-route/routine" },
+    { id: "nav-routine-reports", title: "Routine Analytics & Reports", subtitle: "Classes per teacher & batch, exam duty remuneration, cancellations", category: "Navigation", href: "/admin-route/routine/reports" },
     { id: "nav-students", title: "Students Directory", subtitle: "Enrollments, profiles, roster", category: "Navigation", href: "/admin-route/students" },
     { id: "nav-teachers", title: "Teachers Directory", subtitle: "Faculty profiles & rates", category: "Navigation", href: "/admin-route/teachers" },
     { id: "nav-batches", title: "Batches Management", subtitle: "Classes, batches & enrolled students", category: "Navigation", href: "/admin-route/batches" },
@@ -40,7 +42,8 @@ export function CommandPalette({ isOpen, onClose, role = "ADMIN" }: CommandPalet
     { id: "nav-schools", title: "Partner Schools", subtitle: "Registered feeder schools & institutions", category: "Navigation", href: "/admin-route/schools" },
     { id: "nav-exams", title: "Exam Schedules", subtitle: "Assessments, subjects, schedule", category: "Navigation", href: role === "TEACHER" ? "/teacher-route/exams" : "/admin-route/exams" },
     { id: "nav-attendance", title: "Exam Attendance Sheet", subtitle: "Generate exam attendance signature sheets", category: "Navigation", href: "/admin-route/exams/attendance" },
-    { id: "nav-marks", title: "Marks Entry Spreadsheet", subtitle: "Fast bulk marks recording", category: "Navigation", href: role === "TEACHER" ? "/teacher-route/marks" : "/admin-route/marks" },
+    { id: "nav-results", title: "Results & Merit Lists", subtitle: "View published exam results & rankings", category: "Navigation", href: role === "STUDENT" ? "/student-route/results" : role === "TEACHER" ? "/teacher-route/results" : "/admin-route/exams" },
+    { id: "nav-marks", title: "Marks Entry Spreadsheet", subtitle: "Fast bulk marks recording (Staff/Admin)", category: "Navigation", href: "/admin-route/marks" },
     { id: "nav-fees", title: "Fees Matrix", subtitle: "Monthly student tuition collection", category: "Navigation", href: "/admin-route/fees" },
     { id: "nav-receipts", title: "Receipts Log", subtitle: "Fee payment receipts & voucher history", category: "Navigation", href: "/admin-route/receipts" },
     { id: "nav-expenses", title: "Operating Expenses", subtitle: "Institutional expenses & vouchers", category: "Navigation", href: "/admin-route/expenses" },
@@ -48,6 +51,7 @@ export function CommandPalette({ isOpen, onClose, role = "ADMIN" }: CommandPalet
     { id: "nav-accounts", title: "Accounts Hub", subtitle: "Overall cashflow, receipts & expenses", category: "Navigation", href: "/admin-route/accounts" },
     { id: "nav-classlog", title: "Teacher Class Log", subtitle: "Daily tasks & notebook checks", category: "Navigation", href: role === "TEACHER" ? "/teacher-route/class-log" : "/admin-route/class-log" },
     { id: "nav-rosters", title: "Print Student Rosters", subtitle: "Printable batch & class student rosters", category: "Navigation", href: "/admin-route/students/print" },
+    { id: "nav-backup", title: "Database Backup & Restore", subtitle: "Download backups & restore institutional database snapshots", category: "Navigation", href: "/admin-route/backup" },
     { id: "nav-users", title: "User Access Control", subtitle: "Manage admin, staff & user logins", category: "Navigation", href: "/admin-route/users" },
     { id: "act-admission", title: "+ New Student Admission", subtitle: "Create new student profile", category: "Actions", href: "/admin-route/students?action=create" },
     { id: "act-exam", title: "+ Schedule New Exam", subtitle: "Monthly or Annual assessment", category: "Actions", href: "/admin-route/exams?action=create" },

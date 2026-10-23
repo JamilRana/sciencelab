@@ -18,11 +18,14 @@ import {
   Sparkles,
   Layers,
   FileSpreadsheet,
+  Lock,
 } from "lucide-react";
 
 interface SpecialMarksEntryClientProps {
   exam: any;
   students: any[];
+  backUrl?: string;
+  isTeacher?: boolean;
 }
 
 interface StudentRowEntry {
@@ -39,6 +42,8 @@ interface StudentRowEntry {
 export function SpecialMarksEntryClient({
   exam,
   students,
+  backUrl,
+  isTeacher = false,
 }: SpecialMarksEntryClientProps) {
   const router = useRouter();
   const subjects = exam.subjects || [];
@@ -135,6 +140,7 @@ export function SpecialMarksEntryClient({
   const updateField = useCallback(
     (studentId: number, field: "cq" | "mcq" | "practical" | "single", value: string) => {
       if (value !== "" && !/^\d*\.?\d*$/.test(value)) return;
+      if (isTeacher && entries[studentId]?.hasExisting) return;
 
       const numVal = parseFloat(value) || 0;
       let maxLimit = currentSpecialSubject?.totalMax || 100;
@@ -159,6 +165,10 @@ export function SpecialMarksEntryClient({
           isDirty: false,
         };
 
+        if (isTeacher && current.hasExisting) {
+          return prev;
+        }
+
         return {
           ...prev,
           [studentId]: {
@@ -170,7 +180,7 @@ export function SpecialMarksEntryClient({
         };
       });
     },
-    [currentSpecialSubject, hasCQ, hasMCQ, hasPractical]
+    [currentSpecialSubject, hasCQ, hasMCQ, hasPractical, isTeacher, entries]
   );
 
   // Toggle absent
@@ -178,6 +188,7 @@ export function SpecialMarksEntryClient({
     setEntries((prev) => {
       const current = prev[studentId];
       if (!current) return prev;
+      if (isTeacher && current.hasExisting) return prev;
       const nextAbsent = !current.isAbsent;
 
       return {
@@ -189,7 +200,7 @@ export function SpecialMarksEntryClient({
         },
       };
     });
-  }, []);
+  }, [isTeacher]);
 
   // Compute calculated total for a row
   const getRowTotal = (entry?: StudentRowEntry) => {
@@ -253,7 +264,9 @@ export function SpecialMarksEntryClient({
   const handleSaveAll = async () => {
     if (!currentSpecialSubject) return;
 
-    const dirtyList = Object.values(entries).filter((e) => e.isDirty);
+    const dirtyList = Object.values(entries).filter(
+      (e) => e.isDirty && !(isTeacher && e.hasExisting)
+    );
     if (dirtyList.length === 0) {
       toast.info("No unsaved changes");
       return;
@@ -321,7 +334,9 @@ export function SpecialMarksEntryClient({
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   });
 
-  const dirtyCount = Object.values(entries).filter((e) => e.isDirty).length;
+  const dirtyCount = Object.values(entries).filter(
+    (e) => e.isDirty && !(isTeacher && e.hasExisting)
+  ).length;
   const enteredCount = Object.values(entries).filter(
     (e) => (e.hasExisting || e.isDirty) && (e.cq !== "" || e.single !== "" || e.isAbsent)
   ).length;
@@ -333,11 +348,11 @@ export function SpecialMarksEntryClient({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Link
-              href="/admin-route/special-batch?tab=exams"
+              href={backUrl || "/admin-route/special-batch?tab=exams"}
               className="text-xs text-zinc-500 hover:text-zinc-800 inline-flex items-center gap-1 transition-colors"
             >
               <ArrowLeft className="h-3 w-3" />
-              <span>Back to Special Exams</span>
+              <span>Back to {backUrl ? "Exams" : "Special Exams"}</span>
             </Link>
             <span className="text-zinc-300">·</span>
             <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">
@@ -447,6 +462,16 @@ export function SpecialMarksEntryClient({
         </div>
       </div>
 
+      {/* Teacher Warning Banner */}
+      {isTeacher && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-center gap-2">
+          <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>
+            <strong>Teacher Mode:</strong> You can enter marks for students with pending entries. Existing recorded marks are locked and cannot be edited.
+          </span>
+        </div>
+      )}
+
       {/* Spreadsheet Grid */}
       <div className="bg-white rounded-xl border border-zinc-200 shadow-2xs overflow-hidden">
         {/* Helper Strip */}
@@ -505,6 +530,7 @@ export function SpecialMarksEntryClient({
                 const isOverMax = currentSpecialSubject && total > currentSpecialSubject.totalMax;
                 const batchCode = student.batch?.code || exam.batch?.code || 0;
                 const displayRoll = batchCode ? generateDisplayRoll(batchCode, student.roll) : student.roll;
+                const isRowLocked = isTeacher && entry.hasExisting;
 
                 // Ensure cellRefs has capacity for this row
                 if (!cellRefs.current[rowIndex]) {
@@ -517,6 +543,8 @@ export function SpecialMarksEntryClient({
                     className={`hover:bg-zinc-50/70 transition-colors ${
                       entry.isAbsent
                         ? "bg-rose-50/40"
+                        : isRowLocked
+                        ? "bg-zinc-50/50"
                         : entry.isDirty
                         ? "bg-indigo-50/20"
                         : ""
@@ -562,7 +590,7 @@ export function SpecialMarksEntryClient({
                                 cellRefs.current[rowIndex][0] = el;
                               }}
                               type="text"
-                              disabled={entry.isAbsent}
+                              disabled={entry.isAbsent || isRowLocked}
                               placeholder="—"
                               value={entry.cq}
                               onChange={(e) => updateField(student.id, "cq", e.target.value)}
@@ -570,6 +598,8 @@ export function SpecialMarksEntryClient({
                               className={`w-16 py-1 text-center font-bold text-xs rounded-lg border tabular-nums transition-colors outline-none ${
                                 entry.isAbsent
                                   ? "bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed"
+                                  : isRowLocked
+                                  ? "bg-zinc-100 text-zinc-500 border-zinc-200 cursor-not-allowed font-semibold"
                                   : entry.isDirty
                                   ? "border-indigo-400 bg-white text-indigo-900 ring-1 ring-indigo-200"
                                   : "border-zinc-200 bg-zinc-50/70 hover:bg-white text-zinc-900"
@@ -585,7 +615,7 @@ export function SpecialMarksEntryClient({
                                 cellRefs.current[rowIndex][1] = el;
                               }}
                               type="text"
-                              disabled={entry.isAbsent}
+                              disabled={entry.isAbsent || isRowLocked}
                               placeholder="—"
                               value={entry.mcq}
                               onChange={(e) => updateField(student.id, "mcq", e.target.value)}
@@ -593,6 +623,8 @@ export function SpecialMarksEntryClient({
                               className={`w-16 py-1 text-center font-bold text-xs rounded-lg border tabular-nums transition-colors outline-none ${
                                 entry.isAbsent
                                   ? "bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed"
+                                  : isRowLocked
+                                  ? "bg-zinc-100 text-zinc-500 border-zinc-200 cursor-not-allowed font-semibold"
                                   : entry.isDirty
                                   ? "border-indigo-400 bg-white text-indigo-900 ring-1 ring-indigo-200"
                                   : "border-zinc-200 bg-zinc-50/70 hover:bg-white text-zinc-900"
@@ -608,7 +640,7 @@ export function SpecialMarksEntryClient({
                                 cellRefs.current[rowIndex][2] = el;
                               }}
                               type="text"
-                              disabled={entry.isAbsent}
+                              disabled={entry.isAbsent || isRowLocked}
                               placeholder="—"
                               value={entry.practical}
                               onChange={(e) => updateField(student.id, "practical", e.target.value)}
@@ -616,6 +648,8 @@ export function SpecialMarksEntryClient({
                               className={`w-16 py-1 text-center font-bold text-xs rounded-lg border tabular-nums transition-colors outline-none ${
                                 entry.isAbsent
                                   ? "bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed"
+                                  : isRowLocked
+                                  ? "bg-zinc-100 text-zinc-500 border-zinc-200 cursor-not-allowed font-semibold"
                                   : entry.isDirty
                                   ? "border-indigo-400 bg-white text-indigo-900 ring-1 ring-indigo-200"
                                   : "border-zinc-200 bg-zinc-50/70 hover:bg-white text-zinc-900"
@@ -632,7 +666,7 @@ export function SpecialMarksEntryClient({
                             cellRefs.current[rowIndex][0] = el;
                           }}
                           type="text"
-                          disabled={entry.isAbsent}
+                          disabled={entry.isAbsent || isRowLocked}
                           placeholder="—"
                           value={entry.single || entry.cq}
                           onChange={(e) => updateField(student.id, "single", e.target.value)}
@@ -640,6 +674,8 @@ export function SpecialMarksEntryClient({
                           className={`w-20 py-1 text-center font-bold text-xs rounded-lg border tabular-nums transition-colors outline-none ${
                             entry.isAbsent
                               ? "bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed"
+                              : isRowLocked
+                              ? "bg-zinc-100 text-zinc-500 border-zinc-200 cursor-not-allowed font-semibold"
                               : entry.isDirty
                               ? "border-indigo-400 bg-white text-indigo-900 ring-1 ring-indigo-200"
                               : "border-zinc-200 bg-zinc-50/70 hover:bg-white text-zinc-900"
@@ -659,20 +695,27 @@ export function SpecialMarksEntryClient({
                       )}
                     </td>
 
-                    {/* Absent Toggle Button */}
+                    {/* Absent Toggle Button or Locked Status */}
                     <td className="py-2 px-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => toggleAbsent(student.id)}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
-                          entry.isAbsent
-                            ? "bg-rose-100 text-rose-700 border border-rose-300"
-                            : "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 border border-transparent"
-                        }`}
-                        title="Toggle Absent (press A in cell)"
-                      >
-                        {entry.isAbsent ? "Absent" : "Present"}
-                      </button>
+                      {isRowLocked ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
+                          <Lock className="h-3 w-3 text-zinc-400" />
+                          Locked
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => toggleAbsent(student.id)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
+                            entry.isAbsent
+                              ? "bg-rose-100 text-rose-700 border border-rose-300"
+                              : "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 border border-transparent"
+                          }`}
+                          title="Toggle Absent (press A in cell)"
+                        >
+                          {entry.isAbsent ? "Absent" : "Present"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -719,7 +762,7 @@ export function SpecialMarksEntryClient({
             ) : (
               <Save className="h-3.5 w-3.5" />
             )}
-            <span>Save Marks</span>
+            <span>{isTeacher ? `Save ${dirtyCount > 0 ? dirtyCount : ""} Pending Marks` : "Save Marks"}</span>
           </button>
         </div>
       </div>

@@ -14,6 +14,7 @@ export interface RecordCoursePaymentInput {
 }
 
 export async function getSpecialProgramsAction() {
+  await requireRole(["ADMIN", "STAFF"]);
   try {
     const programs = await prisma.program.findMany({
       where: { active: true },

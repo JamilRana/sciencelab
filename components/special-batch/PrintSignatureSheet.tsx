@@ -211,9 +211,13 @@ export function PrintSignatureSheet({
       <div className="max-w-[210mm] mx-auto p-8 print:p-2 print:max-w-none text-zinc-900">
         {/* Institute Header */}
         <div className="text-center border-b-2 border-zinc-900 pb-3 mb-4">
-          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-900">
-            Science Lab Coaching Center
-          </h1>
+          <div className="flex items-center justify-center gap-2.5 mb-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo2.png" alt="Logo" className="h-9 w-auto object-contain" />
+            <h1 className="text-xl font-black uppercase tracking-wider text-zinc-900">
+              Science Lab Coaching Center
+            </h1>
+          </div>
           <p className="text-xs text-zinc-600 uppercase font-medium tracking-wide">
             Special Care Academic Program · SSC & Junior Examination Wing
           </p>

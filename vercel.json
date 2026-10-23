@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/jobs/daily-digest",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/jobs/planning-reminder",
+      "schedule": "30 11 * * *"
+    },
+    {
+      "path": "/api/jobs/day-close",
+      "schedule": "5 18 * * *"
+    }
+  ]
+}

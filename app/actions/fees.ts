@@ -4,14 +4,20 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-guard";
 
-export async function saveFee(studentId: number, month: string, amount: number) {
+export async function saveFee(
+  studentId: number,
+  month: string,
+  amount: number,
+  year: number = new Date().getFullYear()
+) {
   try {
     await requireRole("ADMIN");
-    // Check if a receipt already exists for this student and month
+    // Check if a receipt already exists for this student, month, and year
     const existingReceipt = await prisma.receipt.findFirst({
       where: {
         studentId,
         month,
+        year,
       },
     });
 
@@ -29,11 +35,12 @@ export async function saveFee(studentId: number, month: string, amount: number) 
         });
       }
     } else if (amount > 0) {
-      // Create new receipt
+      // Create new receipt with academic year
       await prisma.receipt.create({
         data: {
           studentId,
           month,
+          year,
           amount,
         },
       });

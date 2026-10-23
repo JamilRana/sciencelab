@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, User, Shield, ToggleLeft, ToggleRight } from "lucide-react";
+import Link from "next/link";
+import { Plus, User, Shield, ToggleLeft, ToggleRight, ExternalLink } from "lucide-react";
 import { DataModal } from "@/components/ui/data-modal";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { UserForm } from "@/components/forms/UserForm";
@@ -41,15 +42,19 @@ export function UserList({ initialUsers }: UserListProps) {
       header: "Username",
       sortable: true,
       render: (user) => (
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+        <Link
+          href={`/admin-route/profile?userId=${user.id}`}
+          className="flex items-center gap-3 group"
+          title="View & Edit Profile"
+        >
+          <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors">
             <User className="h-5 w-5" />
           </div>
           <div>
-            <p className="font-semibold text-gray-900">{user.username}</p>
+            <p className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{user.username}</p>
             <p className="text-xs text-gray-500">{user.name}</p>
           </div>
-        </div>
+        </Link>
       ),
     },
     {
@@ -153,9 +158,17 @@ export function UserList({ initialUsers }: UserListProps) {
       >
         {user.active ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
       </button>
+      <Link
+        href={`/admin-route/profile?userId=${user.id}`}
+        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+        title="View & Edit Profile"
+      >
+        <User className="h-4 w-4" />
+      </Link>
       <button
         onClick={() => handleOpenEdit(user)}
         className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+        title="Edit User Credentials"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

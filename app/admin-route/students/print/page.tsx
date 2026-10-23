@@ -12,7 +12,12 @@ export default async function StudentPrintPage({
   
   const where: Record<string, unknown> = {};
   if (params.class) where.class = params.class;
-  if (params.batch) where.batchId = parseInt(params.batch);
+  if (params.batch) {
+    where.batchId = parseInt(params.batch);
+  } else {
+    // Default roster print to regular batches to avoid duplicating students enrolled in both regular & special batches
+    where.batch = { programId: null };
+  }
   if (params.gender) where.gender = params.gender;
 
   const [students, batches] = await Promise.all([
@@ -21,7 +26,9 @@ export default async function StudentPrintPage({
       include: { batch: true, school: true },
       orderBy: [{ batch: { code: "asc" } }, { roll: "asc" }],
     }),
-    prisma.batch.findMany({ orderBy: { classId: "asc" } }),
+    prisma.batch.findMany({
+      orderBy: [{ classId: "asc" }, { name: "asc" }],
+    }),
   ]);
 
   const classes = ["Six", "Seven", "Eight", "Nine", "Ten"];
@@ -94,39 +101,59 @@ export default async function StudentPrintPage({
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden print:shadow-none print:border-0">
-          <div className="p-6 border-b">
-            <h1 className="text-2xl font-bold text-center">Student List</h1>
-            <p className="text-gray-500 text-center mt-1">
+          <div className="p-6 border-b text-center">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo2.png" alt="Science Lab Logo" className="h-10 w-auto object-contain" />
+              <div className="text-left">
+                <h2 className="text-xl font-bold uppercase tracking-wide text-zinc-900">Science Lab Coaching Center</h2>
+                <p className="text-xs text-zinc-500 uppercase font-semibold">Official Student Roster</p>
+              </div>
+            </div>
+            <p className="text-gray-500 text-center mt-1 text-sm font-medium">
               {params.class ? `Class: ${params.class}` : ""}
               {params.batch ? ` | Batch: ${batches.find(b => b.id === parseInt(params.batch || "0"))?.name}` : ""}
               {params.gender ? ` | Gender: ${params.gender}` : ""}
               {!params.class && !params.batch && !params.gender && "All Students"}
             </p>
-            <p className="text-sm text-gray-500 text-center mt-1">
-              Total: {students.length} students
+            <p className="text-xs text-gray-400 text-center mt-0.5">
+              Total: {students.length} students · Printed: {new Date().toLocaleDateString()}
             </p>
           </div>
 
-          <table className="w-full">
+          <table className="w-full text-xs">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left text-sm font-bold">Roll</th>
-                <th className="px-4 py-3 text-left text-sm font-bold">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-bold">Gender</th>
-                <th className="px-4 py-3 text-left text-sm font-bold">Class</th>
-                <th className="px-4 py-3 text-left text-sm font-bold">Batch</th>
-                <th className="px-4 py-3 text-left text-sm font-bold">Mobile</th>
+              <tr className="bg-gray-100 border-b border-gray-300">
+                <th className="px-3 py-2 text-left font-bold w-16">Roll</th>
+                <th className="px-3 py-2 text-left font-bold">Student Name</th>
+                <th className="px-3 py-2 text-left font-bold w-16">Gender</th>
+                <th className="px-3 py-2 text-left font-bold w-20">Class</th>
+                <th className="px-3 py-2 text-left font-bold">Batch</th>
+                <th className="px-3 py-2 text-left font-bold">Feeder School</th>
+                <th className="px-3 py-2 text-left font-bold">Contact</th>
+                <th className="px-3 py-2 text-center font-bold w-24">Signature</th>
               </tr>
             </thead>
             <tbody>
               {students.map((student) => (
-                <tr key={student.id} className="border-t">
-                  <td className="px-4 py-3">{student.batch?.code ? generateDisplayRoll(student.batch.code, student.roll) : student.roll}</td>
-                  <td className="px-4 py-3 font-medium">{student.name}</td>
-                  <td className="px-4 py-3">{student.gender}</td>
-                  <td className="px-4 py-3">{student.class}</td>
-                  <td className="px-4 py-3">{student.batch?.name}</td>
-                  <td className="px-4 py-3">{student.mobile}</td>
+                <tr key={student.id} className="border-b border-gray-200">
+                  <td className="px-3 py-2 font-bold tabular-nums">
+                    {student.batch?.code
+                      ? generateDisplayRoll(student.batch.code, student.roll)
+                      : student.roll}
+                  </td>
+                  <td className="px-3 py-2 font-semibold text-gray-900">{student.name}</td>
+                  <td className="px-3 py-2 text-gray-600">{student.gender}</td>
+                  <td className="px-3 py-2 text-gray-600">Class {student.class}</td>
+                  <td className="px-3 py-2 text-gray-700 font-medium">{student.batch?.name}</td>
+                  <td className="px-3 py-2 text-gray-600 truncate max-w-[150px]">{student.school?.name || "—"}</td>
+                  <td className="px-3 py-2 text-gray-700 tabular-nums">
+                    <div>{student.mobile}</div>
+                    {student.homeMobile && (
+                      <div className="text-[10px] text-gray-500">G: {student.homeMobile}</div>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-center border-l border-gray-200"></td>
                 </tr>
               ))}
             </tbody>

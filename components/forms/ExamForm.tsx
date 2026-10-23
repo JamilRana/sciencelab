@@ -5,9 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect } from "react";
 
+const currentYear = new Date().getFullYear();
+
 const examSchema = z.object({
   type: z.string().min(1, "Please select exam type"),
   month: z.string().min(1, "Please select month"),
+  year: z.number().int(),
   class: z.string().min(1, "Please select class"),
 });
 
@@ -37,6 +40,7 @@ export function ExamForm({
     defaultValues: {
       type: "Monthly",
       month: "Jan",
+      year: currentYear,
       class: "Six",
       ...initialData,
     },
@@ -72,6 +76,18 @@ export function ExamForm({
           >
             {MONTHS.map((m) => (
               <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-gray-700">Academic Year</label>
+          <select
+            {...register("year", { valueAsNumber: true })}
+            className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+          >
+            {[currentYear - 1, currentYear, currentYear + 1, currentYear + 2].map((yr) => (
+              <option key={yr} value={yr}>{yr}</option>
             ))}
           </select>
         </div>

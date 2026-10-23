@@ -51,9 +51,13 @@ export function PrintCourseReceiptModal({
         >
           {/* Header */}
           <div className="text-center border-b border-zinc-200 pb-3">
-            <h2 className="text-lg font-black tracking-tight text-zinc-900 uppercase">
-              Science Lab Coaching Center
-            </h2>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo2.png" alt="Logo" className="h-8 w-auto object-contain" />
+              <h2 className="text-lg font-black tracking-tight text-zinc-900 uppercase">
+                Science Lab Coaching Center
+              </h2>
+            </div>
             <p className="text-xs text-zinc-500">
               Special Care Program · Academic Excellence & Board Standard Mentorship
             </p>

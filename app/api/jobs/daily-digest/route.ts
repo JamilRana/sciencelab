@@ -1,0 +1,40 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireJobSecret, getCurrentSession } from "@/lib/auth-guard";
+import { runDailyDigestJob } from "@/lib/notifications";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: NextRequest) {
+  return handleJob(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handleJob(request);
+}
+
+async function handleJob(request: NextRequest) {
+  // Check authorization via CRON_SECRET or an active Admin/Staff user session
+  const secretCheck = requireJobSecret(request);
+  if (!secretCheck.authorized) {
+    const session = await getCurrentSession();
+    if (!session?.user?.role || !["ADMIN", "STAFF"].includes(session.user.role)) {
+      return (
+        secretCheck.errorResponse ||
+        NextResponse.json({ error: "Unauthorized: Valid job secret or Admin session required" }, { status: 401 })
+      );
+    }
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const forDate = searchParams.get("date") || searchParams.get("forDate") || undefined;
+    const force = searchParams.get("force") === "true";
+
+    const result = await runDailyDigestJob({ forDate, force });
+
+    return NextResponse.json(result, { status: result.success ? 200 : 500 });
+  } catch (error: any) {
+    console.error("[api/jobs/daily-digest] Job execution error:", error);
+    return NextResponse.json({ success: false, error: error.message || "Internal server error" }, { status: 500 });
+  }
+}

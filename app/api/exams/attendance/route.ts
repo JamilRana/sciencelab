@@ -28,12 +28,12 @@ export async function GET(request: Request) {
     }
 
     const students = await prisma.student.findMany({
-      where: { class: exam.class, active: true },
+      where: { class: exam.class, active: true, batch: { programId: null } },
       include: {
-        batch: { select: { code: true } },
+        batch: { select: { id: true, name: true, code: true } },
         marks: {
-          where: { examSubject: { examId: parseInt(examId) } },
-          select: { written: true, objective: true },
+          where: { examSubject: { examId: parseInt(examId, 10) } },
+          select: { examSubjectId: true, written: true, objective: true },
         },
       },
       orderBy: [{ gender: "asc" }, { roll: "asc" }],

@@ -1,10 +1,11 @@
-// components/MarksEntryForm.tsx
+// components/forms/MarksEntryForm.tsx
 "use client";
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { saveMarkAction, bulkSaveMarksAction } from "@/app/actions/marks";
 import { generateDisplayRoll } from "@/lib/roll";
+import { Lock } from "lucide-react";
 
 interface Student {
   id: number;
@@ -19,6 +20,7 @@ interface MarkEntry {
   written: string;
   objective: string;
   isSaved: boolean;
+  hasExisting: boolean;
   isDirty: boolean;
 }
 
@@ -38,9 +40,10 @@ interface MarksEntryFormProps {
   };
   students: Student[];
   batchId: number;
+  isTeacher?: boolean;
 }
 
-export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormProps) {
+export function MarksEntryForm({ subject, students, batchId, isTeacher = false }: MarksEntryFormProps) {
   const [entries, setEntries] = useState<Record<number, MarkEntry>>(() => {
     const initial: Record<number, MarkEntry> = {};
     students.forEach((s) => {
@@ -50,6 +53,7 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
         written: existing?.written?.toString() || "",
         objective: existing?.objective?.toString() || "",
         isSaved: !!existing,
+        hasExisting: !!existing,
         isDirty: false,
       };
     });
@@ -61,20 +65,30 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
 
   // Update single entry
   const updateEntry = useCallback((studentId: number, field: "written" | "objective", value: string) => {
-    setEntries((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        [field]: value,
-        isDirty: true,
-      },
-    }));
-  }, []);
+    setEntries((prev) => {
+      const current = prev[studentId];
+      if (isTeacher && current?.hasExisting) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [studentId]: {
+          ...current,
+          [field]: value,
+          isDirty: true,
+        },
+      };
+    });
+  }, [isTeacher]);
 
   // Save single mark (debounced)
   const saveSingle = async (studentId: number) => {
     const entry = entries[studentId];
     if (!entry.isDirty) return;
+    if (isTeacher && entry.hasExisting) {
+      toast.error("Existing marks cannot be modified by teachers.");
+      return;
+    }
 
     setSaving((prev) => new Set(prev).add(studentId));
     
@@ -94,7 +108,7 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
     if (result.success) {
       setEntries((prev) => ({
         ...prev,
-        [studentId]: { ...prev[studentId], isSaved: true, isDirty: false },
+        [studentId]: { ...prev[studentId], isSaved: true, hasExisting: true, isDirty: false },
       }));
       toast.success(`✓ ${subject.subject} saved for ${students.find(s => s.id === studentId)?.name}`);
     } else {
@@ -105,7 +119,7 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
   // Save all dirty entries
   const saveAll = async () => {
     const dirtyEntries = Object.values(entries)
-      .filter((e) => e.isDirty)
+      .filter((e) => e.isDirty && !(isTeacher && e.hasExisting))
       .map((e) => ({
         examSubjectId: subject.id,
         studentId: e.studentId,
@@ -127,12 +141,12 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
         const updated = { ...prev };
         dirtyEntries.forEach((d) => {
           if (updated[d.studentId]) {
-            updated[d.studentId] = { ...updated[d.studentId], isSaved: true, isDirty: false };
+            updated[d.studentId] = { ...updated[d.studentId], isSaved: true, hasExisting: true, isDirty: false };
           }
         });
         return updated;
       });
-      toast.success(`✓ ${result.success} marks saved`);
+      toast.success(`✓ ${dirtyEntries.length} marks saved`);
     } else {
       toast.error(result.error || "Failed to save marks");
     }
@@ -155,11 +169,21 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
     }
   };
 
-  const totalSaved = Object.values(entries).filter((e) => e.isSaved).length;
-  const totalDirty = Object.values(entries).filter((e) => e.isDirty).length;
+  const totalSaved = Object.values(entries).filter((e) => e.isSaved || e.hasExisting).length;
+  const totalDirty = Object.values(entries).filter((e) => e.isDirty && !(isTeacher && e.hasExisting)).length;
 
   return (
     <div className="bg-white rounded-xl shadow border overflow-hidden">
+      {/* Teacher Warning Banner */}
+      {isTeacher && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-xs text-amber-800 flex items-center gap-2">
+          <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>
+            <strong>Teacher Mode:</strong> You can enter marks for students with pending entries. Existing recorded marks are locked and cannot be edited.
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
         <div>
@@ -172,7 +196,7 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">
-            Saved: <span className="font-medium text-green-600">{totalSaved}</span>/{students.length}
+            Recorded: <span className="font-medium text-green-600">{totalSaved}</span>/{students.length}
           </span>
           {totalDirty > 0 && (
             <button
@@ -204,7 +228,7 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
               <th className="px-4 py-3 text-center font-medium text-gray-600 w-32">Written</th>
               <th className="px-4 py-3 text-center font-medium text-gray-600 w-32">Objective</th>
               <th className="px-4 py-3 text-center font-medium text-gray-600 w-24">Total</th>
-              <th className="px-4 py-3 text-center font-medium text-gray-600 w-24">Status</th>
+              <th className="px-4 py-3 text-center font-medium text-gray-600 w-28">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -214,9 +238,10 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
               const objective = parseFloat(entry.objective) || 0;
               const total = written + objective;
               const isSaving = saving.has(student.id);
+              const isRowLocked = isTeacher && entry.hasExisting;
 
               return (
-                <tr key={student.id} className="hover:bg-gray-50 group">
+                <tr key={student.id} className={`hover:bg-gray-50 group ${isRowLocked ? "bg-zinc-50/50" : ""}`}>
                   <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-gray-50 z-10">
                     <div className="font-medium text-gray-900">{student.name}</div>
                     <div className="text-xs text-gray-500 font-mono">
@@ -231,10 +256,14 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
                       max={subject.totalMark}
                       value={entry.written}
                       onChange={(e) => updateEntry(student.id, "written", e.target.value)}
-                      onBlur={() => entry.isDirty && saveSingle(student.id)}
-                      onKeyDown={(e) => handleKeyDown(e, student.id, "written")}
-                      className="w-20 px-2 py-1 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={isSaving}
+                      onBlur={() => !isRowLocked && entry.isDirty && saveSingle(student.id)}
+                      onKeyDown={(e) => !isRowLocked && handleKeyDown(e, student.id, "written")}
+                      className={`w-20 px-2 py-1 border rounded text-center transition-colors ${
+                        isRowLocked
+                          ? "bg-zinc-100 text-zinc-500 border-zinc-200 cursor-not-allowed font-medium"
+                          : "focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-zinc-300 bg-white"
+                      }`}
+                      disabled={isSaving || isRowLocked}
                     />
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -245,10 +274,14 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
                       max={subject.totalMark}
                       value={entry.objective}
                       onChange={(e) => updateEntry(student.id, "objective", e.target.value)}
-                      onBlur={() => entry.isDirty && saveSingle(student.id)}
-                      onKeyDown={(e) => handleKeyDown(e, student.id, "objective")}
-                      className="w-20 px-2 py-1 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={isSaving}
+                      onBlur={() => !isRowLocked && entry.isDirty && saveSingle(student.id)}
+                      onKeyDown={(e) => !isRowLocked && handleKeyDown(e, student.id, "objective")}
+                      className={`w-20 px-2 py-1 border rounded text-center transition-colors ${
+                        isRowLocked
+                          ? "bg-zinc-100 text-zinc-500 border-zinc-200 cursor-not-allowed font-medium"
+                          : "focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-zinc-300 bg-white"
+                      }`}
+                      disabled={isSaving || isRowLocked}
                     />
                   </td>
                   <td className="px-4 py-3 text-center font-semibold text-gray-900">
@@ -260,6 +293,11 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
                         <span className="w-3 h-3 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
                         Saving
                       </span>
+                    ) : isRowLocked ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-100 text-zinc-600 border border-zinc-200 rounded text-xs font-medium">
+                        <Lock className="w-3 h-3 text-zinc-400" />
+                        Locked
+                      </span>
                     ) : entry.isDirty ? (
                       <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
                         Unsaved
@@ -269,7 +307,7 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
                         Saved ✓
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-400">Empty</span>
+                      <span className="text-xs text-gray-400 font-medium">Pending</span>
                     )}
                   </td>
                 </tr>
@@ -290,7 +328,7 @@ export function MarksEntryForm({ subject, students, batchId }: MarksEntryFormPro
             disabled={bulkSaving}
             className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50"
           >
-            {bulkSaving ? "Saving..." : `Save All (${totalDirty})`}
+            {bulkSaving ? "Saving..." : `Save All Pending (${totalDirty})`}
           </button>
         )}
       </div>

@@ -10,6 +10,7 @@ import { requireRole } from "@/lib/auth-guard";
 const receiptSchema = z.object({
   studentId: z.number().min(1),
   month: z.enum(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]),
+  year: z.number().optional(),
   amount: z.number().min(0).max(10000),
   date: z.string().or(z.date()).optional(),
 });
@@ -28,6 +29,7 @@ export async function getReceiptsAction(filters?: {
   batchId?: number;
   studentId?: number;
   month?: string;
+  year?: number;
   search?: string;
   startDate?: string;
   endDate?: string;
@@ -41,6 +43,9 @@ export async function getReceiptsAction(filters?: {
     }
     if (filters?.month) {
       where.month = filters.month;
+    }
+    if (filters?.year) {
+      where.year = filters.year;
     }
     
     // Date range filter
@@ -106,22 +111,25 @@ export async function createReceiptAction(input: unknown) {
     return { success: false, error: "Invalid input", details: parsed.error.flatten() };
   }
 
-  const { studentId, month, amount, date } = parsed.data;
+  const { studentId, month, year, amount, date } = parsed.data;
+  const receiptDate = date ? new Date(date) : new Date();
+  const receiptYear = year || receiptDate.getFullYear();
 
   try {
     const existing = await prisma.receipt.findFirst({
-      where: { studentId, month },
+      where: { studentId, month, year: receiptYear },
     });
     if (existing) {
-      return { success: false, error: "Receipt already exists for this student and month" };
+      return { success: false, error: "Receipt already exists for this student, month, and year" };
     }
 
     const receipt = await prisma.receipt.create({
       data: {
         studentId,
         month,
+        year: receiptYear,
         amount,
-        date: date ? new Date(date) : new Date(),
+        date: receiptDate,
       },
       include: {
         student: {

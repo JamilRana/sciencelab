@@ -56,33 +56,66 @@ export async function createUserAction(data: {
 }
 
 export async function updateUserAction(id: number, data: {
+  username?: string;
   name: string;
   role: string;
   password?: string;
 }) {
   await requireRole("ADMIN");
   try {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return { success: false, error: "User not found" };
+
+    const trimmedName = data.name.trim();
     const updateData: {
+      username?: string;
       name: string;
       role: "ADMIN" | "STAFF" | "TEACHER" | "STUDENT";
       password?: string;
     } = {
-      name: data.name.trim(),
+      name: trimmedName,
       role: data.role as "ADMIN" | "STAFF" | "TEACHER" | "STUDENT",
     };
+
+    if (data.username && data.username.trim() !== user.username) {
+      const trimmedUsername = data.username.trim();
+      const existing = await prisma.user.findUnique({
+        where: { username: trimmedUsername },
+      });
+      if (existing && existing.id !== id) {
+        return { success: false, error: "Username already exists" };
+      }
+      updateData.username = trimmedUsername;
+    }
 
     if (data.password && data.password.trim().length > 0) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
 
-    const user = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: updateData,
       select: SAFE_USER_SELECT,
     });
 
+    // Sync name to student or teacher if linked
+    if (user.role === "TEACHER") {
+      await prisma.teacher.updateMany({
+        where: { userId: id },
+        data: { name: trimmedName },
+      });
+    } else if (user.role === "STUDENT") {
+      await prisma.student.updateMany({
+        where: { userId: id },
+        data: { name: trimmedName },
+      });
+    }
+
     revalidatePath("/admin-route/users");
-    return { success: true, data: user };
+    revalidatePath("/admin-route/profile");
+    revalidatePath("/admin-route/students");
+    revalidatePath("/admin-route/teachers");
+    return { success: true, data: updatedUser };
   } catch (error) {
     console.error("Error updating user:", error);
     return { success: false, error: "Failed to update user" };

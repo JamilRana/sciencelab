@@ -49,6 +49,17 @@ export type Permission =
   | "payments:create"
   | "payments:edit"
   | "payments:delete"
+  | "backup:view"
+  | "backup:create"
+  | "backup:restore"
+  | "routine:view"
+  | "routine:edit"
+  | "sessions:create"
+  | "sessions:edit"
+  | "sessions:cancel"
+  | "notifications:view_log"
+  | "duty:set_amount"
+  | "classlog:adjust"
   | "settings:view"
   | "settings:edit"
   | "profile:view"
@@ -104,6 +115,17 @@ const rolePermissions: Record<Role, Permission[]> = {
     "payments:create",
     "payments:edit",
     "payments:delete",
+    "backup:view",
+    "backup:create",
+    "backup:restore",
+    "routine:view",
+    "routine:edit",
+    "sessions:create",
+    "sessions:edit",
+    "sessions:cancel",
+    "notifications:view_log",
+    "duty:set_amount",
+    "classlog:adjust",
     "settings:view",
     "settings:edit",
     "profile:view",
@@ -111,6 +133,12 @@ const rolePermissions: Record<Role, Permission[]> = {
   ],
   STAFF: [
     "dashboard:view",
+    "routine:view",
+    "routine:edit",
+    "sessions:create",
+    "sessions:edit",
+    "sessions:cancel",
+    "notifications:view_log",
     "schools:view",
     "schools:create",
     "schools:edit",
@@ -140,16 +168,17 @@ const rolePermissions: Record<Role, Permission[]> = {
   ],
   TEACHER: [
     "dashboard:view",
+    "routine:view",
     "exams:view",
     "marks:view",
     "marks:create",
-    "marks:edit",
     "results:view",
     "profile:view",
     "profile:edit",
   ],
   STUDENT: [
     "dashboard:view",
+    "routine:view",
     "results:view",
     "profile:view",
     "profile:edit",

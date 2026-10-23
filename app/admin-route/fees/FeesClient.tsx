@@ -31,6 +31,8 @@ const fetcher = async (url: string) => {
 };
 
 export function FeesClient() {
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [activeClass, setActiveClass] = useState("Six");
   const [activeBatch, setActiveBatch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,7 +60,7 @@ export function FeesClient() {
     mutate,
   } = useSWR<StudentFeeData[]>(
     activeClass
-      ? `/api/fees?class=${activeClass}${activeBatch ? `&batchId=${activeBatch}` : ""}&search=${encodeURIComponent(
+      ? `/api/fees?class=${activeClass}${activeBatch ? `&batchId=${activeBatch}` : ""}&year=${selectedYear}&search=${encodeURIComponent(
           debouncedSearch || ""
         )}`
       : null,
@@ -144,9 +146,9 @@ export function FeesClient() {
     setIsSaving(true);
 
     try {
-      const res = await saveFee(selectedCell.studentId, selectedCell.month, amount);
+      const res = await saveFee(selectedCell.studentId, selectedCell.month, amount, selectedYear);
       if (res.success) {
-        toast.success(`৳${amount} recorded for ${selectedCell.studentName} (${selectedCell.month})`);
+        toast.success(`৳${amount} recorded for ${selectedCell.studentName} (${selectedCell.month} ${selectedYear})`);
         mutate();
         if (printReceipt) {
           window.print();
@@ -164,6 +166,23 @@ export function FeesClient() {
 
   return (
     <div className="space-y-4">
+      {/* Print-only Header with Logo */}
+      <div className="hidden print:block text-center border-b-2 border-black pb-3 mb-4">
+        <div className="flex items-center justify-center gap-2.5 mb-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo2.png" alt="Science Lab Logo" className="h-9 w-auto object-contain" />
+          <h1 className="text-xl font-black uppercase tracking-wider text-black">
+            Science Lab Coaching Center
+          </h1>
+        </div>
+        <p className="text-xs font-semibold text-gray-700 uppercase">
+          Student Fees & Tuition Ledger Matrix — Class {activeClass} {activeBatch ? `· Batch ${batches?.find((b) => String(b.id) === activeBatch)?.name || ""}` : ""}
+        </p>
+        <p className="text-[10px] text-gray-500 mt-0.5">
+          Generated on: {new Date().toLocaleDateString()}
+        </p>
+      </div>
+
       <PageHeader
         title="Student Fees Matrix"
         description="Track and collect monthly tuition payments with color-coded status and quick receipts."
@@ -235,6 +254,20 @@ export function FeesClient() {
       {/* Filter Toolbar */}
       <div className="bg-white p-3 rounded-xl border border-zinc-200/80 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Academic Year Select */}
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="px-2.5 py-1.5 text-xs bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-lg outline-none font-semibold focus-ring"
+            title="Academic Year"
+          >
+            {[currentYear - 1, currentYear, currentYear + 1].map((yr) => (
+              <option key={yr} value={yr}>
+                Session {yr}
+              </option>
+            ))}
+          </select>
+
           {/* Class Select */}
           <select
             value={activeClass}

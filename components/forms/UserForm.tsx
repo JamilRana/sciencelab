@@ -39,8 +39,7 @@ export function UserForm({ initialData, onSubmit, isLoading }: UserFormProps) {
         <label className="text-sm font-semibold text-gray-700">Username</label>
         <input
           {...register("username")}
-          disabled={!!initialData}
-          className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all disabled:opacity-50"
+          className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
           placeholder="Enter username"
         />
         {errors.username && <p className="text-xs text-red-500">{errors.username.message}</p>}

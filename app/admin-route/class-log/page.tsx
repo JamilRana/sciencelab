@@ -9,7 +9,9 @@ import {
   updateClassLogAction,
   deleteClassLogAction,
 } from "@/app/actions/teacher-analytics";
-import { Calendar, User, BookOpen, DollarSign, Search, Trash2, Edit, Plus, FileText, ChevronLeft, ChevronRight, X, Save } from "lucide-react";
+import { closeDayNowAction } from "@/app/actions/routine";
+import { earnedAmount } from "@/lib/teacher-earnings";
+import { Calendar, User, BookOpen, DollarSign, Search, Trash2, Edit, Plus, FileText, ChevronLeft, ChevronRight, X, Save, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
@@ -33,6 +35,8 @@ interface ClassLog {
   other: number;
   perClass: number;
   paid: number;
+  dutyAmount?: number;
+  source?: string;
   teacher: {
     id: number;
     name: string;
@@ -75,7 +79,29 @@ export default function AdminClassLogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("table");
   
-  // Pagination
+  const [isClosingDay, setIsClosingDay] = useState(false);
+
+  const handleCloseDayNow = async () => {
+    if (!confirm("Run Day-Close counting for all past and today's sessions now?")) {
+      return;
+    }
+    setIsClosingDay(true);
+    try {
+      const res = await closeDayNowAction();
+      if (res.success && res.data) {
+        toast.success(
+          `Day close complete! Counted ${res.data.totalCountedSessions} sessions across ${res.data.teacherDaysProcessed} teacher-day groups.`
+        );
+        fetchData();
+      } else {
+        toast.error(res.error || "Failed to run day close");
+      }
+    } catch {
+      toast.error("Day close failed");
+    } finally {
+      setIsClosingDay(false);
+    }
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const ITEMS_PER_PAGE = 20;
@@ -263,10 +289,21 @@ const [logsResult, teachersData] = await Promise.all([
           <p className="text-gray-500 mt-1">Monitor teacher class attendance and payment status.</p>
         </div>
         {(userRole === "ADMIN" || userRole === "STAFF") && (
-          <Button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Class Log
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseDayNow}
+              disabled={isClosingDay}
+              className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isClosingDay ? "animate-spin" : ""}`} />
+              Close Day Now
+            </Button>
+            <Button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Class Log
+            </Button>
+          </div>
         )}
       </div>
 
@@ -497,9 +534,11 @@ const [logsResult, teachersData] = await Promise.all([
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Date</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Teacher</th>
                   <th className="px-4 py-3 text-center font-medium text-gray-600">Month</th>
+                  <th className="px-4 py-3 text-center font-medium text-gray-600">Source</th>
                   <th className="px-4 py-3 text-center font-medium text-gray-600">Classes</th>
                   <th className="px-4 py-3 text-center font-medium text-gray-600">Notebook</th>
                   <th className="px-4 py-3 text-center font-medium text-gray-600">Other</th>
+                  <th className="px-4 py-3 text-center font-medium text-gray-600">Duty Pay</th>
                   <th className="px-4 py-3 text-center font-medium text-gray-600">Total</th>
                   {canSeeFinancials && (
                     <th className="px-4 py-3 text-center font-medium text-gray-600">Amount</th>
@@ -512,7 +551,7 @@ const [logsResult, teachersData] = await Promise.all([
               <tbody className="divide-y">
                 {filteredLogs.map((log) => {
                   const activityTotal = log.classes + log.notebook + log.other;
-                  const amount = activityTotal * log.teacher.perClass;
+                  const amount = earnedAmount(log, log.teacher.perClass);
                   
                   return (
                     <tr key={log.id} className="hover:bg-gray-50 transition-colors">
@@ -537,9 +576,23 @@ const [logsResult, teachersData] = await Promise.all([
                           {log.month}
                         </span>
                       </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {log.source === "AUTO" ? (
+                          <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold text-[10px]">
+                            AUTO
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium text-[10px]">
+                            MANUAL
+                          </span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-center">{log.classes}</td>
                       <td className="px-4 py-3 text-center">{log.notebook}</td>
                       <td className="px-4 py-3 text-center">{log.other}</td>
+                      <td className="px-4 py-3 text-center text-pink-700 font-medium">
+                        {log.dutyAmount && log.dutyAmount > 0 ? `৳${log.dutyAmount}` : "—"}
+                      </td>
                       <td className="px-4 py-3 text-center font-bold">{activityTotal}</td>
                       {canSeeFinancials && (
                         <td className="px-4 py-3 text-center font-bold text-green-600">

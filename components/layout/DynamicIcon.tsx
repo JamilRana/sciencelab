@@ -7,6 +7,7 @@ import {
   GraduationCap,
   CalendarDays,
   CalendarPlus,
+  CalendarClock,
   BookOpenCheck,
   Wallet,
   Receipt,
@@ -40,10 +41,29 @@ import {
   Home,
   Plus,
   School,
+  Database,
+  Upload,
+  RefreshCw,
+  FileArchive,
+  HardDrive,
+  History,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle2,
+  Archive,
   type LucideIcon,
 } from "lucide-react";
 
 const icons: Record<string, LucideIcon> = {
+  Database,
+  Upload,
+  RefreshCw,
+  FileArchive,
+  HardDrive,
+  History,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle2,
   LayoutDashboard,
   Users,
   UserCheck,
@@ -51,6 +71,7 @@ const icons: Record<string, LucideIcon> = {
   GraduationCap,
   CalendarDays,
   CalendarPlus,
+  CalendarClock,
   BookOpenCheck,
   Wallet,
   Receipt,
@@ -84,6 +105,7 @@ const icons: Record<string, LucideIcon> = {
   Home,
   Plus,
   School,
+  Archive,
 };
 
 interface DynamicIconProps {

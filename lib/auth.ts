@@ -119,7 +119,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: parseInt(token.id as string) },
-            select: { active: true, role: true },
+            select: { active: true, role: true, username: true, name: true },
           });
 
           // Invalidate session if user was deleted or deactivated
@@ -128,6 +128,8 @@ export const authOptions: NextAuthOptions = {
           }
 
           token.role = dbUser.role;
+          token.username = dbUser.username;
+          token.name = dbUser.name || "";
         } catch {
           // If DB check fails, fail safely
           return token;

@@ -99,6 +99,7 @@ export async function getMarksForSubjectAction(examSubjectId: number, batchId: n
 export async function saveMarkAction(input: unknown) {
   const auth = await validateAction();
   if (!auth.success) return auth;
+  const user = auth.user;
 
   const parsed = markSchema.safeParse(input);
   if (!parsed.success) {
@@ -117,6 +118,36 @@ export async function saveMarkAction(input: unknown) {
       return { success: false, error: "Exam subject not available" };
     }
 
+    if (user.role === "TEACHER") {
+      const teacher = await prisma.teacher.findFirst({
+        where: {
+          OR: [
+            { userId: parseInt(user.id, 10) },
+            { mobile: user.username },
+          ],
+        },
+        select: { id: true },
+      });
+
+      if (!teacher || subject.teacherId !== teacher.id) {
+        return { success: false, error: "You can only enter marks for your assigned subjects." };
+      }
+
+      // Check if mark already exists - teacher cannot edit existing marks
+      const existingMark = await prisma.mark.findUnique({
+        where: {
+          examSubjectId_studentId: { examSubjectId, studentId },
+        },
+      });
+
+      if (existingMark) {
+        return {
+          success: false,
+          error: "This mark has already been entered. Teachers cannot edit existing marks; only staff and admin can edit them.",
+        };
+      }
+    }
+
     const mark = await prisma.mark.upsert({
       where: {
         examSubjectId_studentId: { examSubjectId, studentId },
@@ -129,14 +160,14 @@ export async function saveMarkAction(input: unknown) {
     });
 
     revalidatePath("/admin-route/marks");
+    revalidatePath("/teacher-route/marks");
+    revalidatePath("/teacher-route/exams");
     return { success: true, mark, message: "Mark saved" };
   } catch (error) {
     console.error("Save mark error:", error);
     return { success: false, error: "Database error" };
   }
 }
-
-// app/actions/marks.ts
 
 // 🔹 Return types
 type BulkSaveSuccess = {
@@ -158,18 +189,80 @@ export async function bulkSaveMarksAction(entries: Array<{
   studentId: number;
   written?: number;
   objective?: number;
-}>): Promise<BulkSaveResult> {  // ✅ Explicit return type
+}>): Promise<BulkSaveResult> {
   const auth = await validateAction();
   if (!auth.success) return auth;
+  const user = auth.user;
+
+  if (!entries || entries.length === 0) {
+    return { success: false, error: "No entries provided" };
+  }
 
   try {
+    let allowedEntries = entries;
+
+    if (user.role === "TEACHER") {
+      const teacher = await prisma.teacher.findFirst({
+        where: {
+          OR: [
+            { userId: parseInt(user.id, 10) },
+            { mobile: user.username },
+          ],
+        },
+        select: { id: true },
+      });
+
+      if (!teacher) {
+        return { success: false, error: "Teacher record not found" };
+      }
+
+      // Check subject assignment
+      const subjectIds = Array.from(new Set(entries.map((e) => e.examSubjectId)));
+      const subjects = await prisma.examSubject.findMany({
+        where: { id: { in: subjectIds } },
+        select: { id: true, teacherId: true },
+      });
+
+      const unauthorized = subjects.some((s) => s.teacherId !== teacher.id);
+      if (unauthorized || subjects.length !== subjectIds.length) {
+        return { success: false, error: "You can only enter marks for your assigned subjects." };
+      }
+
+      // Check existing marks in database - teacher cannot edit existing marks
+      const existingMarks = await prisma.mark.findMany({
+        where: {
+          OR: entries.map((e) => ({
+            examSubjectId: e.examSubjectId,
+            studentId: e.studentId,
+          })),
+        },
+        select: { examSubjectId: true, studentId: true },
+      });
+
+      const existingSet = new Set(
+        existingMarks.map((m) => `${m.examSubjectId}_${m.studentId}`)
+      );
+
+      // Only allow new/empty marks
+      allowedEntries = entries.filter(
+        (e) => !existingSet.has(`${e.examSubjectId}_${e.studentId}`)
+      );
+
+      if (allowedEntries.length === 0 && entries.length > 0) {
+        return {
+          success: false,
+          error: "All selected marks already exist. Teachers cannot edit existing marks; only staff and admin can edit them.",
+        };
+      }
+    }
+
     const results: Mark[] = [];
-    for (const entry of entries) {
+    for (const entry of allowedEntries) {
       const parsed = markSchema.safeParse(entry);
       if (!parsed.success) continue;
 
       const { examSubjectId, studentId, written = 0, objective = 0 } = parsed.data;
-      
+
       const mark = await prisma.mark.upsert({
         where: { examSubjectId_studentId: { examSubjectId, studentId } },
         update: { written, objective },
@@ -179,13 +272,15 @@ export async function bulkSaveMarksAction(entries: Array<{
     }
 
     revalidatePath("/admin-route/marks");
-    
-    return { 
-      success: true, 
-      results, 
+    revalidatePath("/teacher-route/marks");
+    revalidatePath("/teacher-route/exams");
+
+    return {
+      success: true,
+      results,
       count: results.length,
-      message: `${results.length} marks saved` 
-    } satisfies BulkSaveSuccess; // ✅ Type assertion for safety
+      message: `${results.length} marks saved successfully`,
+    } satisfies BulkSaveSuccess;
   } catch (error) {
     console.error("Bulk save error:", error);
     return { success: false, error: "Failed to save marks" } satisfies BulkSaveError;

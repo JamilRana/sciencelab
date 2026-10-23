@@ -23,6 +23,7 @@ export interface Batch {
   classId: string;
   name: string;
   code: number;
+  programId?: number | null;
   students?: Student[];
   _count?: {
     students: number;
@@ -38,6 +39,10 @@ export interface Student {
   homeMobile: string;
   image: string;
   active: boolean;
+  isArchived?: boolean;
+  archivedYear?: number | null;
+  archivedReason?: string | null;
+  archivedAt?: Date | null;
   schoolId: number;
   batchId: number;
   roll: number;
@@ -51,6 +56,7 @@ export interface Student {
   batch?: Batch;
   receipts?: Receipt[];
   marks?: Mark[];
+  academicHistories?: StudentAcademicHistory[];
 }
 
 export interface Teacher {
@@ -63,6 +69,8 @@ export interface Teacher {
   perClass: number;
   due: number;
   userId?: number | null;
+  notifyEmail?: boolean;
+  whatsappNumber?: string | null;
   examSubjects?: ExamSubject[];
 }
 
@@ -70,6 +78,7 @@ export interface Exam {
   id: number;
   type: string;
   month: string;
+  year?: number;
   class: string;
   subjects?: ExamSubject[];
 }
@@ -102,9 +111,23 @@ export interface Receipt {
   id: number;
   studentId: number;
   month: string;
+  year?: number;
   amount: number;
   date: Date;
   student?: Student;
+}
+
+export interface StudentAcademicHistory {
+  id: number;
+  studentId: number;
+  year: number;
+  class: string;
+  batchId: number;
+  roll: number;
+  note?: string | null;
+  createdAt: Date;
+  student?: Student;
+  batch?: Batch;
 }
 
 export interface Expense {

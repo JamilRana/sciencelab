@@ -21,6 +21,11 @@ const bengali = Hind_Siliguri({
 export const metadata: Metadata = {
   title: "Science Lab Coaching Center",
   description: "Academic & Administrative Management System",
+  icons: {
+    icon: "/logo2.png",
+    shortcut: "/logo2.png",
+    apple: "/logo2.png",
+  },
 };
 
 export default function RootLayout({

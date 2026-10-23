@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { getTeacherMonthStatsAction } from "@/app/actions/teacher-payments";
 import { DollarSign, BookOpen, Clock, AlertCircle, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const paymentSchema = z.object({
   teacherId: z.string().min(1, "Please select a teacher"),
@@ -113,17 +114,20 @@ export function PaymentForm({ onSubmit, isLoading, teachers }: PaymentFormProps)
       {/* Teacher Selector */}
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-zinc-700">Select Teacher</label>
-        <select
-          {...register("teacherId")}
-          className="w-full h-9 px-3 bg-white border border-zinc-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-        >
-          <option value="">-- Choose Teacher --</option>
-          {teachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {teacher.name} ({teacher.perClass > 0 ? `৳${teacher.perClass}/class` : "No rate"})
-            </option>
-          ))}
-        </select>
+        <SearchableSelect
+          value={watchedTeacherId}
+          onChange={(val) => setValue("teacherId", val, { shouldValidate: true })}
+          options={teachers.map((teacher) => ({
+            value: teacher.id.toString(),
+            label: teacher.name,
+            subtitle: teacher.mobile ? `Mobile: ${teacher.mobile}` : undefined,
+            badge: teacher.perClass > 0 ? `৳${teacher.perClass}/class` : "No rate",
+          }))}
+          placeholder="-- Choose Teacher --"
+          searchPlaceholder="Search teacher by name or mobile..."
+          error={Boolean(errors.teacherId)}
+          size="sm"
+        />
         {errors.teacherId && (
           <p className="text-[11px] text-rose-500 font-medium">{errors.teacherId.message}</p>
         )}

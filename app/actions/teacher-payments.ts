@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { normalizeMonth } from "@/lib/month";
 import { requireRole } from "@/lib/auth-guard";
+import { earnedAmount } from "@/lib/teacher-earnings";
 
 export async function getTeacherPaymentsAction() {
   await requireRole("ADMIN");
@@ -75,7 +76,10 @@ export async function getTeacherMonthStatsAction(teacherId: number, month: strin
       (sum, log) => sum + (log.classes || 0) + (log.notebook || 0) + (log.other || 0),
       0
     );
-    const monthEarned = monthClasses * (teacher.perClass || 0);
+    const monthEarned = monthLogs.reduce(
+      (sum, log) => sum + earnedAmount(log, teacher.perClass || 0),
+      0
+    );
     const monthPaid = monthPayments.reduce((sum, p) => sum + p.amount, 0);
     const monthDue = Math.max(0, monthEarned - monthPaid);
 
@@ -84,7 +88,10 @@ export async function getTeacherMonthStatsAction(teacherId: number, month: strin
       (sum, log) => sum + (log.classes || 0) + (log.notebook || 0) + (log.other || 0),
       0
     );
-    const lifetimeEarned = lifetimeClasses * (teacher.perClass || 0);
+    const lifetimeEarned = allLogs.reduce(
+      (sum, log) => sum + earnedAmount(log, teacher.perClass || 0),
+      0
+    );
     const lifetimePaid = allPayments.reduce((sum, p) => sum + p.amount, 0);
     const lifetimeDue = Math.max(0, lifetimeEarned - lifetimePaid);
 

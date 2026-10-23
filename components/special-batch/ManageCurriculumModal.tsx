@@ -23,6 +23,7 @@ import {
 } from "@/app/actions/special-curriculum";
 import { CURRICULUM_TEMPLATES } from "@/lib/curriculum-templates";
 import { useRouter } from "next/navigation";
+import { SubjectSelect } from "@/components/ui/SubjectSelect";
 
 interface ManageCurriculumModalProps {
   isOpen: boolean;
@@ -372,12 +373,11 @@ export function ManageCurriculumModal({
                   <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                     Subject Name <span className="text-rose-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Higher Mathematics, ICT, Biology"
+                  <SubjectSelect
                     value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="w-full text-xs px-2.5 py-1.5 bg-white border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    onChange={setNewName}
+                    placeholder="-- Select Subject --"
+                    size="sm"
                     required
                   />
                 </div>
