@@ -22,8 +22,8 @@ export function formatResultNumber(val: number | string | null | undefined, lang
 export const I18N_TERMS = {
   instituteName: {
     en: "Science Lab Coaching Center",
-    bn: "বিজ্ঞান ল্যাব কোচিং সেন্টার",
-    bilingual: "Science Lab Coaching Center · বিজ্ঞান ল্যাব কোচিং সেন্টার",
+    bn: "Science Lab Coaching Center",
+    bilingual: "Science Lab Coaching Center",
   },
   instituteSubtitle: {
     en: "Academic Care & Examination Division",
@@ -358,15 +358,21 @@ export function tTerm(key: TermKey, lang: ResultLanguage): string {
 // Common Subject Name Localization Mapping
 const BASE_SUBJECT_TRANSLATIONS: Record<string, { bn: string; bilingual: string }> = {
   "bangla": { bn: "বাংলা", bilingual: "Bangla / বাংলা" },
-  "bangla 1st": { bn: "বাংলা ১ম পত্র", bilingual: "Bangla 1st / বাংলা ১ম" },
-  "bangla 2nd": { bn: "বাংলা ২য় পত্র", bilingual: "Bangla 2nd / বাংলা ২য়" },
+  "bangla 1st": { bn: "বাংলা ১ম পত্র", bilingual: "Bangla 1st / বাংলা ১ম পত্র" },
+  "bangla 2nd": { bn: "বাংলা ২য় পত্র", bilingual: "Bangla 2nd / বাংলা ২য় পত্র" },
+  "bangla 1st paper": { bn: "বাংলা ১ম পত্র", bilingual: "Bangla 1st / বাংলা ১ম পত্র" },
+  "bangla 2nd paper": { bn: "বাংলা ২য় পত্র", bilingual: "Bangla 2nd / বাংলা ২য় পত্র" },
   "english": { bn: "ইংরেজি", bilingual: "English / ইংরেজি" },
-  "english 1st": { bn: "ইংরেজি ১ম পত্র", bilingual: "English 1st / ইংরেজি ১ম" },
-  "english 2nd": { bn: "ইংরেজি ২য় পত্র", bilingual: "English 2nd / ইংরেজি ২য়" },
+  "english 1st": { bn: "ইংরেজি ১ম পত্র", bilingual: "English 1st / ইংরেজি ১ম পত্র" },
+  "english 2nd": { bn: "ইংরেজি ২য় পত্র", bilingual: "English 2nd / ইংরেজি ২য় পত্র" },
+  "english 1st paper": { bn: "ইংরেজি ১ম পত্র", bilingual: "English 1st / ইংরেজি ১ম পত্র" },
+  "english 2nd paper": { bn: "ইংরেজি ২য় পত্র", bilingual: "English 2nd / ইংরেজি ২য় পত্র" },
   "mathematics": { bn: "গণিত", bilingual: "Mathematics / গণিত" },
   "math": { bn: "গণিত", bilingual: "Math / গণিত" },
   "general math": { bn: "সাধারণ গণিত", bilingual: "General Math / সাধারণ গণিত" },
+  "general mathematics": { bn: "সাধারণ গণিত", bilingual: "General Math / সাধারণ গণিত" },
   "higher math": { bn: "উচ্চতর গণিত", bilingual: "Higher Math / উচ্চতর গণিত" },
+  "higher mathematics": { bn: "উচ্চতর গণিত", bilingual: "Higher Math / উচ্চতর গণিত" },
   "science": { bn: "বিজ্ঞান", bilingual: "Science / বিজ্ঞান" },
   "general science": { bn: "সাধারণ বিজ্ঞান", bilingual: "Science / সাধারণ বিজ্ঞান" },
   "physics": { bn: "পদার্থবিজ্ঞান", bilingual: "Physics / পদার্থবিজ্ঞান" },
@@ -374,19 +380,41 @@ const BASE_SUBJECT_TRANSLATIONS: Record<string, { bn: string; bilingual: string 
   "biology": { bn: "জীববিজ্ঞান", bilingual: "Biology / জীববিজ্ঞান" },
   "bgs": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
   "bangladesh & global studies": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
+  "bangladesh & global studies (bgs)": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
+  "bangladesh and global studies": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
   "ict": { bn: "তথ্য ও যোগাযোগ প্রযুক্তি", bilingual: "ICT / তথ্যপ্রযুক্তি" },
+  "information & communication technology": { bn: "তথ্য ও যোগাযোগ প্রযুক্তি", bilingual: "ICT / তথ্যপ্রযুক্তি" },
+  "information and communication technology": { bn: "তথ্য ও যোগাযোগ প্রযুক্তি", bilingual: "ICT / তথ্যপ্রযুক্তি" },
   "religion": { bn: "ধর্ম ও নৈতিক শিক্ষা", bilingual: "Religion / ধর্ম" },
   "islam": { bn: "ইসলাম ও নৈতিক শিক্ষা", bilingual: "Islam / ইসলাম শিক্ষা" },
+  "islam shikkha": { bn: "ইসলাম ও নৈতিক শিক্ষা", bilingual: "Islam / ইসলাম শিক্ষা" },
+  "islam & moral education": { bn: "ইসলাম ও নৈতিক শিক্ষা", bilingual: "Islam / ইসলাম শিক্ষা" },
+  "islam and moral education": { bn: "ইসলাম ও নৈতিক শিক্ষা", bilingual: "Islam / ইসলাম শিক্ষা" },
   "hinduism": { bn: "হিন্দুধর্ম ও নৈতিক শিক্ষা", bilingual: "Hinduism / হিন্দুধর্ম" },
+  "hindu religious studies": { bn: "হিন্দুধর্ম ও নৈতিক শিক্ষা", bilingual: "Hinduism / হিন্দুধর্ম" },
+  "hindu religion": { bn: "হিন্দুধর্ম ও নৈতিক শিক্ষা", bilingual: "Hinduism / হিন্দুধর্ম" },
   "accounting": { bn: "হিসাববিজ্ঞান", bilingual: "Accounting / হিসাববিজ্ঞান" },
   "finance": { bn: "ফিন্যান্স ও ব্যাংকিং", bilingual: "Finance / ফিন্যান্স" },
+  "finance & banking": { bn: "ফিন্যান্স ও ব্যাংকিং", bilingual: "Finance / ফিন্যান্স" },
+  "finance and banking": { bn: "ফিন্যান্স ও ব্যাংকিং", bilingual: "Finance / ফিন্যান্স" },
   "business": { bn: "ব্যবসায় উদ্যোগ", bilingual: "Business / ব্যবসায় উদ্যোগ" },
+  "business entrepreneurship": { bn: "ব্যবসায় উদ্যোগ", bilingual: "Business / ব্যবসায় উদ্যোগ" },
   "economics": { bn: "অর্থনীতি", bilingual: "Economics / অর্থনীতি" },
-  "geography": { bn: "ভূগোল", bilingual: "Geography / ভূগোল" },
-  "history": { bn: "ইতিহাস", bilingual: "History / ইতিহাস" },
-  "civics": { bn: "পৌরনীতি", bilingual: "Civics / পৌরনীতি" },
+  "geography": { bn: "ভূগোল ও পরিবেশ", bilingual: "Geography / ভূগোল" },
+  "geography & environment": { bn: "ভূগোল ও পরিবেশ", bilingual: "Geography / ভূগোল" },
+  "geography and environment": { bn: "ভূগোল ও পরিবেশ", bilingual: "Geography / ভূগোল" },
+  "history": { bn: "ইতিহাস ও বিশ্বসভ্যতা", bilingual: "History / ইতিহাস" },
+  "history of bangladesh": { bn: "বাংলাদেশ ও বিশ্বসভ্যতার ইতিহাস", bilingual: "History / ইতিহাস" },
+  "civics": { bn: "পৌরনীতি ও নাগরিকতা", bilingual: "Civics / পৌরনীতি" },
+  "civics & citizenship": { bn: "পৌরনীতি ও নাগরিকতা", bilingual: "Civics / পৌরনীতি" },
+  "civics and citizenship": { bn: "পৌরনীতি ও নাগরিকতা", bilingual: "Civics / পৌরনীতি" },
   "agriculture": { bn: "কৃষিশিক্ষা", bilingual: "Agriculture / কৃষিশিক্ষা" },
+  "agricultural studies": { bn: "কৃষিশিক্ষা", bilingual: "Agriculture / কৃষিশিক্ষা" },
   "home science": { bn: "গার্হস্থ্য বিজ্ঞান", bilingual: "Home Science / গার্হস্থ্য বিজ্ঞান" },
+  "physical education": { bn: "শারীরিক শিক্ষা ও স্বাস্থ্য", bilingual: "Physical Education / শারীরিক শিক্ষা" },
+  "arts and crafts": { bn: "চারু ও কারুকলা", bilingual: "Arts & Crafts / চারু ও কারুকলা" },
+  "art & craft": { bn: "চারু ও কারুকলা", bilingual: "Arts & Crafts / চারু ও কারুকলা" },
+  "career education": { bn: "ক্যারিয়ার শিক্ষা", bilingual: "Career Education / ক্যারিয়ার শিক্ষা" },
 };
 
 export function localizeSubjectName(subjectName: string, lang: ResultLanguage): string {
@@ -400,8 +428,8 @@ export function localizeSubjectName(subjectName: string, lang: ResultLanguage): 
     return lang === "bn" ? BASE_SUBJECT_TRANSLATIONS[lower].bn : BASE_SUBJECT_TRANSLATIONS[lower].bilingual;
   }
 
-  // 2. Pattern: "SUBJECT(EXAM-1)" or "SUBJECT (EXAM 1)" or "SUBJECT(EXAM:1)"
-  const examSuffixMatch = raw.match(/^([^(]+?)\s*[\(\[]\s*exam\s*[-–—:]?\s*(\d+)\s*[\)\]]$/i);
+  // 2. Pattern: "SUBJECT(EXAM-1)", "SUBJECT (EXAM 1)", "SUBJECT(TEST-1)", "SUBJECT(MODEL TEST-1)"
+  const examSuffixMatch = raw.match(/^([^(]+?)\s*[\(\[]\s*(?:model\s*test|model|exam|test)?\s*[-–—:]?\s*(\d+)\s*[\)\]]$/i);
   if (examSuffixMatch) {
     const baseRaw = examSuffixMatch[1].trim();
     const examNum = examSuffixMatch[2];
@@ -415,7 +443,22 @@ export function localizeSubjectName(subjectName: string, lang: ResultLanguage): 
     return `${baseRaw} (Exam-${examNum}) / ${baseTrans} (পরীক্ষা-${bnNum})`;
   }
 
-  // 3. Pattern: "SUBJECT (1ST)" or "SUBJECT (2ND)" or "SUBJECT 1ST"
+  // 3. Pattern: "SUBJECT-1", "SUBJECT-2", "SUBJECT - 1"
+  const hyphenSuffixMatch = raw.match(/^([^-–—:]+?)\s*[-–—:]\s*(\d+)$/i);
+  if (hyphenSuffixMatch) {
+    const baseRaw = hyphenSuffixMatch[1].trim();
+    const num = hyphenSuffixMatch[2];
+    const baseLower = baseRaw.toLowerCase();
+    const baseTrans = BASE_SUBJECT_TRANSLATIONS[baseLower]?.bn || baseRaw;
+    const bnNum = toBengaliNumber(num);
+
+    if (lang === "bn") {
+      return `${baseTrans} (পরীক্ষা-${bnNum})`;
+    }
+    return `${baseRaw}-${num} / ${baseTrans} (পরীক্ষা-${bnNum})`;
+  }
+
+  // 4. Pattern: "SUBJECT 1ST", "SUBJECT 2ND", "SUBJECT 1ST PAPER"
   const paperMatch = raw.match(/^([^(]+?)\s*(?:[\(\[]\s*)?(\d+)(st|nd|rd|th)?\s*(?:paper)?\s*(?:[\)\]])?$/i);
   if (paperMatch) {
     const baseRaw = paperMatch[1].trim();
@@ -428,6 +471,22 @@ export function localizeSubjectName(subjectName: string, lang: ResultLanguage): 
       return `${baseTrans} ${paperBn}`;
     }
     return `${baseRaw} ${paperNum} / ${baseTrans} ${paperBn}`;
+  }
+
+  // 5. Pattern: "SUBJECT 1", "SUBJECT 2"
+  const spaceNumMatch = raw.match(/^([a-zA-Z\s&]+?)\s+(\d+)$/i);
+  if (spaceNumMatch) {
+    const baseRaw = spaceNumMatch[1].trim();
+    const num = spaceNumMatch[2];
+    const baseLower = baseRaw.toLowerCase();
+    if (BASE_SUBJECT_TRANSLATIONS[baseLower]) {
+      const baseTrans = BASE_SUBJECT_TRANSLATIONS[baseLower].bn;
+      const bnNum = toBengaliNumber(num);
+      if (lang === "bn") {
+        return `${baseTrans} (পরীক্ষা-${bnNum})`;
+      }
+      return `${baseRaw} ${num} / ${baseTrans} (পরীক্ষা-${bnNum})`;
+    }
   }
 
   return raw;

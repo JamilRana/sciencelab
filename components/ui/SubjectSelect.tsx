@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { ALL_SUBJECTS, SUBJECT_CATEGORIES, getMergedSubjectList } from "@/lib/subjects";
 import { SearchableSelect, SearchableSelectGroup } from "@/components/ui/searchable-select";
 import { BookOpen } from "lucide-react";
+import { localizeSubjectName } from "@/lib/results-i18n";
 
 export interface SubjectSelectProps {
   value: string;
@@ -64,9 +65,10 @@ export function SubjectSelect({
           label: cat.category,
           options: availableInCat.map((sub) => {
             addedSubjects.add(sub);
+            const bnName = localizeSubjectName(sub, "bn");
             return {
               value: sub,
-              label: sub,
+              label: bnName !== sub ? `${bnName} (${sub})` : sub,
               group: cat.category,
             };
           }),

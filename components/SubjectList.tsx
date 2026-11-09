@@ -9,6 +9,7 @@ import { SubjectForm } from "@/components/forms/SubjectForm";
 import { createSubjectAction, updateSubjectAction, deleteSubjectAction } from "@/app/actions/subjects";
 import { toast } from "sonner";
 import type { ExamSubject, Teacher } from "@/types";
+import { localizeSubjectName } from "@/lib/results-i18n";
 
 interface SubjectListProps {
   initialSubjects: ExamSubject[];
@@ -34,10 +35,15 @@ export function SubjectList({
   const isAdminOrStaff = currentUserRole === "ADMIN" || currentUserRole === "STAFF";
   const canViewAllMarks = isAdminOrStaff;
 
-  const filtered = initialSubjects.filter((s) =>
-    s.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.teacher?.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = initialSubjects.filter((s) => {
+    const q = searchQuery.toLowerCase();
+    const bn = localizeSubjectName(s.subject, "bn").toLowerCase();
+    return (
+      s.subject.toLowerCase().includes(q) ||
+      bn.includes(q) ||
+      s.teacher?.name.toLowerCase().includes(q)
+    );
+  });
 
   const canEnterMarks = (subject: ExamSubject) => {
     // Admin/Staff can see all Enter Marks buttons
@@ -143,9 +149,14 @@ export function SubjectList({
                         <Book className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 leading-tight">{s.subject}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">
-                          {s.topics?.substring(0, 30)}...
+                        <p className="font-bold text-gray-900 leading-tight">
+                          {localizeSubjectName(s.subject, "bn")}
+                        </p>
+                        <p className="text-[11px] text-gray-500 font-medium leading-none mt-1">
+                          {s.subject !== localizeSubjectName(s.subject, "bn") && (
+                            <span className="font-mono text-gray-400 mr-1.5">{s.subject} ·</span>
+                          )}
+                          {s.topics?.substring(0, 30)}
                         </p>
                       </div>
                     </div>

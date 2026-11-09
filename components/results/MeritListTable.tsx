@@ -301,15 +301,12 @@ export default function MeritListTable({
         </div>
 
         {/* Signature Strip for Print */}
-        <div className="print-signature-strip hidden print:grid grid-cols-3 gap-6 pt-14 pb-4 px-6 text-center text-xs text-black">
-          <div className="border-t border-black pt-1">
+        <div className="print-signature-strip hidden print:flex justify-between items-end pt-14 pb-4 px-12 text-center text-xs text-black">
+          <div className="w-52 border-t border-black pt-1 text-center">
             <span className="font-bold">{tTerm("teacherSignature", language)}</span>
           </div>
-          <div className="border-t border-black pt-1">
+          <div className="w-52 border-t border-black pt-1 text-center">
             <span className="font-bold">{tTerm("guardianSignature", language)}</span>
-          </div>
-          <div className="border-t border-black pt-1">
-            <span className="font-bold">{tTerm("headSignature", language)}</span>
           </div>
         </div>
       </div>
