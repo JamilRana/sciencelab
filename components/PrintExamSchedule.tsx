@@ -1,7 +1,15 @@
 "use client";
 
-import { Printer, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { Printer, ArrowLeft, Globe } from "lucide-react";
 import Link from "next/link";
+import {
+  localizeSubjectName,
+  localizeClassName,
+  localizeMonthName,
+  localizeExamType,
+  formatResultNumber,
+} from "@/lib/results-i18n";
 
 interface ExamSubject {
   id: number;
@@ -27,29 +35,66 @@ interface PrintExamProps {
 }
 
 export function PrintExamSchedule({ exam }: PrintExamProps) {
+  const [language, setLanguage] = useState<"bn" | "en">("bn");
+
   const handlePrint = () => {
     window.print();
   };
 
+  const isBn = language === "bn";
+
+  const examTitle = isBn
+    ? `${localizeExamType(exam.type, "bn")} — ${localizeMonthName(exam.month, "bn")} ${formatResultNumber(exam.year, "bn")}`
+    : `${exam.type} Examination – ${exam.month} ${exam.year}`;
+
+  const classLabel = isBn
+    ? `শ্রেণি: ${localizeClassName(exam.class, "bn")}`
+    : `Class: ${exam.class}`;
+
   return (
     <div className="space-y-6">
       {/* Top Controls */}
-      <div className="flex items-center justify-between no-print">
+      <div className="flex items-center justify-between no-print bg-white p-4 rounded-xl border border-zinc-200">
         <Link
           href={`/admin-route/exams/${exam.id}/subjects`}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          className="flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </Link>
 
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Printer className="h-4 w-4" />
-          Print
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Language Toggle */}
+          <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-lg text-xs">
+            <Globe className="h-3.5 w-3.5 text-zinc-500 ml-1.5 mr-0.5" />
+            <button
+              type="button"
+              onClick={() => setLanguage("bn")}
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                isBn ? "bg-white text-zinc-900 shadow-xs font-bold" : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              বাংলা
+            </button>
+            <button
+              type="button"
+              onClick={() => setLanguage("en")}
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                !isBn ? "bg-white text-zinc-900 shadow-xs font-bold" : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              English
+            </button>
+          </div>
+
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+          >
+            <Printer className="h-4 w-4" />
+            {isBn ? "প্রিন্ট করুন" : "Print Schedule"}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white border rounded-lg overflow-hidden">
@@ -70,11 +115,14 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
                     </p>
                   </div>
                 </div>
-                <p className="exam-meta">
-                  {exam.type} Examination – {exam.month} {exam.year}
+                <p className="board-division">
+                  {isBn ? "একাডেমিক কেয়ার ও পরীক্ষা বিভাগ" : "Academic Care & Examination Division"}
                 </p>
                 <p className="exam-meta">
-                  Class: {exam.class}
+                  {examTitle}
+                </p>
+                <p className="exam-meta">
+                  {classLabel}
                 </p>
               </div>
 
@@ -82,13 +130,13 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
               <table>
                 <thead>
                   <tr>
-                    <th style={{ width: "5%" }}>SL</th>
-                    <th style={{ width: "14%" }}>Subject</th>
-                    <th style={{ width: "14%" }}>Teacher</th>
-                    <th style={{ width: "7%" }}>Marks</th>
-                    <th style={{ width: "10%" }}>Date</th>
-                    <th style={{ width: "12%" }}>Time</th>
-                    <th style={{ width: "38%" }}>Topics</th>
+                    <th style={{ width: "6%" }}>{isBn ? "ক্র." : "SL"}</th>
+                    <th style={{ width: "16%" }}>{isBn ? "বিষয়" : "Subject"}</th>
+                    <th style={{ width: "14%" }}>{isBn ? "শিক্ষক" : "Teacher"}</th>
+                    <th style={{ width: "8%" }}>{isBn ? "পূর্ণমান" : "Marks"}</th>
+                    <th style={{ width: "11%" }}>{isBn ? "তারিখ" : "Date"}</th>
+                    <th style={{ width: "12%" }}>{isBn ? "সময়" : "Time"}</th>
+                    <th style={{ width: "33%" }}>{isBn ? "সিলেবাস / বিষয়বস্তু" : "Topics"}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -98,21 +146,30 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
                       : [];
 
                     const isLongTopics = topicsArray.length > 5;
+                    const dateFormatted = new Date(subject.examDate).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    });
 
                     return (
                       <tr key={subject.id}>
-                        <td>{index + 1}</td>
-                        <td>{subject.subject}</td>
-                        <td>{subject.teacher.name}</td>
                         <td style={{ textAlign: "center" }}>
-                          {subject.totalMark}
+                          {isBn ? formatResultNumber(index + 1, "bn") : index + 1}
                         </td>
-                        <td>
-                          {new Date(
-                            subject.examDate
-                          ).toLocaleDateString()}
+                        <td className="font-semibold">
+                          {isBn ? localizeSubjectName(subject.subject, "bn") : subject.subject}
                         </td>
-                        <td>{subject.examTime}</td>
+                        <td>{subject.teacher?.name || "—"}</td>
+                        <td style={{ textAlign: "center", fontWeight: "bold" }}>
+                          {isBn ? formatResultNumber(subject.totalMark, "bn") : subject.totalMark}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {isBn ? formatResultNumber(dateFormatted, "bn") : dateFormatted}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {isBn ? formatResultNumber(subject.examTime, "bn") : subject.examTime}
+                        </td>
                         <td className={isLongTopics ? "small-topics" : ""}>
                           {topicsArray.length > 0 ? (
                             <ul className="topics-list">
@@ -133,11 +190,11 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
               {/* Footer */}
               <div className="footer-sign">
                 <div>
-                  <p>Principal Signature</p>
+                  <p>{isBn ? "কর্তৃপক্ষের স্বাক্ষর" : "Authorized Signature"}</p>
                   <div className="sign-line"></div>
                 </div>
                 <div>
-                  <p>Date</p>
+                  <p>{isBn ? "তারিখ" : "Date"}</p>
                   <div className="sign-line short"></div>
                 </div>
               </div>
@@ -228,9 +285,17 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
             font-weight: 500;
           }
 
+          .board-division {
+            font-size: 11px;
+            color: #555;
+            margin: 2px 0;
+            font-weight: 600;
+          }
+
           .exam-meta {
             font-size: 13px;
             margin: 1px 0;
+            font-weight: 600;
           }
 
           .footer-sign {
