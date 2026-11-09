@@ -8,6 +8,7 @@ import PrintHeader from "@/components/results/PrintHeader";
 import NoResults from "@/components/results/NoResults";
 import { calculateResults } from "@/lib/calculateResults";
 import MeritListTable from "@/components/results/MeritListTable";
+import { ResultLanguage } from "@/lib/results-i18n";
 
 export default function ExamResultsPage() {
   const params = useParams();
@@ -24,6 +25,11 @@ export default function ExamResultsPage() {
   const [loading, setLoading] = useState(true);
   const [printLimit, setPrintLimit] = useState<number | null>(null);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
+
+  const urlLang = searchParams?.get("lang") as ResultLanguage | null;
+  const [language, setLanguage] = useState<ResultLanguage>(
+    urlLang === "bn" || urlLang === "bilingual" || urlLang === "en" ? urlLang : "bn"
+  );
 
   const currentYear = new Date().getFullYear();
 
@@ -67,6 +73,8 @@ export default function ExamResultsPage() {
         orientation={orientation}
         onOrientationChange={setOrientation}
         examCount={exam?.subjects?.length || 0}
+        language={language}
+        onLanguageChange={setLanguage}
       />
 
       <PrintHeader
@@ -75,6 +83,7 @@ export default function ExamResultsPage() {
         printLimit={printLimit}
         totalStudents={results.length}
         orientation={orientation}
+        language={language}
       />
 
       {results.length === 0 ? (
@@ -87,6 +96,7 @@ export default function ExamResultsPage() {
           onPrintLimitChange={setPrintLimit}
           orientation={orientation}
           onOrientationChange={setOrientation}
+          language={language}
         />
       )}
     </div>

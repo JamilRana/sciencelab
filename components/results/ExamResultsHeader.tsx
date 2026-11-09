@@ -10,6 +10,7 @@ import {
   tTerm,
   localizeClassName,
   localizeMonthName,
+  localizeExamType,
   formatResultNumber,
 } from "@/lib/results-i18n";
 
@@ -49,17 +50,14 @@ export default function ExamResultsHeader({
 
   const urlLang = searchParams?.get("lang") as ResultLanguage | null;
   const language: ResultLanguage =
-    languageProp && languageProp !== "en"
-      ? languageProp
-      : urlLang === "bn" || urlLang === "bilingual" || urlLang === "en"
-      ? urlLang
-      : languageProp || "en";
+    languageProp ||
+    (urlLang === "bn" || urlLang === "bilingual" || urlLang === "en" ? urlLang : "bn");
 
   const handleSelectLang = (newLang: ResultLanguage) => {
     onLanguageChange?.(newLang);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      if (newLang === "en") {
+      if (newLang === "bn") {
         url.searchParams.delete("lang");
       } else {
         url.searchParams.set("lang", newLang);
@@ -136,7 +134,7 @@ export default function ExamResultsHeader({
               </span>
             </div>
             <p className="text-xs text-zinc-500 mt-0.5">
-              {exam.type} Examination · {localizeMonthName(exam.month, language)} {formatResultNumber(year, language)} · {formatResultNumber(totalStudents, language)} {tTerm("allStudents", language)}
+              {localizeExamType(exam.type, language)} · {localizeMonthName(exam.month, language)} {formatResultNumber(year, language)} · {formatResultNumber(totalStudents, language)} {tTerm("allStudents", language)}
             </p>
           </div>
         </div>

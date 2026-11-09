@@ -8,6 +8,9 @@ import {
   ResultLanguage,
   tTerm,
   localizeSubjectName,
+  localizeClassName,
+  localizeMonthName,
+  localizeExamType,
   formatResultNumber,
 } from "@/lib/results-i18n";
 
@@ -66,11 +69,8 @@ export default function MeritListTable({
   const searchParams = useSearchParams();
   const urlLang = searchParams?.get("lang") as ResultLanguage | null;
   const language: ResultLanguage =
-    languageProp && languageProp !== "en"
-      ? languageProp
-      : urlLang === "bn" || urlLang === "bilingual" || urlLang === "en"
-      ? urlLang
-      : languageProp || "en";
+    languageProp ||
+    (urlLang === "bn" || urlLang === "bilingual" || urlLang === "en" ? urlLang : "bn");
 
   const isMoreThanFourExams = (data?.subjects?.length || 0) > 4;
   const effectiveOrientation: "portrait" | "landscape" =
@@ -202,7 +202,7 @@ export default function MeritListTable({
               </span>
             )}
             <span className="text-xs text-zinc-400 font-medium">
-              {tTerm("class", language)} {data.class} · {data.month} ({data.type})
+              {tTerm("class", language)} {localizeClassName(data.class, language)} · {localizeMonthName(data.month, language)} ({localizeExamType(data.type, language)})
             </span>
           </div>
         </div>

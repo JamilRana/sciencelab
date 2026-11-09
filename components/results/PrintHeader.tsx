@@ -7,6 +7,7 @@ import {
   tTerm,
   localizeClassName,
   localizeMonthName,
+  localizeExamType,
   formatResultNumber,
 } from "@/lib/results-i18n";
 
@@ -36,11 +37,8 @@ export default function PrintHeader({
   const searchParams = useSearchParams();
   const urlLang = searchParams?.get("lang") as ResultLanguage | null;
   const language: ResultLanguage =
-    languageProp && languageProp !== "en"
-      ? languageProp
-      : urlLang === "bn" || urlLang === "bilingual" || urlLang === "en"
-      ? urlLang
-      : languageProp || "en";
+    languageProp ||
+    (urlLang === "bn" || urlLang === "bilingual" || urlLang === "en" ? urlLang : "bn");
   const displaySchoolName = schoolName || tTerm("instituteName", language);
 
   let scopeText = "";
@@ -66,10 +64,22 @@ export default function PrintHeader({
 
   const examTitle =
     language === "bn"
-      ? `${exam.type} পরীক্ষা — ${localizeMonthName(exam.month, "bn")} ${formatResultNumber(year, "bn")}`
+      ? `${localizeExamType(exam.type, "bn")} — ${localizeMonthName(exam.month, "bn")} ${formatResultNumber(year, "bn")}`
       : language === "bilingual"
-      ? `${exam.type} Examination / পরীক্ষা — ${exam.month} ${year}`
+      ? `${exam.type} Examination / পরীক্ষা — ${localizeMonthName(exam.month, "bilingual")} ${year}`
       : `${exam.type} Examination — ${exam.month} ${year}`;
+
+  const generatedDateDisplay =
+    language === "bn"
+      ? formatResultNumber(
+          new Date().toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+          "bn"
+        )
+      : new Date().toLocaleDateString();
 
   return (
     <div
@@ -102,7 +112,7 @@ export default function PrintHeader({
 
       {/* Generated Date */}
       <p className="text-[11px] text-gray-600 mt-1">
-        {tTerm("generatedOn", language)}: {new Date().toLocaleDateString()}
+        {tTerm("generatedOn", language)}: {generatedDateDisplay}
       </p>
     </div>
   );

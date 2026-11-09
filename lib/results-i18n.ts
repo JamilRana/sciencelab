@@ -356,56 +356,114 @@ export function tTerm(key: TermKey, lang: ResultLanguage): string {
 }
 
 // Common Subject Name Localization Mapping
-const SUBJECT_TRANSLATIONS: Record<string, { bn: string; bilingual: string }> = {
-  "Bangla": { bn: "বাংলা", bilingual: "Bangla / বাংলা" },
-  "Bangla 1st": { bn: "বাংলা ১ম পত্র", bilingual: "Bangla 1st / বাংলা ১ম" },
-  "Bangla 2nd": { bn: "বাংলা ২য় পত্র", bilingual: "Bangla 2nd / বাংলা ২য়" },
-  "English": { bn: "ইংরেজি", bilingual: "English / ইংরেজি" },
-  "English 1st": { bn: "ইংরেজি ১ম পত্র", bilingual: "English 1st / ইংরেজি ১ম" },
-  "English 2nd": { bn: "ইংরেজি ২য় পত্র", bilingual: "English 2nd / ইংরেজি ২য়" },
-  "Mathematics": { bn: "গণিত", bilingual: "Mathematics / গণিত" },
-  "Math": { bn: "গণিত", bilingual: "Math / গণিত" },
-  "General Math": { bn: "সাধারণ গণিত", bilingual: "General Math / সাধারণ গণিত" },
-  "Higher Math": { bn: "উচ্চতর গণিত", bilingual: "Higher Math / উচ্চতর গণিত" },
-  "Science": { bn: "বিজ্ঞান", bilingual: "Science / বিজ্ঞান" },
-  "General Science": { bn: "সাধারণ বিজ্ঞান", bilingual: "Science / সাধারণ বিজ্ঞান" },
-  "Physics": { bn: "পদার্থবিজ্ঞান", bilingual: "Physics / পদার্থবিজ্ঞান" },
-  "Chemistry": { bn: "রসায়ন", bilingual: "Chemistry / রসায়ন" },
-  "Biology": { bn: "জীববিজ্ঞান", bilingual: "Biology / জীববিজ্ঞান" },
-  "BGS": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
-  "Bangladesh & Global Studies": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
-  "ICT": { bn: "তথ্য ও যোগাযোগ প্রযুক্তি", bilingual: "ICT / তথ্যপ্রযুক্তি" },
-  "Religion": { bn: "ধর্ম ও নৈতিক শিক্ষা", bilingual: "Religion / ধর্ম" },
-  "Islam": { bn: "ইসলাম ও নৈতিক শিক্ষা", bilingual: "Islam / ইসলাম শিক্ষা" },
-  "Hinduism": { bn: "হিন্দুধর্ম ও নৈতিক শিক্ষা", bilingual: "Hinduism / হিন্দুধর্ম" },
+const BASE_SUBJECT_TRANSLATIONS: Record<string, { bn: string; bilingual: string }> = {
+  "bangla": { bn: "বাংলা", bilingual: "Bangla / বাংলা" },
+  "bangla 1st": { bn: "বাংলা ১ম পত্র", bilingual: "Bangla 1st / বাংলা ১ম" },
+  "bangla 2nd": { bn: "বাংলা ২য় পত্র", bilingual: "Bangla 2nd / বাংলা ২য়" },
+  "english": { bn: "ইংরেজি", bilingual: "English / ইংরেজি" },
+  "english 1st": { bn: "ইংরেজি ১ম পত্র", bilingual: "English 1st / ইংরেজি ১ম" },
+  "english 2nd": { bn: "ইংরেজি ২য় পত্র", bilingual: "English 2nd / ইংরেজি ২য়" },
+  "mathematics": { bn: "গণিত", bilingual: "Mathematics / গণিত" },
+  "math": { bn: "গণিত", bilingual: "Math / গণিত" },
+  "general math": { bn: "সাধারণ গণিত", bilingual: "General Math / সাধারণ গণিত" },
+  "higher math": { bn: "উচ্চতর গণিত", bilingual: "Higher Math / উচ্চতর গণিত" },
+  "science": { bn: "বিজ্ঞান", bilingual: "Science / বিজ্ঞান" },
+  "general science": { bn: "সাধারণ বিজ্ঞান", bilingual: "Science / সাধারণ বিজ্ঞান" },
+  "physics": { bn: "পদার্থবিজ্ঞান", bilingual: "Physics / পদার্থবিজ্ঞান" },
+  "chemistry": { bn: "রসায়ন", bilingual: "Chemistry / রসায়ন" },
+  "biology": { bn: "জীববিজ্ঞান", bilingual: "Biology / জীববিজ্ঞান" },
+  "bgs": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
+  "bangladesh & global studies": { bn: "বাংলাদেশ ও বিশ্বপরিচয়", bilingual: "BGS / বাংলাদেশ ও বিশ্বপরিচয়" },
+  "ict": { bn: "তথ্য ও যোগাযোগ প্রযুক্তি", bilingual: "ICT / তথ্যপ্রযুক্তি" },
+  "religion": { bn: "ধর্ম ও নৈতিক শিক্ষা", bilingual: "Religion / ধর্ম" },
+  "islam": { bn: "ইসলাম ও নৈতিক শিক্ষা", bilingual: "Islam / ইসলাম শিক্ষা" },
+  "hinduism": { bn: "হিন্দুধর্ম ও নৈতিক শিক্ষা", bilingual: "Hinduism / হিন্দুধর্ম" },
+  "accounting": { bn: "হিসাববিজ্ঞান", bilingual: "Accounting / হিসাববিজ্ঞান" },
+  "finance": { bn: "ফিন্যান্স ও ব্যাংকিং", bilingual: "Finance / ফিন্যান্স" },
+  "business": { bn: "ব্যবসায় উদ্যোগ", bilingual: "Business / ব্যবসায় উদ্যোগ" },
+  "economics": { bn: "অর্থনীতি", bilingual: "Economics / অর্থনীতি" },
+  "geography": { bn: "ভূগোল", bilingual: "Geography / ভূগোল" },
+  "history": { bn: "ইতিহাস", bilingual: "History / ইতিহাস" },
+  "civics": { bn: "পৌরনীতি", bilingual: "Civics / পৌরনীতি" },
+  "agriculture": { bn: "কৃষিশিক্ষা", bilingual: "Agriculture / কৃষিশিক্ষা" },
+  "home science": { bn: "গার্হস্থ্য বিজ্ঞান", bilingual: "Home Science / গার্হস্থ্য বিজ্ঞান" },
 };
 
 export function localizeSubjectName(subjectName: string, lang: ResultLanguage): string {
   if (lang === "en" || !subjectName) return subjectName;
-  const match = SUBJECT_TRANSLATIONS[subjectName.trim()];
-  if (match) {
-    return lang === "bn" ? match.bn : match.bilingual;
+
+  const raw = subjectName.trim();
+  const lower = raw.toLowerCase();
+
+  // 1. Direct match
+  if (BASE_SUBJECT_TRANSLATIONS[lower]) {
+    return lang === "bn" ? BASE_SUBJECT_TRANSLATIONS[lower].bn : BASE_SUBJECT_TRANSLATIONS[lower].bilingual;
   }
-  return subjectName;
+
+  // 2. Pattern: "SUBJECT(EXAM-1)" or "SUBJECT (EXAM 1)" or "SUBJECT(EXAM:1)"
+  const examSuffixMatch = raw.match(/^([^(]+?)\s*[\(\[]\s*exam\s*[-–—:]?\s*(\d+)\s*[\)\]]$/i);
+  if (examSuffixMatch) {
+    const baseRaw = examSuffixMatch[1].trim();
+    const examNum = examSuffixMatch[2];
+    const baseLower = baseRaw.toLowerCase();
+    const baseTrans = BASE_SUBJECT_TRANSLATIONS[baseLower]?.bn || baseRaw;
+    const bnNum = toBengaliNumber(examNum);
+
+    if (lang === "bn") {
+      return `${baseTrans} (পরীক্ষা-${bnNum})`;
+    }
+    return `${baseRaw} (Exam-${examNum}) / ${baseTrans} (পরীক্ষা-${bnNum})`;
+  }
+
+  // 3. Pattern: "SUBJECT (1ST)" or "SUBJECT (2ND)" or "SUBJECT 1ST"
+  const paperMatch = raw.match(/^([^(]+?)\s*(?:[\(\[]\s*)?(\d+)(st|nd|rd|th)?\s*(?:paper)?\s*(?:[\)\]])?$/i);
+  if (paperMatch) {
+    const baseRaw = paperMatch[1].trim();
+    const paperNum = paperMatch[2];
+    const baseLower = baseRaw.toLowerCase();
+    const baseTrans = BASE_SUBJECT_TRANSLATIONS[baseLower]?.bn || baseRaw;
+    const paperBn = paperNum === "1" ? "১ম পত্র" : paperNum === "2" ? "২য় পত্র" : `${toBengaliNumber(paperNum)} পত্র`;
+
+    if (lang === "bn") {
+      return `${baseTrans} ${paperBn}`;
+    }
+    return `${baseRaw} ${paperNum} / ${baseTrans} ${paperBn}`;
+  }
+
+  return raw;
 }
 
 // Common Class Name Localization Mapping
 const CLASS_TRANSLATIONS: Record<string, { bn: string; bilingual: string }> = {
-  "Six": { bn: "ষষ্ঠ", bilingual: "Six / ষষ্ঠ" },
-  "Seven": { bn: "সপ্তম", bilingual: "Seven / সপ্তম" },
-  "Eight": { bn: "অষ্টম", bilingual: "Eight / অষ্টম" },
-  "Nine": { bn: "নবম", bilingual: "Nine / নবম" },
-  "Ten": { bn: "দশম", bilingual: "Ten / দশম" },
+  "six": { bn: "ষষ্ঠ", bilingual: "Six / ষষ্ঠ" },
+  "seven": { bn: "সপ্তম", bilingual: "Seven / সপ্তম" },
+  "eight": { bn: "অষ্টম", bilingual: "Eight / অষ্টম" },
+  "nine": { bn: "নবম", bilingual: "Nine / নবম" },
+  "ten": { bn: "দশম", bilingual: "Ten / দশম" },
+  "class six": { bn: "ষষ্ঠ শ্রেণি", bilingual: "Class Six / ষষ্ঠ শ্রেণি" },
+  "class seven": { bn: "সপ্তম শ্রেণি", bilingual: "Class Seven / সপ্তম শ্রেণি" },
+  "class eight": { bn: "অষ্টম শ্রেণি", bilingual: "Class Eight / অষ্টম শ্রেণি" },
+  "class nine": { bn: "নবম শ্রেণি", bilingual: "Class Nine / নবম শ্রেণি" },
+  "class ten": { bn: "দশম শ্রেণি", bilingual: "Class Ten / দশম শ্রেণি" },
+  "class 6": { bn: "৬ষ্ঠ শ্রেণি", bilingual: "Class 6 / ৬ষ্ঠ শ্রেণি" },
+  "class 7": { bn: "৭ম শ্রেণি", bilingual: "Class 7 / ৭ম শ্রেণি" },
+  "class 8": { bn: "৮ম শ্রেণি", bilingual: "Class 8 / ৮ম শ্রেণি" },
+  "class 9": { bn: "৯ম শ্রেণি", bilingual: "Class 9 / ৯ম শ্রেণি" },
+  "class 10": { bn: "১০ম শ্রেণি", bilingual: "Class 10 / ১০ম শ্রেণি" },
   "6": { bn: "৬ষ্ঠ", bilingual: "Class 6 / ৬ষ্ঠ" },
   "7": { bn: "৭ম", bilingual: "Class 7 / ৭ম" },
   "8": { bn: "৮ম", bilingual: "Class 8 / ৮ম" },
   "9": { bn: "৯ম", bilingual: "Class 9 / ৯ম" },
   "10": { bn: "১০ম", bilingual: "Class 10 / ১০ম" },
+  "ssc": { bn: "এসএসসি", bilingual: "SSC / এসএসসি" },
+  "hsc": { bn: "এইচএসসি", bilingual: "HSC / এইচএসসি" },
+  "junior": { bn: "জুনিয়র", bilingual: "Junior / জুনিয়র" },
 };
 
 export function localizeClassName(className: string, lang: ResultLanguage): string {
   if (lang === "en" || !className) return className;
-  const match = CLASS_TRANSLATIONS[className.trim()];
+  const lower = className.trim().toLowerCase();
+  const match = CLASS_TRANSLATIONS[lower];
   if (match) {
     return lang === "bn" ? match.bn : match.bilingual;
   }
@@ -414,25 +472,66 @@ export function localizeClassName(className: string, lang: ResultLanguage): stri
 
 // Month localization
 const MONTH_TRANSLATIONS: Record<string, { bn: string; bilingual: string }> = {
-  "January": { bn: "জানুয়ারি", bilingual: "January / জানুয়ারি" },
-  "February": { bn: "ফেব্রুয়ারি", bilingual: "February / ফেব্রুয়ারি" },
-  "March": { bn: "মার্চ", bilingual: "March / মার্চ" },
-  "April": { bn: "এপ্রিল", bilingual: "April / এপ্রিল" },
-  "May": { bn: "মে", bilingual: "May / মে" },
-  "June": { bn: "জুন", bilingual: "June / জুন" },
-  "July": { bn: "জুলাই", bilingual: "July / জুলাই" },
-  "August": { bn: "আগস্ট", bilingual: "August / আগস্ট" },
-  "September": { bn: "সেপ্টেম্বর", bilingual: "September / সেপ্টেম্বর" },
-  "October": { bn: "অক্টোবর", bilingual: "October / অক্টোবর" },
-  "November": { bn: "নভেম্বর", bilingual: "November / নভেম্বর" },
-  "December": { bn: "ডিসেম্বর", bilingual: "December / ডিসেম্বর" },
+  "january": { bn: "জানুয়ারি", bilingual: "January / জানুয়ারি" },
+  "jan": { bn: "জানুয়ারি", bilingual: "Jan / জানুয়ারি" },
+  "february": { bn: "ফেব্রুয়ারি", bilingual: "February / ফেব্রুয়ারি" },
+  "feb": { bn: "ফেব্রুয়ারি", bilingual: "Feb / ফেব্রুয়ারি" },
+  "march": { bn: "মার্চ", bilingual: "March / মার্চ" },
+  "mar": { bn: "মার্চ", bilingual: "Mar / মার্চ" },
+  "april": { bn: "এপ্রিল", bilingual: "April / এপ্রিল" },
+  "apr": { bn: "এপ্রিল", bilingual: "Apr / এপ্রিল" },
+  "may": { bn: "মে", bilingual: "May / মে" },
+  "june": { bn: "জুন", bilingual: "June / জুন" },
+  "jun": { bn: "জুন", bilingual: "Jun / জুন" },
+  "july": { bn: "জুলাই", bilingual: "July / জুলাই" },
+  "jul": { bn: "জুলাই", bilingual: "Jul / জুলাই" },
+  "august": { bn: "আগস্ট", bilingual: "August / আগস্ট" },
+  "aug": { bn: "আগস্ট", bilingual: "Aug / আগস্ট" },
+  "september": { bn: "সেপ্টেম্বর", bilingual: "September / সেপ্টেম্বর" },
+  "sep": { bn: "সেপ্টেম্বর", bilingual: "Sep / সেপ্টেম্বর" },
+  "sept": { bn: "সেপ্টেম্বর", bilingual: "Sept / সেপ্টেম্বর" },
+  "october": { bn: "অক্টোবর", bilingual: "October / অক্টোবর" },
+  "oct": { bn: "অক্টোবর", bilingual: "Oct / অক্টোবর" },
+  "november": { bn: "নভেম্বর", bilingual: "November / নভেম্বর" },
+  "nov": { bn: "নভেম্বর", bilingual: "Nov / নভেম্বর" },
+  "december": { bn: "ডিসেম্বর", bilingual: "December / ডিসেম্বর" },
+  "dec": { bn: "ডিসেম্বর", bilingual: "Dec / ডিসেম্বর" },
 };
 
 export function localizeMonthName(monthName: string, lang: ResultLanguage): string {
   if (lang === "en" || !monthName) return monthName;
-  const match = MONTH_TRANSLATIONS[monthName.trim()];
+  const lower = monthName.trim().toLowerCase();
+  const match = MONTH_TRANSLATIONS[lower];
   if (match) {
     return lang === "bn" ? match.bn : match.bilingual;
   }
   return monthName;
+}
+
+// Exam Type localization
+const EXAM_TYPE_TRANSLATIONS: Record<string, { bn: string; bilingual: string }> = {
+  "model test": { bn: "মডেল টেস্ট পরীক্ষা", bilingual: "Model Test / মডেল টেস্ট পরীক্ষা" },
+  "monthly": { bn: "মাসিক পরীক্ষা", bilingual: "Monthly Exam / মাসিক পরীক্ষা" },
+  "monthly test": { bn: "মাসিক পরীক্ষা", bilingual: "Monthly Test / মাসিক পরীক্ষা" },
+  "weekly": { bn: "সাপ্তাহিক পরীক্ষা", bilingual: "Weekly Test / সাপ্তাহিক পরীক্ষা" },
+  "weekly test": { bn: "সাপ্তাহিক পরীক্ষা", bilingual: "Weekly Test / সাপ্তাহিক পরীক্ষা" },
+  "annual": { bn: "বার্ষিক পরীক্ষা", bilingual: "Annual Exam / বার্ষিক পরীক্ষা" },
+  "annual exam": { bn: "বার্ষিক পরীক্ষা", bilingual: "Annual Exam / বার্ষিক পরীক্ষা" },
+  "term": { bn: "সাময়িক পরীক্ষা", bilingual: "Term Exam / সাময়িক পরীক্ষা" },
+  "term exam": { bn: "সাময়িক পরীক্ষা", bilingual: "Term Exam / সাময়িক পরীক্ষা" },
+  "half yearly": { bn: "অর্ধবার্ষিক পরীক্ষা", bilingual: "Half Yearly / অর্ধবার্ষিক পরীক্ষা" },
+  "pre-test": { bn: "প্রাক-নির্বাচনী পরীক্ষা", bilingual: "Pre-Test / প্রাক-নির্বাচনী" },
+  "test": { bn: "নির্বাচনী পরীক্ষা", bilingual: "Test Exam / নির্বাচনী পরীক্ষা" },
+  "special": { bn: "বিশেষ মূল্যায়ন পরীক্ষা", bilingual: "Special Exam / বিশেষ পরীক্ষা" },
+  "admission": { bn: "ভর্তি পরীক্ষা", bilingual: "Admission Test / ভর্তি পরীক্ষা" },
+};
+
+export function localizeExamType(examType: string, lang: ResultLanguage): string {
+  if (lang === "en" || !examType) return examType ? `${examType} Examination` : "Examination";
+  const normalized = examType.trim().toLowerCase();
+  const match = EXAM_TYPE_TRANSLATIONS[normalized];
+  if (match) {
+    return lang === "bn" ? match.bn : match.bilingual;
+  }
+  return lang === "bn" ? `${examType} পরীক্ষা` : `${examType} Examination / পরীক্ষা`;
 }
