@@ -23,6 +23,7 @@ export default function ExamResultsPage() {
   const [exam, setExam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [printLimit, setPrintLimit] = useState<number | null>(null);
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
 
   const currentYear = new Date().getFullYear();
 
@@ -34,6 +35,9 @@ export default function ExamResultsPage() {
         const res = await fetch(`/api/exams/${id}`);
         const data = await res.json();
         setExam(data);
+        if (data?.subjects) {
+          setOrientation(data.subjects.length > 4 ? "landscape" : "portrait");
+        }
       } catch (error) {
         console.error("Error fetching exam:", error);
       } finally {
@@ -60,6 +64,9 @@ export default function ExamResultsPage() {
         printLimit={printLimit}
         onPrintLimitChange={setPrintLimit}
         totalStudents={results.length}
+        orientation={orientation}
+        onOrientationChange={setOrientation}
+        examCount={exam?.subjects?.length || 0}
       />
 
       <PrintHeader
@@ -67,6 +74,7 @@ export default function ExamResultsPage() {
         year={currentYear}
         printLimit={printLimit}
         totalStudents={results.length}
+        orientation={orientation}
       />
 
       {results.length === 0 ? (
@@ -77,6 +85,8 @@ export default function ExamResultsPage() {
           results={results}
           printLimit={printLimit}
           onPrintLimitChange={setPrintLimit}
+          orientation={orientation}
+          onOrientationChange={setOrientation}
         />
       )}
     </div>

@@ -404,6 +404,22 @@ export function CompiledMarksheetViewerClient({
           </div>
         </div>
       </div>
+
+      {/* Dynamic Print Stylesheet */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: ${exams.length > 4 ? "A4 landscape" : "A4 portrait"};
+            margin: ${exams.length > 4 ? "6mm 8mm 8mm 8mm" : "8mm 10mm 10mm 10mm"};
+          }
+          thead {
+            display: table-header-group !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

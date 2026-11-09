@@ -50,6 +50,8 @@ interface MeritListTableProps {
   printLimit?: number | null;
   onPrintLimitChange?: (limit: number | null) => void;
   language?: ResultLanguage;
+  orientation?: "portrait" | "landscape";
+  onOrientationChange?: (orientation: "portrait" | "landscape") => void;
 }
 
 export default function MeritListTable({
@@ -58,6 +60,8 @@ export default function MeritListTable({
   printLimit = null,
   onPrintLimitChange,
   language: languageProp,
+  orientation: orientationProp,
+  onOrientationChange,
 }: MeritListTableProps) {
   const searchParams = useSearchParams();
   const urlLang = searchParams?.get("lang") as ResultLanguage | null;
@@ -67,6 +71,11 @@ export default function MeritListTable({
       : urlLang === "bn" || urlLang === "bilingual" || urlLang === "en"
       ? urlLang
       : languageProp || "en";
+
+  const isMoreThanFourExams = (data?.subjects?.length || 0) > 4;
+  const effectiveOrientation: "portrait" | "landscape" =
+    orientationProp || (isMoreThanFourExams ? "landscape" : "portrait");
+
   const top1 = results.find((r) => r.position === 1);
   const top2 = results.find((r) => r.position === 2);
   const top3 = results.find((r) => r.position === 3);
@@ -184,32 +193,41 @@ export default function MeritListTable({
               {tTerm("meritListTitle", language)} ({formatResultNumber(results.length, language)} {tTerm("allStudents", language)})
             </h2>
           </div>
-          <span className="text-xs text-zinc-400 font-medium">
-            {tTerm("class", language)} {data.class} · {data.month} ({data.type})
-          </span>
+          <div className="flex items-center gap-2">
+            {isMoreThanFourExams && (
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200/80">
+                {language === "bn"
+                  ? `আড়াআড়ি প্রিন্ট (${formatResultNumber(data.subjects.length, language)} টি বিষয়)`
+                  : `Landscape Print (${data.subjects.length} exams)`}
+              </span>
+            )}
+            <span className="text-xs text-zinc-400 font-medium">
+              {tTerm("class", language)} {data.class} · {data.month} ({data.type})
+            </span>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-[13px] print:text-xs">
-            <thead className="bg-zinc-50 border-b border-zinc-200 text-[11px] font-semibold text-zinc-600 uppercase tracking-wider print:bg-white print:border-b-2 print:border-black print:text-black">
+        <div className="overflow-x-auto print:overflow-visible">
+          <table className="merit-table-print w-full border-collapse text-left text-[13px] print:text-[9.5pt]">
+            <thead className="bg-zinc-50 border-b border-zinc-200 text-[11px] font-semibold text-zinc-600 uppercase tracking-wider print:bg-gray-100 print:border-b-2 print:border-black print:text-black">
               <tr>
-                <th className="py-2.5 px-3 w-16 text-center">{tTerm("position", language)}</th>
-                <th className="py-2.5 px-3 w-24 text-center">{tTerm("roll", language)}</th>
-                <th className="py-2.5 px-4 min-w-[160px]">{tTerm("studentName", language)}</th>
+                <th className="py-2.5 px-3 w-16 text-center print:w-auto print:py-1.5 print:px-2 print:text-[8.5pt]">{tTerm("position", language)}</th>
+                <th className="py-2.5 px-3 w-24 text-center print:w-auto print:py-1.5 print:px-2 print:text-[8.5pt]">{tTerm("roll", language)}</th>
+                <th className="py-2.5 px-4 min-w-[160px] print:min-w-0 print:py-1.5 print:px-2.5 print:text-[9pt]">{tTerm("studentName", language)}</th>
                 {data.subjects.map((s) => (
-                  <th key={s.id} className="py-2.5 px-3 text-center min-w-[80px]">
+                  <th key={s.id} className="py-2.5 px-3 text-center min-w-[80px] print:min-w-0 print:py-1.5 print:px-2 print:text-[8.5pt]">
                     {localizeSubjectName(s.subject, language)}
                     <span className="block text-[9px] text-zinc-400 font-normal print:hidden">
                       /{formatResultNumber(s.totalMark, language)}
                     </span>
                   </th>
                 ))}
-                <th className="py-2.5 px-3.5 text-center w-24">{tTerm("totalShort", language)}</th>
-                <th className="py-2.5 px-3.5 text-center w-20">{tTerm("percentage", language)}</th>
+                <th className="py-2.5 px-3.5 text-center w-24 print:w-auto print:py-1.5 print:px-2 print:text-[8.5pt]">{tTerm("totalShort", language)}</th>
+                <th className="py-2.5 px-3.5 text-center w-20 print:w-auto print:py-1.5 print:px-2 print:text-[8.5pt]">{tTerm("percentage", language)}</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-zinc-100 print:divide-zinc-300">
+            <tbody className="divide-y divide-zinc-100 print:divide-zinc-400">
               {results.map((r, index) => {
                 const isPodium = r.position <= 3;
                 const isExcludedFromPrint =
@@ -229,9 +247,9 @@ export default function MeritListTable({
                     }`}
                   >
                     {/* Rank Badge */}
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center print:py-1 print:px-2 print:text-[9pt]">
                       <span
-                        className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold tabular-nums print:text-black print:bg-transparent ${
+                        className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold tabular-nums print:text-black print:bg-transparent print:h-auto print:w-auto print:inline print:font-bold ${
                           r.position === 1
                             ? "bg-amber-400 text-amber-950 shadow-xs"
                             : r.position === 2
@@ -246,13 +264,13 @@ export default function MeritListTable({
                     </td>
 
                     {/* Roll */}
-                    <td className="py-2.5 px-3 text-center font-bold text-xs text-indigo-700 tabular-nums print:text-black">
+                    <td className="py-2.5 px-3 text-center font-bold text-xs text-indigo-700 tabular-nums print:text-black print:py-1 print:px-2 print:text-[9pt]">
                       {formatResultNumber(getRollString(r.student), language)}
                     </td>
 
                     {/* Student Name */}
-                    <td className="py-2.5 px-4">
-                      <p className="font-semibold text-zinc-900 truncate">{r.student.name}</p>
+                    <td className="py-2.5 px-4 print:py-1 print:px-2.5">
+                      <p className="font-semibold text-zinc-900 truncate print:whitespace-normal print:overflow-visible print:text-[9pt]">{r.student.name}</p>
                       <p className="text-[10px] text-zinc-400 print:hidden">{r.student.batch?.name}</p>
                     </td>
 
@@ -260,19 +278,19 @@ export default function MeritListTable({
                     {data.subjects.map((s) => {
                       const mark = r.subjectMarks.find((m) => m.subject === s.subject);
                       return (
-                        <td key={s.id} className="py-2.5 px-3 text-center tabular-nums text-zinc-700 print:text-black">
+                        <td key={s.id} className="py-2.5 px-3 text-center tabular-nums text-zinc-700 print:text-black print:py-1 print:px-2 print:text-[9pt]">
                           {mark ? formatResultNumber(mark.total, language) : "—"}
                         </td>
                       );
                     })}
 
                     {/* Total */}
-                    <td className="py-2.5 px-3.5 text-center font-bold text-zinc-900 tabular-nums print:text-black">
+                    <td className="py-2.5 px-3.5 text-center font-bold text-zinc-900 tabular-nums print:text-black print:py-1 print:px-2 print:text-[9.5pt]">
                       {formatResultNumber(r.total, language)}
                     </td>
 
                     {/* Percentage */}
-                    <td className="py-2.5 px-3.5 text-center font-medium text-xs text-zinc-600 tabular-nums print:text-black">
+                    <td className="py-2.5 px-3.5 text-center font-medium text-xs text-zinc-600 tabular-nums print:text-black print:py-1 print:px-2 print:text-[9pt]">
                       {r.percentage ? `${formatResultNumber(r.percentage, language)}%` : "—"}
                     </td>
                   </tr>
@@ -283,7 +301,7 @@ export default function MeritListTable({
         </div>
 
         {/* Signature Strip for Print */}
-        <div className="hidden print:grid grid-cols-3 gap-6 pt-16 pb-4 px-6 text-center text-xs text-black">
+        <div className="print-signature-strip hidden print:grid grid-cols-3 gap-6 pt-14 pb-4 px-6 text-center text-xs text-black">
           <div className="border-t border-black pt-1">
             <span className="font-bold">{tTerm("teacherSignature", language)}</span>
           </div>
@@ -295,6 +313,61 @@ export default function MeritListTable({
           </div>
         </div>
       </div>
+
+      {/* Dynamic Print Stylesheet */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: ${effectiveOrientation === "landscape" ? "A4 landscape" : "A4 portrait"};
+            margin: ${effectiveOrientation === "landscape" ? "6mm 8mm 8mm 8mm" : "8mm 10mm 10mm 10mm"};
+          }
+
+          body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .merit-table-print {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: ${effectiveOrientation === "landscape" ? (data.subjects.length > 6 ? "9pt" : "9.5pt") : "9pt"} !important;
+          }
+
+          .merit-table-print th,
+          .merit-table-print td {
+            border: 1pt solid #000000 !important;
+            padding: ${effectiveOrientation === "landscape" ? "4px 6px" : "4px 6px"} !important;
+            color: #000000 !important;
+            line-height: 1.25 !important;
+          }
+
+          .merit-table-print th {
+            background-color: #f3f4f6 !important;
+            font-weight: 700 !important;
+            font-size: 8.5pt !important;
+            text-align: center !important;
+          }
+
+          /* Ensure table headers repeat across pages */
+          thead {
+            display: table-header-group !important;
+          }
+
+          /* Prevent individual rows from tearing across pages */
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          /* Signature strip avoid page break inside */
+          .print-signature-strip {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

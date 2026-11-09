@@ -21,6 +21,7 @@ type PrintHeaderProps = {
   printLimit?: number | null;
   totalStudents?: number;
   language?: ResultLanguage;
+  orientation?: "portrait" | "landscape";
 };
 
 export default function PrintHeader({
@@ -30,6 +31,7 @@ export default function PrintHeader({
   printLimit = null,
   totalStudents = 0,
   language: languageProp,
+  orientation = "portrait",
 }: PrintHeaderProps) {
   const searchParams = useSearchParams();
   const urlLang = searchParams?.get("lang") as ResultLanguage | null;
@@ -70,8 +72,12 @@ export default function PrintHeader({
       : `${exam.type} Examination — ${exam.month} ${year}`;
 
   return (
-    <div className="hidden print:block text-center mb-6 border-b-2 border-black pb-4 text-black">
-      <div className="flex items-center justify-center gap-3 mb-2">
+    <div
+      className={`hidden print:block text-center border-b-2 border-black text-black ${
+        orientation === "landscape" ? "mb-3 pb-2" : "mb-5 pb-3.5"
+      }`}
+    >
+      <div className="flex items-center justify-center gap-3 mb-1.5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo2.png" alt="Logo" className="h-10 w-auto object-contain" />
         <div>

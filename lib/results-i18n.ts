@@ -100,6 +100,21 @@ export const I18N_TERMS = {
     bn: "বিষয়সমূহ",
     bilingual: "Subjects / বিষয়সমূহ",
   },
+  portrait: {
+    en: "Portrait",
+    bn: "লম্বালম্বি",
+    bilingual: "Portrait / লম্বালম্বি",
+  },
+  landscape: {
+    en: "Landscape",
+    bn: "আড়াআড়ি",
+    bilingual: "Landscape / আড়াআড়ি",
+  },
+  pageOrientation: {
+    en: "Page",
+    bn: "পৃষ্ঠা",
+    bilingual: "Page / পৃষ্ঠা",
+  },
   written: {
     en: "Written",
     bn: "লিখিত",
