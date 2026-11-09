@@ -94,9 +94,11 @@ export default function PrintHeader({
           <h1 className="text-2xl font-bold uppercase tracking-wide">
             {displaySchoolName}
           </h1>
-          <p className="text-xs font-semibold uppercase text-gray-700">
-            {tTerm("instituteSubtitle", language)}
-          </p>
+          {tTerm("instituteSubtitle", language) && (
+            <p className="text-xs font-semibold uppercase text-gray-700">
+              {tTerm("instituteSubtitle", language)}
+            </p>
+          )}
         </div>
       </div>
 

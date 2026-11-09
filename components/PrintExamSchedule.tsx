@@ -115,9 +115,6 @@ export function PrintExamSchedule({ exam }: PrintExamProps) {
                     </p>
                   </div>
                 </div>
-                <p className="board-division">
-                  {isBn ? "একাডেমিক কেয়ার ও পরীক্ষা বিভাগ" : "Academic Care & Examination Division"}
-                </p>
                 <p className="exam-meta">
                   {examTitle}
                 </p>

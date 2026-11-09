@@ -27,8 +27,8 @@ export const I18N_TERMS = {
   },
   instituteSubtitle: {
     en: "Academic Care & Examination Division",
-    bn: "একাডেমিক কেয়ার ও পরীক্ষা বিভাগ",
-    bilingual: "Academic Care & Examination Division · একাডেমিক কেয়ার ও পরীক্ষা বিভাগ",
+    bn: "",
+    bilingual: "Academic Care & Examination Division",
   },
   specialDivisionSubtitle: {
     en: "Special Care Academic Program · SSC & Junior Examination Wing",
