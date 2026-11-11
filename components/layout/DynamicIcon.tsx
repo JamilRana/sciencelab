@@ -51,6 +51,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Archive,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -106,6 +107,7 @@ const icons: Record<string, LucideIcon> = {
   Plus,
   School,
   Archive,
+  FileText,
 };
 
 interface DynamicIconProps {
