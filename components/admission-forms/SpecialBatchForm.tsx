@@ -61,6 +61,8 @@ export function SpecialBatchForm({
     },
   }[theme];
 
+  const cleanMobileNumber = (data.hotline || "").replace(/হটলাইন[:\s]*/gi, "").trim();
+
   return (
     <div
       className={`admission-form-print-sheet relative mx-auto bg-white text-zinc-900 font-bengali p-3.5 sm:p-5 w-full max-w-[794px] border border-zinc-300 rounded-lg shadow-md print:shadow-none print:border-none print:p-0 print:max-w-none print:rounded-none select-none`}
@@ -73,9 +75,6 @@ export function SpecialBatchForm({
             <img src="/logo2.png" alt="watermark" className="w-80 h-auto object-contain" />
             <span className="text-6xl font-black text-emerald-900 tracking-wider mt-4">
               Science Lab
-            </span>
-            <span className="text-2xl font-bold text-emerald-900 mt-1">
-              শেরপুর ক্যাম্পাস
             </span>
           </div>
         </div>
@@ -120,17 +119,11 @@ export function SpecialBatchForm({
                 {data.examTitle || "এসএসসি স্পেশাল ব্যাচ ২০২৭"}
               </h2>
 
-              <p className="text-xs text-zinc-600 font-medium mt-0.5 flex items-center justify-center gap-1.5 flex-wrap">
-                <span>{data.campusAddress}</span>
-                {data.hotline && (
-                  <>
-                    <span className="text-zinc-400">•</span>
-                    <span className="font-extrabold text-zinc-900 text-xs tracking-wider font-mono">
-                      {data.hotline.replace(/হটলাইন[:\s]*/gi, "").trim()}
-                    </span>
-                  </>
-                )}
-              </p>
+              {cleanMobileNumber && (
+                <p className="text-sm font-extrabold text-zinc-950 tracking-wider font-mono mt-0.5">
+                  {cleanMobileNumber}
+                </p>
+              )}
             </div>
 
             {/* Right: Passport Photo Frame */}
@@ -183,24 +176,23 @@ export function SpecialBatchForm({
               </div>
             </div>
 
-            {/* Row: পিতার নাম & মাতার নাম */}
-            <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2`}>
-                <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
-                  পিতার নাম:
-                </span>
-                <div className="flex-1 font-medium text-zinc-800">
-                  {!isBlank ? data.fatherName : ""}
-                </div>
+            {/* Field: পিতার নাম */}
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+              <span className={`font-bold whitespace-nowrap min-w-[70px] ${themeStyles.labelColor}`}>
+                পিতার নাম:
+              </span>
+              <div className="flex-1 font-medium text-zinc-800">
+                {!isBlank ? data.fatherName : ""}
               </div>
+            </div>
 
-              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2`}>
-                <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
-                  মাতার নাম:
-                </span>
-                <div className="flex-1 font-medium text-zinc-800">
-                  {!isBlank ? data.motherName : ""}
-                </div>
+            {/* Field: মাতার নাম */}
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+              <span className={`font-bold whitespace-nowrap min-w-[70px] ${themeStyles.labelColor}`}>
+                মাতার নাম:
+              </span>
+              <div className="flex-1 font-medium text-zinc-800">
+                {!isBlank ? data.motherName : ""}
               </div>
             </div>
 
@@ -260,7 +252,7 @@ export function SpecialBatchForm({
                   </span>
                 </div>
                 <div className="font-bold text-red-700 text-center text-xs tracking-wider">
-                  {data.batchName || (!isBlank ? data.batchName : "")}
+                  {!isBlank ? data.batchName : ""}
                 </div>
               </div>
             </div>
@@ -357,17 +349,11 @@ export function SpecialBatchForm({
               <h3 className={`text-sm font-bold mt-0.5 ${themeStyles.subtitleText}`}>
                 {data.examTitle || "এসএসসি স্পেশাল ব্যাচ ২০২৭"}
               </h3>
-              <p className="text-[11px] text-zinc-600 font-medium mt-0.5 flex items-center justify-center gap-1.5 flex-wrap">
-                <span>{data.campusAddress}</span>
-                {data.hotline && (
-                  <>
-                    <span className="text-zinc-400">•</span>
-                    <span className="font-extrabold text-zinc-900 text-[11px] tracking-wider font-mono">
-                      {data.hotline.replace(/হটলাইন[:\s]*/gi, "").trim()}
-                    </span>
-                  </>
-                )}
-              </p>
+              {cleanMobileNumber && (
+                <p className="text-xs font-extrabold text-zinc-950 tracking-wider font-mono mt-0.5">
+                  {cleanMobileNumber}
+                </p>
+              )}
             </div>
 
             {/* Right: Candidate Photo Box */}

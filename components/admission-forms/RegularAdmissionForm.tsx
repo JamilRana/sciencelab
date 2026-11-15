@@ -73,9 +73,6 @@ export function RegularAdmissionForm({
             <span className="text-6xl font-black text-emerald-900 tracking-wider mt-4">
               Science Lab
             </span>
-            <span className="text-2xl font-bold text-emerald-900 mt-1">
-              নিয়মিত শ্রেণি ভর্তি
-            </span>
           </div>
         </div>
       )}
@@ -120,17 +117,11 @@ export function RegularAdmissionForm({
                   {data.formTitle || "নিয়মিত শ্রেণি ভর্তি ফরম (৬ষ্ঠ - ১০ম শ্রেণি)"}
                 </h2>
 
-                <p className="text-xs text-zinc-600 font-medium mt-0.5 flex items-center justify-center gap-1.5 flex-wrap">
-                  <span>{data.campusAddress}</span>
-                  {cleanMobileNumber && (
-                    <>
-                      <span className="text-zinc-400">•</span>
-                      <span className="font-extrabold text-zinc-900 text-xs tracking-wider font-mono">
-                        {cleanMobileNumber}
-                      </span>
-                    </>
-                  )}
-                </p>
+                {cleanMobileNumber && (
+                  <p className="text-sm font-extrabold text-zinc-950 tracking-wider font-mono mt-0.5">
+                    {cleanMobileNumber}
+                  </p>
+                )}
               </div>
 
               {/* Right: Passport Photo Frame */}
@@ -207,25 +198,24 @@ export function RegularAdmissionForm({
                 </div>
               </div>
 
-              {/* Row: পিতার নাম & মাতার নাম */}
-              <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-1.5`}>
-                  <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
-                    পিতার নাম:
-                  </span>
-                  <span className="font-medium text-zinc-800 truncate">
-                    {!isBlank ? data.fatherName : ""}
-                  </span>
-                </div>
+              {/* Field: পিতার নাম */}
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-2 text-xs sm:text-sm`}>
+                <span className={`font-bold whitespace-nowrap min-w-[70px] ${themeStyles.labelColor}`}>
+                  পিতার নাম:
+                </span>
+                <span className="font-medium text-zinc-800 truncate">
+                  {!isBlank ? data.fatherName : ""}
+                </span>
+              </div>
 
-                <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-1.5`}>
-                  <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
-                    মাতার নাম:
-                  </span>
-                  <span className="font-medium text-zinc-800 truncate">
-                    {!isBlank ? data.motherName : ""}
-                  </span>
-                </div>
+              {/* Field: মাতার নাম */}
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-2 text-xs sm:text-sm`}>
+                <span className={`font-bold whitespace-nowrap min-w-[70px] ${themeStyles.labelColor}`}>
+                  মাতার নাম:
+                </span>
+                <span className="font-medium text-zinc-800 truncate">
+                  {!isBlank ? data.motherName : ""}
+                </span>
               </div>
 
               {/* Field: বিদ্যালয়ের নাম */}
@@ -278,7 +268,7 @@ export function RegularAdmissionForm({
                     </span>
                   </div>
                   <div className="font-bold text-red-700 text-center text-xs tracking-wider">
-                    {data.batchName || (!isBlank ? data.batchName : "")}
+                    {!isBlank ? data.batchName : ""}
                   </div>
                 </div>
               </div>

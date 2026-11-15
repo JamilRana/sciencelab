@@ -134,7 +134,7 @@ export function FormControls({
         setFormData((prev) => ({
           ...prev,
           examTitle: "এসএসসি স্পেশাল ব্যাচ ২০২৭",
-          batchName: "SSC-2027",
+          batchName: "",
           targetClass: "১০ম শ্রেণি",
           registrationNo: "SL-SSC-2027-015",
           rollNo: "১০০১",
@@ -148,9 +148,9 @@ export function FormControls({
         setFormData((prev) => ({
           ...prev,
           examTitle: "ভর্তি ফরম ও প্রবেশপত্র - ২০২৬",
-          batchName: "10A",
+          batchName: "",
           targetClass: "১০ম শ্রেণি",
-          registrationNo: "SL-REG-2026-1001",
+          registrationNo: "SL-REG-2026-001",
           rollNo: "১০১",
           formTitle: "নিয়মিত শ্রেণি ভর্তি ফরম (৬ষ্ঠ - ১০ম)",
         }));
@@ -169,7 +169,7 @@ export function FormControls({
         setFormData((prev) => ({
           ...prev,
           examTitle: "এসএসসি স্পেশাল ব্যাচ ২০২৭",
-          batchName: "SSC-2027",
+          batchName: "",
           targetClass: "১০ম শ্রেণি",
           registrationNo: "SL-SSC-2027-015",
           rollNo: "১০০১",
@@ -185,7 +185,7 @@ export function FormControls({
         setFormData((prev) => ({
           ...prev,
           examTitle: "জুনিয়র বৃত্তি পরীক্ষা ২০২৬",
-          batchName: "JSC-2026",
+          batchName: "",
           targetClass: "৮ম শ্রেণি",
           registrationNo: "SL-JSC-2026-015",
           rollNo: "৮১০১",
@@ -237,13 +237,11 @@ export function FormControls({
   }
 
   function handleSelectRegularClass(clsName: string, classKey: string) {
-    const classBatches = batches.filter((b) => !b.programId && b.classId === classKey);
-    const firstBatch = classBatches[0];
     setFormData((prev) => ({
       ...prev,
       targetClass: clsName,
-      batchName: firstBatch ? firstBatch.name : prev.batchName,
-      registrationNo: firstBatch ? `SL-REG-${firstBatch.code}-001` : prev.registrationNo,
+      batchName: "",
+      registrationNo: prev.registrationNo || "SL-REG-2026-001",
       examTitle: "ভর্তি ফরম ও প্রবেশপত্র - ২০২৬",
     }));
   }
@@ -504,6 +502,7 @@ export function FormControls({
                   onChange={(e) => handleSelectBatch(e.target.value)}
                   className="px-2.5 py-1 text-xs font-bold bg-white border border-zinc-300 rounded-lg text-zinc-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 >
+                  <option value="">ব্যাচ ফাঁকা রাখুন (অফিস পূরণীয়)</option>
                   {batches
                     .filter((b) => !b.programId)
                     .map((b) => (
