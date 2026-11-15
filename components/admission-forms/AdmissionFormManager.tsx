@@ -82,7 +82,7 @@ export function AdmissionFormManager({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-100/70 pb-16">
+    <div className="min-h-screen bg-zinc-100/70 pb-16 print:min-h-0 print:bg-white print:p-0 print:m-0">
       <PrintStyles />
 
       {/* Screen Page Header (Hidden during print) */}
@@ -126,7 +126,7 @@ export function AdmissionFormManager({
       </div>
 
       {/* Controls & Form Workspace */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 print:p-0 print:m-0 print:max-w-none print:w-full">
         
         {/* Interactive Controls (Tabs, Blank/Fill mode, Color theme, live editor) */}
         <FormControls
@@ -151,7 +151,7 @@ export function AdmissionFormManager({
         />
 
         {/* Live Printable A4 Preview Container */}
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center print:block print:w-full print:p-0 print:m-0">
           
           {/* Paper View Indicator (Screen only) */}
           <div className="no-print mb-2 text-xs text-zinc-500 flex items-center gap-2 font-medium">

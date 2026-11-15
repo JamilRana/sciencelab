@@ -8,7 +8,7 @@ export function PrintStyles() {
       @media print {
         @page {
           size: A4 portrait;
-          margin: 4mm 6mm !important;
+          margin: 4mm !important;
         }
 
         html, body {
@@ -16,6 +16,9 @@ export function PrintStyles() {
           color: #000000 !important;
           margin: 0 !important;
           padding: 0 !important;
+          height: 100% !important;
+          max-height: 297mm !important;
+          overflow: hidden !important;
           font-family: var(--font-bengali), var(--font-inter), sans-serif !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -37,6 +40,7 @@ export function PrintStyles() {
           margin: 0 !important;
           padding: 0 !important;
           max-width: 100% !important;
+          background: transparent !important;
         }
 
         /* Target the printable A4 page container */
@@ -48,10 +52,13 @@ export function PrintStyles() {
           width: 100% !important;
           max-width: 100% !important;
           height: auto !important;
-          max-height: 285mm !important;
+          max-height: 288mm !important;
           page-break-inside: avoid !important;
+          break-inside: avoid !important;
           page-break-after: avoid !important;
+          break-after: avoid !important;
           page-break-before: avoid !important;
+          break-before: avoid !important;
           overflow: hidden !important;
         }
 
