@@ -29,6 +29,7 @@ export default async function AdmissionFormsPage() {
         name: true,
         classId: true,
         code: true,
+        programId: true,
       },
       orderBy: [{ code: "asc" }],
     }),

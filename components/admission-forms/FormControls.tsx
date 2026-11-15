@@ -11,6 +11,8 @@ import {
   SchoolOption,
   DEFAULT_SPECIAL_FORM,
   DEFAULT_REGULAR_FORM,
+  DEFAULT_SSC_2027_FORM,
+  DEFAULT_JSC_2026_FORM,
 } from "./types";
 import {
   Printer,
@@ -79,6 +81,14 @@ export function FormControls({
 
   const isBlank = fillMode === "blank";
 
+  const CLASS_MAP: Record<string, string> = {
+    Six: "৬ষ্ঠ শ্রেণি",
+    Seven: "৭ম শ্রেণি",
+    Eight: "৮ম শ্রেণি",
+    Nine: "৯ম শ্রেণি",
+    Ten: "১০ম শ্রেণি",
+  };
+
   function updateField<K extends keyof AdmissionFormData>(key: K, value: AdmissionFormData[K]) {
     setFormData((prev) => ({ ...prev, [key]: value }));
   }
@@ -101,11 +111,153 @@ export function FormControls({
   function handleFillSample() {
     setFillMode("filled");
     if (formType === "special") {
-      setFormData(DEFAULT_SPECIAL_FORM);
+      if (
+        formData.batchName.includes("JSC") ||
+        formData.batchName.includes("Junior") ||
+        formData.examTitle.includes("জুনিয়র")
+      ) {
+        setFormData(DEFAULT_JSC_2026_FORM);
+      } else {
+        setFormData(DEFAULT_SSC_2027_FORM);
+      }
     } else {
       setFormData(DEFAULT_REGULAR_FORM);
     }
   }
+
+  function handleSwitchFormType(type: FormType) {
+    setFormType(type);
+    if (type === "special") {
+      if (fillMode === "filled") {
+        setFormData(DEFAULT_SSC_2027_FORM);
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          examTitle: "এসএসসি স্পেশাল ব্যাচ ২০২৭",
+          batchName: "SSC-2027",
+          targetClass: "১০ম শ্রেণি",
+          registrationNo: "SL-SSC-2027-015",
+          rollNo: "১০০১",
+          formTitle: "ভর্তি ফরম (স্পেশাল ব্যাচ)",
+        }));
+      }
+    } else {
+      if (fillMode === "filled") {
+        setFormData(DEFAULT_REGULAR_FORM);
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          examTitle: "ভর্তি ফরম ও প্রবেশপত্র - ২০২৬",
+          batchName: "10A",
+          targetClass: "১০ম শ্রেণি",
+          registrationNo: "SL-REG-2026-1001",
+          rollNo: "১০১",
+          formTitle: "নিয়মিত শ্রেণি ভর্তি ফরম (৬ষ্ঠ - ১০ম)",
+        }));
+      }
+    }
+  }
+
+  function handleSelectProgram(programCode: string) {
+    const prog = programs.find((p) => p.code === programCode);
+    if (!prog) return;
+
+    if (programCode === "SSC-2027") {
+      if (fillMode === "filled") {
+        setFormData(DEFAULT_SSC_2027_FORM);
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          examTitle: "এসএসসি স্পেশাল ব্যাচ ২০২৭",
+          batchName: "SSC-2027",
+          targetClass: "১০ম শ্রেণি",
+          registrationNo: "SL-SSC-2027-015",
+          rollNo: "১০০১",
+          examDate: "১৫ জানুয়ারি ২০২৭ (শুক্রবার)",
+          examTime: "সকাল ১০:০০ টা - ১১:৩০ টা",
+          examVenue: "সায়েন্স ল্যাব প্রধান ভবন (২য় তলা)",
+        }));
+      }
+    } else if (programCode === "JSC-2026") {
+      if (fillMode === "filled") {
+        setFormData(DEFAULT_JSC_2026_FORM);
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          examTitle: "জুনিয়র বৃত্তি পরীক্ষা ২০২৬",
+          batchName: "JSC-2026",
+          targetClass: "৮ম শ্রেণি",
+          registrationNo: "SL-JSC-2026-015",
+          rollNo: "৮১০১",
+          examDate: "২৫ ডিসেম্বর ২০২৬ (শুক্রবার)",
+          examTime: "সকাল ১০:০০ টা - ১১:৩০ টা",
+          examVenue: "সায়েন্স ল্যাব প্রধান ভবন (২য় তলা)",
+        }));
+      }
+    } else {
+      const progBatches = batches.filter((b) => b.programId === prog.id);
+      const defaultBatch = progBatches[0];
+      const targetClass = defaultBatch ? (CLASS_MAP[defaultBatch.classId] || defaultBatch.classId) : "বিশেষ ব্যাচ";
+      setFormData((prev) => ({
+        ...prev,
+        examTitle: `${prog.name}`,
+        batchName: defaultBatch?.name || prog.code,
+        targetClass,
+        registrationNo: `SL-${prog.code}-001`,
+      }));
+    }
+  }
+
+  function handleSelectBatch(batchName: string) {
+    const foundBatch = batches.find((b) => b.name === batchName);
+    if (!foundBatch) {
+      updateField("batchName", batchName);
+      return;
+    }
+
+    const prog = programs.find((p) => p.id === foundBatch.programId);
+    const targetClass = CLASS_MAP[foundBatch.classId] || foundBatch.classId;
+
+    setFormData((prev) => {
+      const isSsc = foundBatch.name.includes("SSC") || prog?.code === "SSC-2027";
+      const isJsc = foundBatch.name.includes("Junior") || foundBatch.name.includes("JSC") || prog?.code === "JSC-2026";
+
+      return {
+        ...prev,
+        batchName: foundBatch.name,
+        targetClass: targetClass ? `${targetClass}` : prev.targetClass,
+        registrationNo: `SL-${foundBatch.code}-015`,
+        examTitle: isSsc
+          ? "এসএসসি স্পেশাল ব্যাচ ২০২৭"
+          : isJsc
+          ? "জুনিয়র বৃত্তি পরীক্ষা ২০২৬"
+          : prog?.name || prev.examTitle,
+      };
+    });
+  }
+
+  function handleSelectRegularClass(clsName: string, classKey: string) {
+    const classBatches = batches.filter((b) => !b.programId && b.classId === classKey);
+    const firstBatch = classBatches[0];
+    setFormData((prev) => ({
+      ...prev,
+      targetClass: clsName,
+      batchName: firstBatch ? firstBatch.name : prev.batchName,
+      registrationNo: firstBatch ? `SL-REG-${firstBatch.code}-001` : prev.registrationNo,
+      examTitle: "ভর্তি ফরম ও প্রবেশপত্র - ২০২৬",
+    }));
+  }
+
+  // Current active special program and batches
+  const currentProgram =
+    programs.find((p) => {
+      if (formData.batchName.startsWith(p.code)) return true;
+      if (p.code === "SSC-2027" && (formData.batchName.includes("SSC") || formData.examTitle.includes("এসএসসি") || formData.examTitle.includes("SSC"))) return true;
+      if (p.code === "JSC-2026" && (formData.batchName.includes("JSC") || formData.batchName.includes("Junior") || formData.examTitle.includes("জুনিয়র"))) return true;
+      return false;
+    }) || programs[0];
+
+  const programBatches = currentProgram ? batches.filter((b) => b.programId === currentProgram.id) : [];
 
   return (
     <div className="no-print space-y-4 mb-6">
@@ -124,10 +276,7 @@ export function FormControls({
             <div className="bg-zinc-100 p-1 rounded-xl flex items-center gap-1 border border-zinc-200/70">
               <button
                 type="button"
-                onClick={() => {
-                  setFormType("special");
-                  if (fillMode === "filled") setFormData(DEFAULT_SPECIAL_FORM);
-                }}
+                onClick={() => handleSwitchFormType("special")}
                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   formType === "special"
                     ? "bg-white text-emerald-800 shadow-2xs border border-emerald-200"
@@ -140,10 +289,7 @@ export function FormControls({
 
               <button
                 type="button"
-                onClick={() => {
-                  setFormType("regular");
-                  if (fillMode === "filled") setFormData(DEFAULT_REGULAR_FORM);
-                }}
+                onClick={() => handleSwitchFormType("regular")}
                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   formType === "regular"
                     ? "bg-white text-emerald-800 shadow-2xs border border-emerald-200"
@@ -226,6 +372,170 @@ export function FormControls({
           </div>
         </div>
 
+        {/* ============================================================== */}
+        {/* DEDICATED PROGRAM & BATCH SELECTOR (Prominent on Toolbar)     */}
+        {/* ============================================================== */}
+        <div className="mt-3 pt-3 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-3">
+          {formType === "special" ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                স্পেশাল প্রোগ্রাম:
+              </span>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {programs.map((p) => {
+                  const isSelected =
+                    (p.code === "SSC-2027" && (formData.batchName.includes("SSC") || formData.examTitle.includes("এসএসসি") || formData.examTitle.includes("SSC"))) ||
+                    (p.code === "JSC-2026" && (formData.batchName.includes("JSC") || formData.batchName.includes("Junior") || formData.examTitle.includes("জুনিয়র"))) ||
+                    formData.batchName.startsWith(p.code);
+
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handleSelectProgram(p.code)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border cursor-pointer ${
+                        isSelected
+                          ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                          : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
+                      }`}
+                    >
+                      {p.code === "SSC-2027" ? (
+                        <>
+                          <span>এসএসসি স্পেশাল ২০২৭ (SSC-2027)</span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                              isSelected ? "bg-emerald-700 text-white" : "bg-emerald-100 text-emerald-800"
+                            }`}
+                          >
+                            ১০ম শ্রেণি
+                          </span>
+                        </>
+                      ) : p.code === "JSC-2026" ? (
+                        <>
+                          <span>জুনিয়র বৃত্তি ২০২৬ (JSC-2026)</span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                              isSelected ? "bg-emerald-700 text-white" : "bg-zinc-200 text-zinc-700"
+                            }`}
+                          >
+                            ৮ম শ্রেণি
+                          </span>
+                        </>
+                      ) : (
+                        <span>
+                          {p.name} ({p.code})
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Batch / Section Dropdown */}
+              <div className="flex items-center gap-1.5 ml-2">
+                <span className="text-xs text-zinc-500 font-medium">শাখা / ব্যাচ:</span>
+                <select
+                  value={formData.batchName}
+                  onChange={(e) => handleSelectBatch(e.target.value)}
+                  className="px-2.5 py-1 text-xs font-bold bg-white border border-zinc-300 rounded-lg text-zinc-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                >
+                  {/* Main Program Option */}
+                  {currentProgram && (
+                    <option value={currentProgram.code}>
+                      মূল ব্যাচ ({currentProgram.code})
+                    </option>
+                  )}
+                  {/* Section Batches */}
+                  {programBatches.map((b) => (
+                    <option key={b.id} value={b.name}>
+                      {b.name} ({CLASS_MAP[b.classId] || b.classId})
+                    </option>
+                  ))}
+                  {/* If custom batch name */}
+                  {formData.batchName &&
+                    formData.batchName !== currentProgram?.code &&
+                    !programBatches.some((b) => b.name === formData.batchName) && (
+                      <option value={formData.batchName}>
+                        {formData.batchName} (কাস্টম)
+                      </option>
+                    )}
+                </select>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                <GraduationCap className="h-3.5 w-3.5 text-emerald-600" />
+                শ্রেণি নির্বাচন:
+              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { key: "Six", label: "৬ষ্ঠ শ্রেণি" },
+                  { key: "Seven", label: "৭ম শ্রেণি" },
+                  { key: "Eight", label: "৮ম শ্রেণি" },
+                  { key: "Nine", label: "৯ম শ্রেণি" },
+                  { key: "Ten", label: "১০ম শ্রেণি" },
+                ].map((c) => {
+                  const isSelected =
+                    formData.targetClass.includes(c.label) || formData.targetClass.includes(c.key);
+                  return (
+                    <button
+                      key={c.key}
+                      type="button"
+                      onClick={() => handleSelectRegularClass(c.label, c.key)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition border cursor-pointer ${
+                        isSelected
+                          ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                          : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
+                      }`}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center gap-1.5 ml-2">
+                <span className="text-xs text-zinc-500 font-medium">শাখা / ব্যাচ:</span>
+                <select
+                  value={formData.batchName}
+                  onChange={(e) => handleSelectBatch(e.target.value)}
+                  className="px-2.5 py-1 text-xs font-bold bg-white border border-zinc-300 rounded-lg text-zinc-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                >
+                  {batches
+                    .filter((b) => !b.programId)
+                    .map((b) => (
+                      <option key={b.id} value={b.name}>
+                        {b.name} ({CLASS_MAP[b.classId] || b.classId})
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Quick presets (নমুনা তথ্য লোড / ফাঁকা ফরম রিসেট) */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleFillSample}
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline"
+            >
+              নমুনা তথ্য লোড
+            </button>
+            <span className="text-zinc-300">|</span>
+            <button
+              type="button"
+              onClick={handleResetBlank}
+              className="text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+            >
+              ফাঁকা ফরম রিসেট
+            </button>
+          </div>
+        </div>
+
         {/* Quick Style Options Bar */}
         <div className="mt-3 pt-3 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-3 text-xs">
           {/* Color Themes */}
@@ -302,25 +612,6 @@ export function FormControls({
               <span>ডিজিটাল স্বাক্ষর</span>
             </label>
           </div>
-
-          {/* Quick presets */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleFillSample}
-              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline"
-            >
-              নমুনা তথ্য লোড
-            </button>
-            <span className="text-zinc-300">|</span>
-            <button
-              type="button"
-              onClick={handleResetBlank}
-              className="text-xs font-semibold text-zinc-500 hover:text-zinc-800"
-            >
-              ফাঁকা ফরম রিসেট
-            </button>
-          </div>
         </div>
       </div>
 
@@ -349,25 +640,25 @@ export function FormControls({
                 type="text"
                 value={formData.examTitle}
                 onChange={(e) => updateField("examTitle", e.target.value)}
-                placeholder="যেমন: জুনিয়র বৃত্তি পরীক্ষা ২০২৬"
+                placeholder="যেমন: এসএসসি স্পেশাল ব্যাচ ২০২৭"
                 className="w-full px-3 py-1.5 text-xs border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
               {/* Presets */}
               <div className="flex items-center gap-1.5 mt-1">
                 <button
                   type="button"
-                  onClick={() => updateField("examTitle", "জুনিয়র বৃত্তি পরীক্ষা ২০২৬")}
-                  className="text-[10px] text-emerald-700 hover:underline"
+                  onClick={() => handleSelectProgram("SSC-2027")}
+                  className="text-[10px] text-emerald-700 font-bold hover:underline"
                 >
-                  জুনিয়র বৃত্তি
+                  এসএসসি স্পেশাল ২০২৭
                 </button>
                 <span className="text-zinc-300 text-[10px]">•</span>
                 <button
                   type="button"
-                  onClick={() => updateField("examTitle", "এসএসসি স্পেশাল ব্যাচ ২০২৭")}
-                  className="text-[10px] text-emerald-700 hover:underline"
+                  onClick={() => handleSelectProgram("JSC-2026")}
+                  className="text-[10px] text-emerald-700 font-bold hover:underline"
                 >
-                  এসএসসি স্পেশাল
+                  জুনিয়র বৃত্তি ২০২৬
                 </button>
                 <span className="text-zinc-300 text-[10px]">•</span>
                 <button
@@ -584,7 +875,7 @@ export function FormControls({
                 value={formData.batchName}
                 onChange={(e) => updateField("batchName", e.target.value)}
                 list="batches-datalist"
-                placeholder="e.g. JSC-2026 / 8A"
+                placeholder="e.g. SSC-2027 / JSC-2026 / 8A"
                 className="w-full px-3 py-1.5 text-xs font-bold text-red-700 border border-red-300 bg-red-50/30 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               />
               <datalist id="batches-datalist">

@@ -11,6 +11,8 @@ import {
   SchoolOption,
   DEFAULT_SPECIAL_FORM,
   DEFAULT_REGULAR_FORM,
+  DEFAULT_SSC_2027_FORM,
+  DEFAULT_JSC_2026_FORM,
 } from "./types";
 import { PrintStyles } from "./PrintStyles";
 import { FormControls } from "./FormControls";
@@ -34,6 +36,13 @@ export function AdmissionFormManager({
 }: AdmissionFormManagerProps) {
   const searchParams = useSearchParams();
   const initialType = searchParams?.get("type") === "regular" ? "regular" : "special";
+  const initialProgram = searchParams?.get("program");
+
+  const getInitialFormData = (): AdmissionFormData => {
+    if (initialType === "regular") return DEFAULT_REGULAR_FORM;
+    if (initialProgram === "JSC-2026") return DEFAULT_JSC_2026_FORM;
+    return DEFAULT_SSC_2027_FORM;
+  };
 
   const [formType, setFormType] = useState<FormType>(initialType);
   const [fillMode, setFillMode] = useState<FillMode>("blank"); // Default to blank ready for print/distribution!
@@ -43,9 +52,7 @@ export function AdmissionFormManager({
   const [showDigitalSignature, setShowDigitalSignature] = useState<boolean>(true);
 
   // Form State
-  const [formData, setFormData] = useState<AdmissionFormData>(
-    initialType === "regular" ? DEFAULT_REGULAR_FORM : DEFAULT_SPECIAL_FORM
-  );
+  const [formData, setFormData] = useState<AdmissionFormData>(getInitialFormData);
 
   // Search Dialog State
   const [isSearchOpen, setIsSearchOpen] = useState(false);

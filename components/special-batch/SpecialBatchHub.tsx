@@ -256,6 +256,14 @@ export function SpecialBatchHub({
             </button>
           )}
 
+          <Link
+            href="/admin-route/admission-forms?type=special&program=SSC-2027"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors shadow-2xs"
+          >
+            <Printer className="w-3.5 h-3.5 text-emerald-600" />
+            ভর্তি ও প্রবেশপত্র ফরম
+          </Link>
+
           <button
             onClick={() => setIsCreateProgramOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-lg transition-colors shadow-sm"

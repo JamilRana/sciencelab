@@ -52,6 +52,7 @@ export interface BatchOption {
   name: string;
   classId: string;
   code: number;
+  programId?: number | null;
 }
 
 export interface SchoolOption {
@@ -59,7 +60,41 @@ export interface SchoolOption {
   name: string;
 }
 
-export const DEFAULT_SPECIAL_FORM: AdmissionFormData = {
+export const DEFAULT_SSC_2027_FORM: AdmissionFormData = {
+  studentNameBangla: "আহমেদ তানভীর",
+  studentNameEnglish: "Ahmed Tanvir",
+  fatherName: "মোঃ রফিকুল ইসলাম",
+  motherName: "মোসাঃ পারভীন আক্তার",
+  schoolName: "শেরপুর সরকারি ভিক্টোরিয়া একাডেমি",
+  address: "বাসা নং ১২, কলেজ রোড, শেরপুর সদর, শেরপুর",
+  dateOfBirth: "১২/০৫/২০১০",
+  gender: "ছাত্র",
+  bloodGroup: "B+",
+  guardianMobile: "01712345678",
+  studentMobile: "01987654321",
+  targetClass: "১০ম শ্রেণি",
+  schoolRoll: "০৫",
+  previousGpa: "৫.০০",
+  batchName: "SSC-2027",
+  rollNo: "১০০১",
+  registrationNo: "SL-SSC-2027-015",
+  photoUrl: "",
+  examTitle: "এসএসসি স্পেশাল ব্যাচ ২০২৭",
+  formTitle: "ভর্তি ফরম (স্পেশাল ব্যাচ)",
+  subtitle: "সায়েন্স ল্যাব কোচিং সেন্টার",
+  campusAddress: "শেরপুর ক্যাম্পাস | মানসম্মত শিক্ষার বিশ্বস্ত প্রতিষ্ঠান",
+  hotline: "০১৭১২-৩৪৫৬৭৮, ০১৯১১-৯৮৭৬৫৪",
+  examDate: "১৫ জানুয়ারি ২০২৭ (শুক্রবার)",
+  examTime: "সকাল ১০:০০ টা - ১১:৩০ টা",
+  examVenue: "সায়েন্স ল্যাব প্রধান ভবন (২য় তলা)",
+  admitInstructions: [
+    "পরীক্ষা শুরুর অন্তত ১৫ মিনিট পূর্বে পরীক্ষার হলে উপস্থিত হতে হবে।",
+    "প্রবেশপত্র ছাড়া কোনো পরীক্ষার্থীকে পরীক্ষা কক্ষে প্রবেশ করতে দেওয়া হবে না।",
+    "ক্যালকুলেটর বা কোনো ধরনের ইলেকট্রনিক ডিভাইস আনা সম্পূর্ণ নিষেধ।",
+  ],
+};
+
+export const DEFAULT_JSC_2026_FORM: AdmissionFormData = {
   studentNameBangla: "আব্দুল্লাহ আল নোমান",
   studentNameEnglish: "Abdullah Al Noman",
   fatherName: "মোঃ রফিকুল ইসলাম",
@@ -92,6 +127,9 @@ export const DEFAULT_SPECIAL_FORM: AdmissionFormData = {
     "ক্যালকুলেটর বা কোনো ধরনের ইলেকট্রনিক ডিভাইস আনা সম্পূর্ণ নিষেধ।",
   ],
 };
+
+// Default special batch form is set to SSC 2027
+export const DEFAULT_SPECIAL_FORM: AdmissionFormData = DEFAULT_SSC_2027_FORM;
 
 export const DEFAULT_REGULAR_FORM: AdmissionFormData = {
   studentNameBangla: "ফাহমিদা তাসনিম",

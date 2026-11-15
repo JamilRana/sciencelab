@@ -117,7 +117,7 @@ export function SpecialBatchForm({
 
               {/* Subtitle / Exam Title */}
               <h2 className={`text-base font-bold mt-0.5 tracking-wide ${themeStyles.subtitleText}`}>
-                {data.examTitle || "জুনিয়র বৃত্তি পরীক্ষা ২০২৬"}
+                {data.examTitle || "এসএসসি স্পেশাল ব্যাচ ২০২৭"}
               </h2>
 
               <p className="text-[10px] text-zinc-500 font-medium">
@@ -242,7 +242,7 @@ export function SpecialBatchForm({
                   </span>
                 </div>
                 <div className="font-bold text-red-700 text-center text-xs tracking-wider">
-                  {!isBlank ? data.batchName : ""}
+                  {data.batchName || (!isBlank ? data.batchName : "")}
                 </div>
               </div>
             </div>
@@ -337,7 +337,7 @@ export function SpecialBatchForm({
                 </h2>
               </div>
               <h3 className={`text-sm font-bold mt-0.5 ${themeStyles.subtitleText}`}>
-                {data.examTitle || "জুনিয়র বৃত্তি পরীক্ষা ২০২৬"}
+                {data.examTitle || "এসএসসি স্পেশাল ব্যাচ ২০২৭"}
               </h3>
               <p className="text-[10px] text-zinc-500 font-medium">
                 {data.campusAddress}
