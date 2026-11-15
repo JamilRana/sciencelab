@@ -120,8 +120,16 @@ export function SpecialBatchForm({
                 {data.examTitle || "এসএসসি স্পেশাল ব্যাচ ২০২৭"}
               </h2>
 
-              <p className="text-[10px] text-zinc-500 font-medium">
-                {data.campusAddress} • হটলাইন: {data.hotline}
+              <p className="text-xs text-zinc-600 font-medium mt-0.5 flex items-center justify-center gap-1.5 flex-wrap">
+                <span>{data.campusAddress}</span>
+                {data.hotline && (
+                  <>
+                    <span className="text-zinc-400">•</span>
+                    <span className="font-extrabold text-zinc-900 text-xs tracking-wider font-mono">
+                      {data.hotline.replace(/হটলাইন[:\s]*/gi, "").trim()}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
 
@@ -196,22 +204,13 @@ export function SpecialBatchForm({
               </div>
             </div>
 
-            {/* Row: বিদ্যালয়ের নাম ও বিগত শ্রেণির রোল / GPA */}
-            <div className="grid grid-cols-12 gap-2 text-xs sm:text-sm">
-              <div className={`col-span-8 border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-1.5`}>
-                <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
-                  বিদ্যালয়ের নাম:
-                </span>
-                <span className="font-medium text-zinc-800 truncate">
-                  {!isBlank ? data.schoolName : ""}
-                </span>
-              </div>
-
-              <div className={`col-span-4 border border-dashed ${themeStyles.dashedBorder} rounded px-2 py-1 flex items-center justify-between text-xs`}>
-                <span className={`font-bold ${themeStyles.labelColor}`}>রোল / GPA:</span>
-                <span className="font-bold text-zinc-800">
-                  {!isBlank ? `${data.schoolRoll || "—"} / ${data.previousGpa || "—"}` : ""}
-                </span>
+            {/* Field: বিদ্যালয়ের নাম */}
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+              <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
+                বিদ্যালয়ের নাম:
+              </span>
+              <div className="flex-1 font-medium text-zinc-800">
+                {!isBlank ? data.schoolName : ""}
               </div>
             </div>
 
@@ -268,20 +267,20 @@ export function SpecialBatchForm({
 
             {/* Row: অভিভাবকের ফোন & ছাত্র/ছাত্রীর ফোন */}
             <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2 py-1 flex items-center gap-1`}>
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-2`}>
                 <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
                   অভিভাবকের ফোন:
                 </span>
-                <span className="font-medium text-zinc-800 font-mono text-xs">
+                <span className="font-extrabold text-zinc-950 font-mono text-sm tracking-wider">
                   {!isBlank ? data.guardianMobile : ""}
                 </span>
               </div>
 
-              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2 py-1 flex items-center gap-1`}>
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-2`}>
                 <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
                   ছাত্র/ছাত্রীর ফোন:
                 </span>
-                <span className="font-medium text-zinc-800 font-mono text-xs">
+                <span className="font-extrabold text-zinc-950 font-mono text-sm tracking-wider">
                   {!isBlank ? data.studentMobile : ""}
                 </span>
               </div>
@@ -358,8 +357,16 @@ export function SpecialBatchForm({
               <h3 className={`text-sm font-bold mt-0.5 ${themeStyles.subtitleText}`}>
                 {data.examTitle || "এসএসসি স্পেশাল ব্যাচ ২০২৭"}
               </h3>
-              <p className="text-[10px] text-zinc-500 font-medium">
-                {data.campusAddress}
+              <p className="text-[11px] text-zinc-600 font-medium mt-0.5 flex items-center justify-center gap-1.5 flex-wrap">
+                <span>{data.campusAddress}</span>
+                {data.hotline && (
+                  <>
+                    <span className="text-zinc-400">•</span>
+                    <span className="font-extrabold text-zinc-900 text-[11px] tracking-wider font-mono">
+                      {data.hotline.replace(/হটলাইন[:\s]*/gi, "").trim()}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
 
