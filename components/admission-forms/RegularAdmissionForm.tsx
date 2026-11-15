@@ -62,7 +62,7 @@ export function RegularAdmissionForm({
 
   return (
     <div
-      className={`admission-form-print-sheet relative mx-auto bg-white text-zinc-900 font-bengali p-3.5 sm:p-5 w-full max-w-[794px] border border-zinc-300 rounded-lg shadow-md print:shadow-none print:border-none print:p-0 print:max-w-none print:rounded-none select-none`}
+      className={`admission-form-print-sheet relative mx-auto bg-white text-zinc-900 font-bengali p-3 sm:p-4 w-full max-w-[794px] min-h-[1050px] border border-zinc-300 rounded-lg shadow-md print:shadow-none print:border-none print:p-0 print:max-w-none print:rounded-none select-none flex flex-col justify-between`}
       style={{ boxSizing: "border-box" }}
     >
       {/* Background Watermark */}
@@ -77,48 +77,48 @@ export function RegularAdmissionForm({
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col justify-between h-full max-h-[282mm] print:max-h-[280mm]">
+      <div className="relative z-10 flex flex-col justify-between h-full flex-1">
         
         {/* ============================================================== */}
         {/* FULL PAGE: নিয়মিত শ্রেণি ভর্তি ফরম (REGULAR ADMISSION FORM)        */}
         {/* ============================================================== */}
-        <section className={`border-[1.5px] ${themeStyles.outerBorder} rounded-lg p-3 bg-white relative flex flex-col justify-between`}>
+        <section className={`border-[1.5px] ${themeStyles.outerBorder} rounded-lg p-3.5 sm:p-4 bg-white relative flex flex-col justify-between flex-1`}>
           
           {/* Header Row */}
-          <div>
-            <div className="flex items-start justify-between gap-2 border-b pb-1.5 mb-1.5 border-zinc-200">
+          <div className="shrink-0">
+            <div className="flex items-start justify-between gap-2 border-b pb-2 mb-2 border-zinc-200">
               {/* Left: Circuit Emblem */}
               <div className="w-20 pt-0.5 shrink-0 flex flex-col items-center justify-center">
                 <img
                   src="/circuit_emblem.png"
                   alt="Emblem"
-                  className="h-8 w-auto object-contain"
+                  className="h-9 w-auto object-contain"
                 />
-                <span className="text-[8px] font-semibold text-zinc-500 tracking-tighter mt-0.5">
+                <span className="text-[9px] font-semibold text-zinc-500 tracking-tighter mt-0.5">
                   EST. 2018
                 </span>
               </div>
 
               {/* Center: Logo & Title */}
               <div className="flex-1 flex flex-col items-center text-center px-1">
-                <div className="flex items-center justify-center gap-1.5">
+                <div className="flex items-center justify-center gap-2">
                   <img
                     src="/logo2.png"
                     alt="Science Lab Logo"
                     className="h-8 w-auto object-contain"
                   />
-                  <h1 className={`text-xl font-extrabold tracking-tight ${themeStyles.headerText}`}>
+                  <h1 className={`text-2xl font-extrabold tracking-tight ${themeStyles.headerText}`}>
                     Science Lab
                   </h1>
                 </div>
 
                 {/* Form Title & Subtitle */}
-                <h2 className={`text-sm font-bold mt-0.5 tracking-wide ${themeStyles.subtitleText}`}>
+                <h2 className={`text-base font-bold mt-0.5 tracking-wide ${themeStyles.subtitleText}`}>
                   {data.formTitle || "নিয়মিত শ্রেণি ভর্তি ফরম (৬ষ্ঠ - ১০ম শ্রেণি)"}
                 </h2>
 
                 {cleanMobileNumber && (
-                  <p className="text-xs font-extrabold text-zinc-950 tracking-wider font-mono mt-0.5">
+                  <p className="text-xs sm:text-sm font-extrabold text-zinc-950 tracking-wider font-mono mt-0.5">
                     {cleanMobileNumber}
                   </p>
                 )}
@@ -126,7 +126,7 @@ export function RegularAdmissionForm({
 
               {/* Right: Passport Photo Frame */}
               <div className="w-20 shrink-0 flex flex-col items-center">
-                <div className="w-[68px] h-[78px] border border-dashed border-zinc-400 rounded bg-zinc-50/70 flex flex-col items-center justify-center p-1 text-center overflow-hidden">
+                <div className="w-[74px] h-[86px] border border-dashed border-zinc-400 rounded bg-zinc-50/70 flex flex-col items-center justify-center p-1 text-center overflow-hidden">
                   {!isBlank && data.photoUrl ? (
                     <img
                       src={data.photoUrl}
@@ -142,7 +142,7 @@ export function RegularAdmissionForm({
                       >
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                       </svg>
-                      <span className="text-[7.5px] font-semibold text-zinc-500 leading-tight">
+                      <span className="text-[8px] font-semibold text-zinc-500 leading-tight">
                         পাসপোর্ট ছবি
                       </span>
                     </>
@@ -152,7 +152,7 @@ export function RegularAdmissionForm({
             </div>
 
             {/* Form Fields Box */}
-            <div className={`border ${themeStyles.innerBorder} rounded-md p-2 sm:p-2.5 bg-white space-y-1 text-xs`}>
+            <div className={`border ${themeStyles.innerBorder} rounded-md p-3 bg-white flex-1 flex flex-col justify-between gap-1 text-xs sm:text-sm`}>
               
               {/* Row 1: ভর্তিচ্ছু শ্রেণি & শিক্ষাবর্ষ */}
               <div className="grid grid-cols-12 gap-1.5 text-xs">
@@ -295,33 +295,33 @@ export function RegularAdmissionForm({
               </div>
 
               {/* Office Registration Details */}
-              <div className="grid grid-cols-3 gap-1.5 text-xs pt-0.5">
-                <div className="border-2 border-dashed border-red-500 rounded px-2 py-0.5 bg-red-50/30 flex flex-col justify-center">
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                <div className="border-2 border-dashed border-red-500 rounded px-2.5 py-1 bg-red-50/30 flex flex-col justify-center">
                   <div className="flex items-baseline justify-between">
-                    <span className="font-bold text-red-600 text-[11px]">ভর্তি রোল নং:-</span>
+                    <span className="font-bold text-red-600 text-xs">ভর্তি রোল নং:-</span>
                     <span className="text-[7.5px] font-bold text-red-500">[অফিস]</span>
                   </div>
-                  <div className="font-extrabold text-red-700 text-center text-xs tracking-wider pt-0.5">
+                  <div className="font-extrabold text-red-700 text-center text-xs sm:text-sm tracking-wider pt-0.5">
                     {!isBlank ? data.rollNo : ""}
                   </div>
                 </div>
 
-                <div className="border-2 border-dashed border-red-500 rounded px-2 py-0.5 bg-red-50/30 flex flex-col justify-center">
+                <div className="border-2 border-dashed border-red-500 rounded px-2.5 py-1 bg-red-50/30 flex flex-col justify-center">
                   <div className="flex items-baseline justify-between">
-                    <span className="font-bold text-red-600 text-[11px]">রেজিস্ট্রেশন নং:-</span>
+                    <span className="font-bold text-red-600 text-xs">রেজিস্ট্রেশন নং:-</span>
                     <span className="text-[7.5px] font-bold text-red-500">[অফিস]</span>
                   </div>
-                  <div className="font-extrabold text-red-700 text-center text-xs tracking-wider pt-0.5">
+                  <div className="font-extrabold text-red-700 text-center text-xs sm:text-sm tracking-wider pt-0.5">
                     {!isBlank ? data.registrationNo : ""}
                   </div>
                 </div>
 
-                <div className="border-2 border-dashed border-red-500 rounded px-2 py-0.5 bg-red-50/30 flex flex-col justify-center">
+                <div className="border-2 border-dashed border-red-500 rounded px-2.5 py-1 bg-red-50/30 flex flex-col justify-center">
                   <div className="flex items-baseline justify-between">
-                    <span className="font-bold text-red-600 text-[11px]">ভর্তির তারিখ:-</span>
+                    <span className="font-bold text-red-600 text-xs">ভর্তির তারিখ:-</span>
                     <span className="text-[7.5px] font-bold text-red-500">[অফিস]</span>
                   </div>
-                  <div className="font-extrabold text-red-700 text-center text-xs tracking-wider pt-0.5">
+                  <div className="font-extrabold text-red-700 text-center text-xs sm:text-sm tracking-wider pt-0.5">
                     {!isBlank ? new Date().toLocaleDateString("bn-BD") : ""}
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export function RegularAdmissionForm({
             </div>
 
             {/* ভর্তির নিয়মাবলী ও অঙ্গীকারনামা */}
-            <div className={`mt-2 border border-dashed ${themeStyles.dashedBorder} rounded-md p-2 bg-zinc-50/60 text-[10px] text-zinc-700 space-y-0.5`}>
+            <div className={`mt-2.5 border border-dashed ${themeStyles.dashedBorder} rounded-md p-2.5 bg-zinc-50/60 text-[10.5px] text-zinc-700 space-y-0.5`}>
               <span className="font-bold text-zinc-900 block border-b border-zinc-200 pb-0.5">
                 ভর্তির সাধারণ নিয়মাবলী ও শিক্ষার্থীর অঙ্গীকারনামা:
               </span>
@@ -344,31 +344,31 @@ export function RegularAdmissionForm({
           </div>
 
           {/* Form Bottom: Signatures */}
-          <div className="mt-3 pt-2 border-t border-zinc-200 flex items-end justify-between px-3 text-[11px] text-zinc-700">
+          <div className="pt-3.5 border-t border-zinc-200 shrink-0 flex items-end justify-between px-4 text-xs font-bold text-zinc-700">
             <div className="flex flex-col items-center">
-              <div className="w-32 border-b border-zinc-400 border-dashed mb-1" />
-              <span className="font-bold text-zinc-800">শিক্ষার্থীর স্বাক্ষর</span>
+              <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
+              <span className="text-zinc-800">শিক্ষার্থীর স্বাক্ষর</span>
             </div>
 
             <div className="flex flex-col items-center">
-              <div className="w-32 border-b border-zinc-400 border-dashed mb-1" />
-              <span className="font-bold text-zinc-800">অভিভাবকের স্বাক্ষর</span>
+              <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
+              <span className="text-zinc-800">অভিভাবকের স্বাক্ষর</span>
             </div>
 
             {showDigitalSignature ? (
               <div className="flex flex-col items-center">
                 <div className="mb-0.5 flex flex-col items-center">
-                  <span className="font-serif italic font-bold text-indigo-900 text-xs tracking-widest rotate-[-5deg]">
+                  <span className="font-serif italic font-bold text-indigo-900 text-sm tracking-widest rotate-[-5deg]">
                     Director, SL
                   </span>
-                  <div className="w-32 border-b border-zinc-400 mb-0.5" />
+                  <div className="w-36 border-b border-zinc-400 mb-0.5" />
                 </div>
-                <span className="font-bold text-zinc-800">ভর্তি কর্মকর্তা / পরিচালক</span>
+                <span className="text-zinc-800">ভর্তি কর্মকর্তা / পরিচালক</span>
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <div className="w-32 border-b border-zinc-400 border-dashed mb-1" />
-                <span className="font-bold text-zinc-800">ভর্তি কর্মকর্তা / পরিচালক</span>
+                <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
+                <span className="text-zinc-800">ভর্তি কর্মকর্তা / পরিচালক</span>
               </div>
             )}
           </div>

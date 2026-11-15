@@ -50,9 +50,13 @@ export function PrintStyles() {
           margin: 0 auto !important;
           padding: 0 !important;
           width: 100% !important;
-          max-width: 100% !important;
-          height: auto !important;
-          max-height: 288mm !important;
+          max-width: 194mm !important;
+          height: 284mm !important;
+          min-height: 284mm !important;
+          max-height: 284mm !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
           page-break-inside: avoid !important;
           break-inside: avoid !important;
           page-break-after: avoid !important;
@@ -60,6 +64,7 @@ export function PrintStyles() {
           page-break-before: avoid !important;
           break-before: avoid !important;
           overflow: hidden !important;
+          box-sizing: border-box !important;
         }
 
         /* Retain borders, dashed outlines, badges and background tints */
