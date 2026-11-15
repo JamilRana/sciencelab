@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { MobileTabBar } from "./MobileTabBar";
@@ -15,13 +15,36 @@ export function AppShell({ children, role }: AppShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("sidebar_collapsed");
+      if (saved !== null) {
+        setIsCollapsed(saved === "true");
+      }
+    } catch {
+      // Ignore localStorage read errors
+    }
+  }, []);
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("sidebar_collapsed", String(next));
+      } catch {
+        // Ignore localStorage write errors
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-950 flex">
       {/* Desktop Persistent Sidebar & Mobile Drawer */}
       <Sidebar
         role={role}
         isCollapsed={isCollapsed}
-        onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+        onToggleCollapse={handleToggleCollapse}
         isMobileOpen={isMobileOpen}
         onCloseMobile={() => setIsMobileOpen(false)}
       />
@@ -36,6 +59,8 @@ export function AppShell({ children, role }: AppShellProps) {
         {/* Top Header */}
         <TopBar
           role={role}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
           onOpenMobileMenu={() => setIsMobileOpen(true)}
         />
 

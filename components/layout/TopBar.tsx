@@ -10,22 +10,42 @@ import { CommandPalette } from "./CommandPalette";
 
 interface TopBarProps {
   role: string;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
   onOpenMobileMenu?: () => void;
 }
 
-export function TopBar({ role, onOpenMobileMenu }: TopBarProps) {
+export function TopBar({
+  role,
+  isCollapsed = false,
+  onToggleCollapse,
+  onOpenMobileMenu,
+}: TopBarProps) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   return (
     <>
       <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-zinc-200 bg-white/95 px-4 sm:px-6 backdrop-blur-md">
-        {/* Left Section: Mobile Menu Trigger + Breadcrumbs */}
-        <div className="flex items-center gap-3">
+        {/* Left Section: Mobile Menu Trigger + Desktop Collapse Toggle + Breadcrumbs */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile Menu Trigger */}
           {onOpenMobileMenu && (
             <button
               onClick={onOpenMobileMenu}
-              className="lg:hidden p-1.5 text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors focus-ring"
+              className="lg:hidden p-1.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors focus-ring"
               title="Open Navigation Menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
+
+          {/* Desktop Sidebar Collapse / Expand Toggle */}
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="hidden lg:flex p-1.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors focus-ring"
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <Menu className="h-5 w-5" />
             </button>

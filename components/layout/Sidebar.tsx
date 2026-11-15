@@ -50,31 +50,56 @@ export function Sidebar({
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-zinc-200 select-none">
       {/* Brand Header */}
-      <div className="flex items-center justify-between h-14 px-4 border-b border-zinc-100">
-        <Link
-          href={role === "STUDENT" ? "/student-route/dashboard" : role === "TEACHER" ? "/teacher-route/dashboard" : "/admin-route/dashboard"}
-          className="flex items-center gap-2.5 min-w-0"
-        >
-          <div className="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-200/80 flex items-center justify-center p-1 shrink-0 shadow-2xs overflow-hidden">
-            <Image
-              src="/logo2.png"
-              alt="Science Lab"
-              width={32}
-              height={32}
-              className="h-full w-auto object-contain"
-            />
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0">
-              <h1 className="text-sm font-bold tracking-tight text-zinc-900 truncate">
-                Science Lab
-              </h1>
-              <p className="text-[10px] text-zinc-400 font-medium tracking-wide uppercase">
-                Coaching Center
-              </p>
-            </div>
-          )}
-        </Link>
+      <div
+        className={cn(
+          "flex items-center h-14 border-b border-zinc-100",
+          isCollapsed ? "justify-center px-2" : "justify-between px-4"
+        )}
+      >
+        {!isCollapsed ? (
+          <>
+            <Link
+              href={role === "STUDENT" ? "/student-route/dashboard" : role === "TEACHER" ? "/teacher-route/dashboard" : "/admin-route/dashboard"}
+              className="flex items-center gap-2.5 min-w-0"
+            >
+              <div className="h-8 w-8 rounded-lg bg-zinc-50 border border-zinc-200/80 flex items-center justify-center p-1 shrink-0 shadow-2xs overflow-hidden">
+                <Image
+                  src="/logo2.png"
+                  alt="Science Lab"
+                  width={32}
+                  height={32}
+                  className="h-full w-auto object-contain"
+                />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-sm font-bold tracking-tight text-zinc-900 truncate">
+                  Science Lab
+                </h1>
+                <p className="text-[10px] text-zinc-400 font-medium tracking-wide uppercase">
+                  Coaching Center
+                </p>
+              </div>
+            </Link>
+
+            {onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className="hidden lg:flex p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg transition-colors focus-ring"
+                title="Collapse sidebar"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+            )}
+          </>
+        ) : (
+          <button
+            onClick={onToggleCollapse}
+            className="flex items-center justify-center h-9 w-9 rounded-lg text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50 border border-zinc-200/80 transition-all focus-ring group"
+            title="Expand sidebar"
+          >
+            <ChevronsRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+          </button>
+        )}
 
         {/* Mobile Close Button */}
         {onCloseMobile && (
@@ -131,6 +156,7 @@ export function Sidebar({
                   title={isCollapsed ? item.label : undefined}
                   className={cn(
                     "flex items-center gap-3 px-2.5 py-2 rounded-lg text-xs font-medium transition-all group relative",
+                    isCollapsed && "justify-center px-2",
                     isActive
                       ? "bg-indigo-50 text-indigo-700 font-semibold shadow-xs"
                       : "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80"
@@ -161,17 +187,27 @@ export function Sidebar({
 
       {/* Collapse Toggle Footer */}
       {onToggleCollapse && (
-        <div className="hidden lg:flex items-center justify-between p-3 border-t border-zinc-100">
+        <div
+          className={cn(
+            "hidden lg:flex items-center p-3 border-t border-zinc-100",
+            isCollapsed ? "justify-center" : "justify-between"
+          )}
+        >
           {!isCollapsed && (
             <span className="text-[11px] text-zinc-400 font-medium">Collapse menu</span>
           )}
           <button
             onClick={onToggleCollapse}
-            className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg transition-colors focus-ring ml-auto"
+            className={cn(
+              "p-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors focus-ring",
+              isCollapsed
+                ? "w-full flex items-center justify-center bg-zinc-50/80 border border-zinc-200/60"
+                : "ml-auto"
+            )}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
-              <ChevronsRight className="h-4 w-4" />
+              <ChevronsRight className="h-4 w-4 text-zinc-600" />
             ) : (
               <ChevronsLeft className="h-4 w-4" />
             )}
