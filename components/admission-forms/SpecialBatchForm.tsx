@@ -161,7 +161,7 @@ export function SpecialBatchForm({
               <span className={`font-bold whitespace-nowrap min-w-[140px] ${themeStyles.labelColor}`}>
                 ছাত্র/ছাত্রীর নাম (বাংলা):
               </span>
-              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[22px] flex items-center font-semibold text-zinc-900`}>
+              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-1 min-h-[26px] flex items-center font-semibold text-zinc-900`}>
                 {!isBlank ? data.studentNameBangla : ""}
               </div>
             </div>
@@ -171,13 +171,13 @@ export function SpecialBatchForm({
               <span className={`font-bold whitespace-nowrap min-w-[140px] ${themeStyles.labelColor}`}>
                 Name (English / Block):
               </span>
-              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[22px] flex items-center font-bold tracking-wider text-zinc-900 uppercase`}>
+              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-1 min-h-[26px] flex items-center font-bold tracking-wider text-zinc-900 uppercase`}>
                 {!isBlank ? data.studentNameEnglish : ""}
               </div>
             </div>
 
             {/* Field: পিতার নাম */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 min-h-[28px] flex items-center gap-2 text-xs sm:text-sm`}>
               <span className={`font-bold whitespace-nowrap min-w-[70px] ${themeStyles.labelColor}`}>
                 পিতার নাম:
               </span>
@@ -187,7 +187,7 @@ export function SpecialBatchForm({
             </div>
 
             {/* Field: মাতার নাম */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 min-h-[28px] flex items-center gap-2 text-xs sm:text-sm`}>
               <span className={`font-bold whitespace-nowrap min-w-[70px] ${themeStyles.labelColor}`}>
                 মাতার নাম:
               </span>
@@ -197,7 +197,7 @@ export function SpecialBatchForm({
             </div>
 
             {/* Field: বিদ্যালয়ের নাম */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 min-h-[28px] flex items-center gap-2 text-xs sm:text-sm`}>
               <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
                 বিদ্যালয়ের নাম:
               </span>
@@ -212,17 +212,17 @@ export function SpecialBatchForm({
                 <span className={`font-bold whitespace-nowrap min-w-[45px] ${themeStyles.labelColor}`}>
                   ঠিকানা:
                 </span>
-                <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} pb-0.5 min-h-[18px] font-medium text-zinc-800`}>
+                <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} pb-0.5 min-h-[20px] font-medium text-zinc-800`}>
                   {!isBlank ? data.address : ""}
                 </div>
               </div>
-              <div className={`w-full border-b border-dashed ${themeStyles.dashedBorder} min-h-[14px]`} />
+              <div className={`w-full border-b border-dashed ${themeStyles.dashedBorder} min-h-[20px]`} />
             </div>
 
             {/* Row: জন্ম তারিখ, রক্ত & ব্যাচ (অফিস কর্তৃক পূরণীয়) */}
             <div className="grid grid-cols-12 gap-2 text-xs sm:text-sm">
               {/* জন্ম তারিখ */}
-              <div className={`col-span-7 border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2`}>
+              <div className={`col-span-7 border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 min-h-[30px] flex items-center gap-2`}>
                 <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
                   জন্ম তারিখ:
                 </span>
@@ -242,7 +242,7 @@ export function SpecialBatchForm({
               </div>
 
               {/* ব্যাচ (অফিস কর্তৃক পূরণীয়) - RED DASHED BOX FROM IMAGE */}
-              <div className="col-span-5 border-2 border-dashed border-red-500 rounded px-2.5 py-1 bg-red-50/40 flex flex-col justify-center">
+              <div className="col-span-5 border-2 border-dashed border-red-500 rounded px-2.5 py-1 min-h-[30px] bg-red-50/40 flex flex-col justify-center">
                 <div className="flex items-baseline justify-between">
                   <span className="font-bold text-red-600 text-xs sm:text-sm">
                     ব্যাচ:-
@@ -259,7 +259,7 @@ export function SpecialBatchForm({
 
             {/* Row: অভিভাবকের ফোন & ছাত্র/ছাত্রীর ফোন */}
             <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2`}>
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 min-h-[30px] flex items-center gap-2`}>
                 <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
                   অভিভাবকের ফোন:
                 </span>
@@ -268,7 +268,7 @@ export function SpecialBatchForm({
                 </span>
               </div>
 
-              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2`}>
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 min-h-[30px] flex items-center gap-2`}>
                 <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
                   ছাত্র/ছাত্রীর ফোন:
                 </span>
@@ -281,15 +281,19 @@ export function SpecialBatchForm({
           </div>
 
           {/* Form Bottom: Signatures */}
-          <div className="pt-2.5 shrink-0 flex items-end justify-between px-4 text-xs text-zinc-700">
+          <div className="pt-3 pb-0.5 shrink-0 flex items-end justify-between px-6 text-xs text-zinc-700">
             <div className="flex flex-col items-center">
-              <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
-              <span className="font-bold text-zinc-800">অভিভাবকের স্বাক্ষর</span>
+              <div className="h-8 sm:h-9 flex flex-col justify-end mb-1">
+                <div className="w-36 sm:w-40 border-b border-zinc-400 border-dashed" />
+              </div>
+              <span className="font-bold text-zinc-800 text-xs sm:text-sm">অভিভাবকের স্বাক্ষর</span>
             </div>
 
             <div className="flex flex-col items-center">
-              <div className="w-40 border-b border-zinc-400 border-dashed mb-1" />
-              <span className="font-bold text-zinc-800">ভর্তি কর্মকর্তার স্বাক্ষর ও তারিখ</span>
+              <div className="h-8 sm:h-9 flex flex-col justify-end mb-1">
+                <div className="w-40 sm:w-44 border-b border-zinc-400 border-dashed" />
+              </div>
+              <span className="font-bold text-zinc-800 text-xs sm:text-sm">ভর্তি কর্মকর্তার স্বাক্ষর ও তারিখ</span>
             </div>
           </div>
         </section>
@@ -384,10 +388,10 @@ export function SpecialBatchForm({
           </div>
 
           {/* Admit Card Fields Box */}
-          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white flex-1 flex flex-col justify-between gap-1.5`}>
+          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white space-y-2`}>
             
             {/* Field: ছাত্র/ছাত্রীর নাম (বাংলা) */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-2 text-xs sm:text-sm`}>
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 min-h-[30px] flex items-center gap-2 text-xs sm:text-sm`}>
               <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
                 ছাত্র/ছাত্রীর নাম (বাংলা):
               </span>
@@ -397,7 +401,7 @@ export function SpecialBatchForm({
             </div>
 
             {/* Field: Name in English */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-2 text-xs sm:text-sm`}>
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 min-h-[30px] flex items-center gap-2 text-xs sm:text-sm`}>
               <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
                 Name (in English):
               </span>
@@ -407,7 +411,7 @@ export function SpecialBatchForm({
             </div>
 
             {/* Field: বিদ্যালয়ের নাম */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 flex items-center gap-2 text-xs sm:text-sm`}>
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1.5 min-h-[30px] flex items-center gap-2 text-xs sm:text-sm`}>
               <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
                 বিদ্যালয়ের নাম:
               </span>
@@ -419,7 +423,7 @@ export function SpecialBatchForm({
             {/* Row: রোল নং & রেজিঃ নং (BOTH IN RED DASHED BOXES FROM IMAGE) */}
             <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
               {/* রোল নং */}
-              <div className="border-2 border-dashed border-red-500 rounded px-2.5 py-1.5 bg-red-50/40 flex flex-col justify-center">
+              <div className="border-2 border-dashed border-red-500 rounded px-2.5 py-1 min-h-[44px] bg-red-50/40 flex flex-col justify-center">
                 <div className="flex items-baseline justify-between">
                   <span className="font-bold text-red-600 text-xs sm:text-sm">
                     রোল নং:-
@@ -434,7 +438,7 @@ export function SpecialBatchForm({
               </div>
 
               {/* রেজিঃ নং */}
-              <div className="border-2 border-dashed border-red-500 rounded px-2.5 py-1.5 bg-red-50/40 flex flex-col justify-center">
+              <div className="border-2 border-dashed border-red-500 rounded px-2.5 py-1 min-h-[44px] bg-red-50/40 flex flex-col justify-center">
                 <div className="flex items-baseline justify-between">
                   <span className="font-bold text-red-600 text-xs sm:text-sm">
                     রেজিঃ নং:-
@@ -452,32 +456,34 @@ export function SpecialBatchForm({
           </div>
 
           {/* Admit Card Footer: Signatures */}
-          <div className="pt-2 shrink-0 flex items-end justify-between px-3 text-xs text-zinc-700">
+          <div className="mt-auto pt-4 pb-1 shrink-0 flex items-end justify-between px-4 text-xs text-zinc-700">
             {/* Left section: Clean and minimal */}
-            <div className="text-[10px] text-zinc-500">
+            <div className="text-[10px] text-zinc-500 flex flex-col justify-end">
               <span className="font-semibold text-zinc-600">Science Lab Academic System</span>
             </div>
 
             {/* Controller / Director Signature */}
             <div className="flex flex-col items-center">
               {showDigitalSignature ? (
-                <div className="mb-0.5 flex flex-col items-center">
+                <div className="h-11 flex flex-col items-center justify-end mb-1">
                   <span className="font-serif italic font-bold text-indigo-900 text-sm tracking-widest rotate-[-5deg]">
                     Director, SL
                   </span>
-                  <div className="w-36 border-b border-zinc-400 mb-1" />
+                  <div className="w-40 border-b border-zinc-400 mt-1" />
                 </div>
               ) : (
-                <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
+                <div className="h-11 flex flex-col items-center justify-end mb-1">
+                  <div className="w-40 border-b border-zinc-400 border-dashed" />
+                </div>
               )}
-              <span className="font-bold text-zinc-800 text-xs">
+              <span className="font-bold text-zinc-800 text-xs sm:text-sm">
                 পরিচালক / পরীক্ষা নিয়ন্ত্রক
               </span>
             </div>
           </div>
 
           {/* Quick Notice */}
-          <div className="mt-1.5 shrink-0 text-[9px] text-zinc-500 border-t border-zinc-200 pt-1 flex items-center justify-between">
+          <div className="mt-1 shrink-0 text-[9px] text-zinc-500 border-t border-zinc-200 pt-1 flex items-center justify-between">
             <span>* পরীক্ষা কক্ষে প্রবেশের জন্য প্রবেশপত্রটি অবশ্যই সাথে আনতে হবে।</span>
             <span className="font-semibold text-zinc-600">Science Lab Academic System</span>
           </div>

@@ -346,28 +346,34 @@ export function RegularAdmissionForm({
           {/* Form Bottom: Signatures */}
           <div className="pt-3.5 border-t border-zinc-200 shrink-0 flex items-end justify-between px-4 text-xs font-bold text-zinc-700">
             <div className="flex flex-col items-center">
-              <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
+              <div className="h-9 flex flex-col justify-end mb-1">
+                <div className="w-36 border-b border-zinc-400 border-dashed" />
+              </div>
               <span className="text-zinc-800">শিক্ষার্থীর স্বাক্ষর</span>
             </div>
 
             <div className="flex flex-col items-center">
-              <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
+              <div className="h-9 flex flex-col justify-end mb-1">
+                <div className="w-36 border-b border-zinc-400 border-dashed" />
+              </div>
               <span className="text-zinc-800">অভিভাবকের স্বাক্ষর</span>
             </div>
 
             {showDigitalSignature ? (
               <div className="flex flex-col items-center">
-                <div className="mb-0.5 flex flex-col items-center">
+                <div className="h-9 flex flex-col items-center justify-end mb-1">
                   <span className="font-serif italic font-bold text-indigo-900 text-sm tracking-widest rotate-[-5deg]">
                     Director, SL
                   </span>
-                  <div className="w-36 border-b border-zinc-400 mb-0.5" />
+                  <div className="w-36 border-b border-zinc-400 mt-0.5" />
                 </div>
                 <span className="text-zinc-800">ভর্তি কর্মকর্তা / পরিচালক</span>
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <div className="w-36 border-b border-zinc-400 border-dashed mb-1" />
+                <div className="h-9 flex flex-col justify-end mb-1">
+                  <div className="w-36 border-b border-zinc-400 border-dashed" />
+                </div>
                 <span className="text-zinc-800">ভর্তি কর্মকর্তা / পরিচালক</span>
               </div>
             )}
