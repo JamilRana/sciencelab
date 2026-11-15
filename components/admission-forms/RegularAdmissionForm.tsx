@@ -2,7 +2,7 @@
 
 import React from "react";
 import { AdmissionFormData, FillMode, ColorTheme } from "./types";
-import { Scissors, Award, BookOpen, CheckCircle } from "lucide-react";
+import { Scissors } from "lucide-react";
 
 interface RegularAdmissionFormProps {
   data: AdmissionFormData;
@@ -178,29 +178,30 @@ export function RegularAdmissionForm({
               </div>
             </div>
 
-            {/* Field: ছাত্র/ছাত্রীর নাম */}
+            {/* Field: ছাত্র/ছাত্রীর নাম (বাংলা) */}
             <div className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
-                ছাত্র/ছাত্রীর নাম:
+              <span className={`font-bold whitespace-nowrap min-w-[145px] ${themeStyles.labelColor}`}>
+                ছাত্র/ছাত্রীর নাম (বাংলা):
               </span>
-              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[26px] flex items-center font-bold text-zinc-900`}>
-                {!isBlank && (
-                  <span>
-                    {data.studentNameBangla}
-                    {data.studentNameEnglish && (
-                      <span className="text-zinc-600 font-normal ml-2">
-                        ({data.studentNameEnglish})
-                      </span>
-                    )}
-                  </span>
-                )}
+              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[22px] flex items-center font-bold text-zinc-900`}>
+                {!isBlank ? data.studentNameBangla : ""}
+              </div>
+            </div>
+
+            {/* Field: ছাত্র/ছাত্রীর নাম (English) */}
+            <div className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <span className={`font-bold whitespace-nowrap min-w-[145px] ${themeStyles.labelColor}`}>
+                Name (English / Block):
+              </span>
+              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[22px] flex items-center font-bold tracking-wider text-zinc-900 uppercase`}>
+                {!isBlank ? data.studentNameEnglish : ""}
               </div>
             </div>
 
             {/* Row: পিতার নাম & মাতার নাম */}
             <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
               <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-1.5`}>
-                <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
+                <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
                   পিতার নাম:
                 </span>
                 <span className="font-medium text-zinc-800 truncate">
@@ -209,7 +210,7 @@ export function RegularAdmissionForm({
               </div>
 
               <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-1.5`}>
-                <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
+                <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
                   মাতার নাম:
                 </span>
                 <span className="font-medium text-zinc-800 truncate">
@@ -237,14 +238,17 @@ export function RegularAdmissionForm({
               </div>
             </div>
 
-            {/* Field: ঠিকানা */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
-              <span className={`font-bold whitespace-nowrap min-w-[55px] ${themeStyles.labelColor}`}>
-                ঠিকানা:
-              </span>
-              <div className="flex-1 font-medium text-zinc-800 truncate">
-                {!isBlank ? data.address : ""}
+            {/* Field: ঠিকানা (২ লাইন) */}
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 space-y-1 text-xs sm:text-sm`}>
+              <div className="flex items-center gap-2">
+                <span className={`font-bold whitespace-nowrap min-w-[45px] ${themeStyles.labelColor}`}>
+                  ঠিকানা:
+                </span>
+                <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} pb-0.5 min-h-[18px] font-medium text-zinc-800`}>
+                  {!isBlank ? data.address : ""}
+                </div>
               </div>
+              <div className={`w-full border-b border-dashed ${themeStyles.dashedBorder} min-h-[14px]`} />
             </div>
 
             {/* Row: জন্ম তারিখ & ব্যাচ (অফিস কর্তৃক পূরণীয়) */}
@@ -404,15 +408,25 @@ export function RegularAdmissionForm({
           </div>
 
           {/* Admit Card Fields Box */}
-          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white space-y-2`}>
+          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white space-y-1.5`}>
             
-            {/* Field: ছাত্র/ছাত্রীর নাম */}
+            {/* Field: ছাত্র/ছাত্রীর নাম (বাংলা) */}
             <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
-              <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
-                ছাত্র/ছাত্রীর নাম:
+              <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
+                ছাত্র/ছাত্রীর নাম (বাংলা):
               </span>
               <div className="flex-1 font-bold text-zinc-900">
                 {!isBlank ? data.studentNameBangla : ""}
+              </div>
+            </div>
+
+            {/* Field: Name in English */}
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+              <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
+                Name (in English):
+              </span>
+              <div className="flex-1 font-bold tracking-wider uppercase text-zinc-900">
+                {!isBlank ? data.studentNameEnglish : ""}
               </div>
             </div>
 
@@ -468,41 +482,13 @@ export function RegularAdmissionForm({
               </div>
             </div>
 
-            {/* Instructions / Notice Row */}
-            <div className="bg-zinc-50 border border-zinc-200 rounded px-2.5 py-1 text-[11px] text-zinc-700 space-y-0.5">
-              <div className="flex items-center justify-between">
-                <span><span className="font-bold text-zinc-900">ক্লাস শুরুর সময় ও রুটিন: </span>অফিস নোটিশ বোর্ড বা এসএমএস অনুযায়ী</span>
-                <span><span className="font-bold text-zinc-900">স্থান: </span>{data.examVenue}</span>
-              </div>
-            </div>
-
           </div>
 
-          {/* Footer: Seals & Signatures */}
-          <div className="mt-3 pt-2 flex items-end justify-between px-3 text-xs text-zinc-700">
-            {/* Seal Box */}
-            <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-full border border-dashed border-zinc-400 flex flex-col items-center justify-center p-1 text-center text-zinc-400 bg-zinc-50/50">
-                {showDigitalSeal ? (
-                  <div className={`w-14 h-14 rounded-full border-2 border-emerald-600/70 flex flex-col items-center justify-center text-emerald-700 rotate-[-12deg]`}>
-                    <Award className="h-3.5 w-3.5 text-emerald-600 mb-0.5" />
-                    <span className="text-[7px] font-extrabold tracking-tighter leading-none">
-                      SCIENCE LAB
-                    </span>
-                    <span className="text-[6px] font-bold uppercase text-emerald-800">
-                      OFFICIAL
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-[9px] font-bold text-zinc-400 leading-tight">
-                    অফিস সিল
-                  </span>
-                )}
-              </div>
-              <div className="text-[10px] text-zinc-500 hidden sm:block">
-                <p>হটলাইন: {data.hotline}</p>
-                <p>www.sciencelab.edu.bd</p>
-              </div>
+          {/* Footer: Signatures (Seal & hotline removed as requested) */}
+          <div className="mt-4 pt-2 flex items-end justify-between px-3 text-xs text-zinc-700">
+            {/* Left section: Clean and minimal */}
+            <div className="text-[10px] text-zinc-500">
+              <span className="font-semibold text-zinc-600">Science Lab Academic System</span>
             </div>
 
             {/* Controller / Director Signature */}

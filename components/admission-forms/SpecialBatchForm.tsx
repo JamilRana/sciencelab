@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { AdmissionFormData, FillMode, ColorTheme } from "./types";
-import { Scissors, Award, CheckCircle2 } from "lucide-react";
+import { Scissors } from "lucide-react";
 
 interface SpecialBatchFormProps {
   data: AdmissionFormData;
@@ -153,68 +153,82 @@ export function SpecialBatchForm({
           </div>
 
           {/* Form Fields Box (Matching original green border) */}
-          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white space-y-2`}>
+          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white space-y-1.5`}>
             
-            {/* Field: ছাত্র/ছাত্রীর নাম */}
+            {/* Field: ছাত্র/ছাত্রীর নাম (বাংলা) */}
             <div className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
-                ছাত্র/ছাত্রীর নাম:
+              <span className={`font-bold whitespace-nowrap min-w-[145px] ${themeStyles.labelColor}`}>
+                ছাত্র/ছাত্রীর নাম (বাংলা):
               </span>
-              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[26px] flex items-center font-semibold text-zinc-900`}>
-                {!isBlank && (
-                  <span>
-                    {data.studentNameBangla}
-                    {data.studentNameEnglish && (
-                      <span className="text-zinc-600 font-medium ml-2">
-                        ({data.studentNameEnglish})
-                      </span>
-                    )}
-                  </span>
-                )}
+              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[22px] flex items-center font-semibold text-zinc-900`}>
+                {!isBlank ? data.studentNameBangla : ""}
               </div>
             </div>
 
-            {/* Field: পিতার নাম */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
-              <span className={`font-bold whitespace-nowrap min-w-[85px] ${themeStyles.labelColor}`}>
-                পিতার নাম:
-              </span>
-              <div className="flex-1 font-medium text-zinc-800">
-                {!isBlank ? data.fatherName : ""}
-              </div>
-            </div>
-
-            {/* Field: মাতার নাম (Enhanced Bangladesh Standard) */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
-              <span className={`font-bold whitespace-nowrap min-w-[85px] ${themeStyles.labelColor}`}>
-                মাতার নাম:
-              </span>
-              <div className="flex-1 font-medium text-zinc-800">
-                {!isBlank ? data.motherName : ""}
-              </div>
-            </div>
-
-            {/* Field: বিদ্যালয়ের নাম */}
+            {/* Field: ছাত্র/ছাত্রীর নাম (English / Block Letter) */}
             <div className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
-                বিদ্যালয়ের নাম:
+              <span className={`font-bold whitespace-nowrap min-w-[145px] ${themeStyles.labelColor}`}>
+                Name (English / Block):
               </span>
-              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[26px] flex items-center font-medium text-zinc-800`}>
-                {!isBlank ? data.schoolName : ""}
+              <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} px-2 py-0.5 min-h-[22px] flex items-center font-bold tracking-wider text-zinc-900 uppercase`}>
+                {!isBlank ? data.studentNameEnglish : ""}
               </div>
             </div>
 
-            {/* Field: ঠিকানা */}
-            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
-              <span className={`font-bold whitespace-nowrap min-w-[55px] ${themeStyles.labelColor}`}>
-                ঠিকানা:
-              </span>
-              <div className="flex-1 font-medium text-zinc-800 truncate">
-                {!isBlank ? data.address : ""}
+            {/* Row: পিতার নাম & মাতার নাম */}
+            <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2`}>
+                <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
+                  পিতার নাম:
+                </span>
+                <div className="flex-1 font-medium text-zinc-800">
+                  {!isBlank ? data.fatherName : ""}
+                </div>
+              </div>
+
+              <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2`}>
+                <span className={`font-bold whitespace-nowrap min-w-[65px] ${themeStyles.labelColor}`}>
+                  মাতার নাম:
+                </span>
+                <div className="flex-1 font-medium text-zinc-800">
+                  {!isBlank ? data.motherName : ""}
+                </div>
               </div>
             </div>
 
-            {/* Row: জন্ম তারিখ & ব্যাচ (অফিস কর্তৃক পূরণীয়) */}
+            {/* Row: বিদ্যালয়ের নাম ও বিগত শ্রেণির রোল / GPA */}
+            <div className="grid grid-cols-12 gap-2 text-xs sm:text-sm">
+              <div className={`col-span-8 border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-1.5`}>
+                <span className={`font-bold whitespace-nowrap ${themeStyles.labelColor}`}>
+                  বিদ্যালয়ের নাম:
+                </span>
+                <span className="font-medium text-zinc-800 truncate">
+                  {!isBlank ? data.schoolName : ""}
+                </span>
+              </div>
+
+              <div className={`col-span-4 border border-dashed ${themeStyles.dashedBorder} rounded px-2 py-1 flex items-center justify-between text-xs`}>
+                <span className={`font-bold ${themeStyles.labelColor}`}>রোল / GPA:</span>
+                <span className="font-bold text-zinc-800">
+                  {!isBlank ? `${data.schoolRoll || "—"} / ${data.previousGpa || "—"}` : ""}
+                </span>
+              </div>
+            </div>
+
+            {/* Field: ঠিকানা (২ লাইন) */}
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 space-y-1 text-xs sm:text-sm`}>
+              <div className="flex items-center gap-2">
+                <span className={`font-bold whitespace-nowrap min-w-[45px] ${themeStyles.labelColor}`}>
+                  ঠিকানা:
+                </span>
+                <div className={`flex-1 border-b border-dashed ${themeStyles.dashedBorder} pb-0.5 min-h-[18px] font-medium text-zinc-800`}>
+                  {!isBlank ? data.address : ""}
+                </div>
+              </div>
+              <div className={`w-full border-b border-dashed ${themeStyles.dashedBorder} min-h-[14px]`} />
+            </div>
+
+            {/* Row: জন্ম তারিখ, রক্ত & ব্যাচ (অফিস কর্তৃক পূরণীয়) */}
             <div className="grid grid-cols-12 gap-2 text-xs sm:text-sm">
               {/* জন্ম তারিখ */}
               <div className={`col-span-7 border border-dashed ${themeStyles.dashedBorder} rounded px-2 py-1 flex items-center gap-1.5`}>
@@ -224,6 +238,11 @@ export function SpecialBatchForm({
                 <span className="font-medium text-zinc-800">
                   {!isBlank ? data.dateOfBirth : ""}
                 </span>
+                {!isBlank && data.gender && (
+                  <span className="text-[11px] font-semibold text-zinc-600 bg-zinc-100 px-1.5 py-0.2 rounded ml-1">
+                    {data.gender}
+                  </span>
+                )}
                 {!isBlank && data.bloodGroup && (
                   <span className="ml-auto text-[11px] font-semibold text-zinc-600 bg-zinc-100 px-1.5 py-0.2 rounded">
                     রক্ত: {data.bloodGroup}
@@ -372,21 +391,31 @@ export function SpecialBatchForm({
           </div>
 
           {/* Admit Card Fields Box */}
-          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white space-y-2`}>
+          <div className={`border ${themeStyles.innerBorder} rounded-md p-2.5 sm:p-3 bg-white space-y-1.5`}>
             
-            {/* Field: ছাত্র/ছাত্রীর নাম */}
+            {/* Field: ছাত্র/ছাত্রীর নাম (বাংলা) */}
             <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
-              <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
-                ছাত্র/ছাত্রীর নাম:
+              <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
+                ছাত্র/ছাত্রীর নাম (বাংলা):
               </span>
               <div className="flex-1 font-bold text-zinc-900">
                 {!isBlank ? data.studentNameBangla : ""}
               </div>
             </div>
 
+            {/* Field: Name in English */}
+            <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
+              <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
+                Name (in English):
+              </span>
+              <div className="flex-1 font-bold tracking-wider uppercase text-zinc-900">
+                {!isBlank ? data.studentNameEnglish : ""}
+              </div>
+            </div>
+
             {/* Field: বিদ্যালয়ের নাম */}
             <div className={`border border-dashed ${themeStyles.dashedBorder} rounded px-2.5 py-1 flex items-center gap-2 text-xs sm:text-sm`}>
-              <span className={`font-bold whitespace-nowrap min-w-[105px] ${themeStyles.labelColor}`}>
+              <span className={`font-bold whitespace-nowrap min-w-[135px] ${themeStyles.labelColor}`}>
                 বিদ্যালয়ের নাম:
               </span>
               <div className="flex-1 font-medium text-zinc-800">
@@ -427,45 +456,13 @@ export function SpecialBatchForm({
               </div>
             </div>
 
-            {/* Dynamic Exam Details: তারিখ, সময় ও স্থান */}
-            <div className="bg-zinc-50 border border-zinc-200 rounded px-2.5 py-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-zinc-700">
-              <div>
-                <span className="font-bold text-zinc-900">পরীক্ষার তারিখ ও সময়: </span>
-                <span>{data.examDate} | {data.examTime}</span>
-              </div>
-              <div>
-                <span className="font-bold text-zinc-900">পরীক্ষার স্থান: </span>
-                <span className="truncate">{data.examVenue}</span>
-              </div>
-            </div>
-
           </div>
 
-          {/* Admit Card Footer: Seals & Signatures */}
-          <div className="mt-3 pt-2 flex items-end justify-between px-3 text-xs text-zinc-700">
-            {/* Seal Box */}
-            <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-full border border-dashed border-zinc-400 flex flex-col items-center justify-center p-1 text-center text-zinc-400 bg-zinc-50/50">
-                {showDigitalSeal ? (
-                  <div className={`w-14 h-14 rounded-full border-2 border-emerald-600/70 flex flex-col items-center justify-center text-emerald-700 rotate-[-12deg]`}>
-                    <Award className="h-3.5 w-3.5 text-emerald-600 mb-0.5" />
-                    <span className="text-[7px] font-extrabold tracking-tighter leading-none">
-                      SCIENCE LAB
-                    </span>
-                    <span className="text-[6px] font-bold uppercase text-emerald-800">
-                      VERIFIED
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-[9px] font-bold text-zinc-400 leading-tight">
-                    অফিস সিল
-                  </span>
-                )}
-              </div>
-              <div className="text-[10px] text-zinc-500 hidden sm:block">
-                <p>হটলাইন: {data.hotline}</p>
-                <p>www.sciencelab.edu.bd</p>
-              </div>
+          {/* Admit Card Footer: Signatures (Seal & hotline removed as requested) */}
+          <div className="mt-4 pt-2 flex items-end justify-between px-3 text-xs text-zinc-700">
+            {/* Left section: Clean and minimal */}
+            <div className="text-[10px] text-zinc-500">
+              <span className="font-semibold text-zinc-600">Science Lab Academic System</span>
             </div>
 
             {/* Controller / Director Signature */}

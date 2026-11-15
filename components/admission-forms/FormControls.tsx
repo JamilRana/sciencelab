@@ -595,16 +595,6 @@ export function FormControls({
             <label className="flex items-center gap-1.5 cursor-pointer font-medium text-zinc-700 select-none">
               <input
                 type="checkbox"
-                checked={showDigitalSeal}
-                onChange={(e) => setShowDigitalSeal(e.target.checked)}
-                className="rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
-              />
-              <span>অফিস সিল স্ট্যাম্প</span>
-            </label>
-
-            <label className="flex items-center gap-1.5 cursor-pointer font-medium text-zinc-700 select-none">
-              <input
-                type="checkbox"
                 checked={showDigitalSignature}
                 onChange={(e) => setShowDigitalSignature(e.target.checked)}
                 className="rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
